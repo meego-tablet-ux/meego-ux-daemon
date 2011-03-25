@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<provider xmlns="http://contextkit.freedesktop.org/Provider"
+          bus="session"
+          service="com.meego.meego-ux-daemon">
+    <key name="Notifications.Last" />
+    <key name="Notifications.Unread" />
+</provider>

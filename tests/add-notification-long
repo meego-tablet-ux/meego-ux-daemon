@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+import sys
+import dbus
+
+if (len(sys.argv) < 10):
+	print "Usage: %s USERID GROUPID EVENTTYPE SUMMARY BODY ACTION IMAGEURI COUNT IDENTIFIER" % (sys.argv[0])
+	sys.exit(1)
+
+bus = dbus.SessionBus()
+
+manager = dbus.Interface(bus.get_object('com.meego.core.MNotificationManager', 
+					'/notificationmanager'),
+					'com.meego.core.MNotificationManager')
+
+print manager.addNotification(dbus.UInt32(sys.argv[1]), dbus.UInt32(sys.argv[2]), dbus.String(sys.argv[3]), dbus.String(sys.argv[4]), dbus.String(sys.argv[5]), dbus.String(sys.argv[6]), dbus.String(sys.argv[7]), dbus.UInt32(sys.argv[8]), dbus.String(sys.argv[9]))

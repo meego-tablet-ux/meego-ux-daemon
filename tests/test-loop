@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while true; do
+	./add-new-email-notification 0 "New email" "`date`"
+        sleep 8
+        for i in `./notification-id-list 0`; do
+        	./remove-notification 0 $i
+	done
+        sleep 8
+	./add-im-recieved-notification 0 "New IM" "`date`"
+        sleep 8
+done

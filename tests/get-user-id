@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import sys
+import dbus
+
+bus = dbus.SessionBus()
+
+manager = dbus.Interface(bus.get_object('com.meego.core.MNotificationManager', 
+					'/notificationmanager'),
+					'com.meego.core.MNotificationManager')
+
+print manager.notificationUserId()

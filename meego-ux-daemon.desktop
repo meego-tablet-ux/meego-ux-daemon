@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Name=meego-ux-daemon
+Exec=/usr/libexec/meego-ux-daemon --opengl
+X-Meego-Watchdog=Restart

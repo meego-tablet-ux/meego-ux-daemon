@@ -1,0 +1,205 @@
+/*
+ * Copyright 2011 Intel Corporation.
+ *
+ * This program is licensed under the terms and conditions of the
+ * Apache License, version 2.0.  The full text of the Apache License is at 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+#ifndef APPLICATION_H
+#define APPLICATION_H
+
+#include <QApplication>
+#include <QDBusConnection>
+#include <QDeclarativeEngine>
+#include <QDeclarativeListProperty>
+#include <QTranslator>
+#include <MNotification>
+#include <mnotificationgroup.h>
+
+#include "desktop.h"
+#include "dialog.h"
+
+#include "windowinfo.h"
+
+class Dialog;
+class Desktop;
+class MGConfItem;
+class QSettings;
+class NotificationDataStore;
+class NotificationModel;
+
+class Application : public QApplication
+{
+    Q_OBJECT
+    Q_PROPERTY(int orientation READ getOrientation NOTIFY orientationChanged)
+    Q_PROPERTY(int foregroundOrientation READ getForegroundOrientation NOTIFY foregroundOrientationChanged);
+    Q_PROPERTY(QDeclarativeListProperty<Desktop> runningApps READ runningApps NOTIFY runningAppsChanged)
+    Q_PROPERTY(int runningAppsLimit READ runningAppsLimit WRITE setRunningAppsLimit);
+    Q_PROPERTY(int preferredLandscapeOrientation READ preferredLandscapeOrientation);
+    Q_PROPERTY(int preferredPortraitOrientation READ preferredPortraitOrientation);
+    Q_PROPERTY(bool haveAppStore READ haveAppStore NOTIFY haveAppStoreChanged);
+    Q_PROPERTY(int foregroundWindow READ foregroundWindow NOTIFY foregroundWindowChanged);
+public:
+    explicit Application(int & argc, char ** argv, bool opengl);
+    ~Application();
+
+    int getOrientation() {
+        return orientation;
+    }
+    void setOrientation(int o) {
+        orientation = o;
+        emit orientationChanged();
+    }
+
+    int getForegroundOrientation();
+
+    QSettings *themeConfig;
+
+    int runningAppsLimit() {
+        return m_runningAppsLimit;
+    }
+    void setRunningAppsLimit(int limit);
+    QDeclarativeListProperty<Desktop> runningApps();
+
+    int preferredLandscapeOrientation() {
+        return m_preferredLandscapeOrientation;
+    }
+    int preferredPortraitOrientation() {
+        return m_preferredPortraitOrientation;
+    }
+
+    bool haveAppStore() {
+        return m_haveAppStore;
+    }
+
+    int foregroundWindow()
+    {
+        return m_foregroundWindow;
+    }
+
+public slots:
+    void showTaskSwitcher();
+    void showPanels();
+    void showGrid();
+    void showAppStore();
+    void goHome();
+    void lock();
+    void launchDesktopByName(QString name);
+    void closeDesktopByName(QString name);
+    void openStatusIndicatorMenu();
+    void clearAllNotifications();
+
+    // MNotificationManager Interface
+    uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    uint addGroup(uint notificationUserId, const QString &eventType);
+    uint addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    uint addNotification(uint notificationUserId, uint groupId, const QString &eventType);
+    QList < MNotificationGroup >  notificationGroupListWithIdentifiers(uint notificationUserId);
+    QList < uint >  notificationIdList(uint notificationUserId);
+    QList < MNotification >  notificationListWithIdentifiers(uint notificationUserId);
+    uint notificationUserId();
+    bool removeGroup(uint notificationUserId, uint groupId);
+    bool removeNotification(uint notificationUserId, uint notificationId);
+    bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType);
+    bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
+
+signals:
+    /*!
+     * \brief A signal for notifying that the window list has been updated
+     */
+    void windowListUpdated(const QList<WindowInfo> &windowList);
+    void activateLock();
+    void orientationChanged();
+    void runningAppsChanged();
+    void haveAppStoreChanged();
+    void foregroundWindowChanged();
+    void foregroundOrientationChanged();
+
+private slots:
+    void cleanupTaskSwitcher();
+    void cleanupLockscreen();
+    void updateApps(const QList<WindowInfo> &windowList);
+    void toggleSwitcher();
+    void cleanupStatusIndicatorMenu();
+
+protected:
+    /*! \reimp
+     * The _NET_CLIENT_LIST property of the root window is interesting and
+     * causes an update to the window list.
+     */
+    virtual bool x11EventFilter(XEvent *event);
+    //! \reimp_end
+
+private:
+    void updateWindowList();
+    static QVector<Atom> getNetWmState(Display *display, Window window);
+    void minimizeWindow(int windowId);
+    void loadTranslators();
+    void grabHomeKey(const char* key);
+    void raiseWindow(int windowId);
+    void closeWindow(int windowId);
+    void setForegroundOrientationForWindow(uint wid);
+
+    int orientation;
+    bool useOpenGL;
+    Dialog *taskSwitcher;
+    Dialog *lockScreen;
+    Dialog *gridScreen;
+    Dialog *panelsScreen;
+    Dialog *statusIndicatorMenu;
+    Atom windowTypeAtom;
+    Atom windowTypeNormalAtom;
+    Atom windowTypeDesktopAtom;
+    Atom windowTypeNotificationAtom;
+    Atom windowTypeDockAtom;
+    Atom clientListAtom;
+    Atom closeWindowAtom;
+    Atom skipTaskbarAtom;
+    Atom windowStateAtom;
+    Atom activeWindowAtom;
+    Atom foregroundOrientationAtom;
+
+    int  m_ss_event;
+    int  m_ss_error;
+    QList<Window> windowsBeingClosed;
+    QList<Window> openWindows;
+
+    QSet<KeyCode> homeKeys;
+    KeyCode menu;
+
+    QTranslator qtTranslator;
+    QTranslator commonTranslator;
+    QTranslator homescreenTranslator;
+    QTranslator panelsTranslator;
+    QTranslator daemonTranslator;
+    QTranslator mediaTranslator;
+
+    int m_runningAppsLimit;
+    QList<Desktop *> m_runningApps;
+    QList<Desktop *> m_runningAppsOverflow;
+
+    QTimer *m_homeLongPressTimer;
+
+    bool m_homeActive;
+    Time m_homePressTime;
+
+    int m_preferredLandscapeOrientation;
+    int m_preferredPortraitOrientation;
+
+    bool m_showPanelsAsHome;
+    bool m_haveAppStore;
+
+    int m_foregroundWindow;
+    int m_foregroundOrientation;
+
+    QString m_homeScreenDirectoryName;
+
+    NotificationDataStore *m_notificationDataStore;
+    NotificationModel *m_notificationModel;
+    uint m_lastNotificationId;
+};
+
+#endif // APPLICATION_H
