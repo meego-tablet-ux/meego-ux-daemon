@@ -64,6 +64,9 @@ int main(int argc, char *argv[])
     sensor.addFilter(&filter);
     sensor.start();
 
+    QObject::connect(&app, SIGNAL(startOrientationSensor()), &sensor, SLOT(start()));
+    QObject::connect(&app, SIGNAL(stopOrientationSensor()), &sensor, SLOT(stop()));
+
     foreach (QString path, QCoreApplication::libraryPaths())
     {
         QPluginLoader loader(path + "/libmultipointtouchplugin.so");

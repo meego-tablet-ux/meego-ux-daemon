@@ -1214,3 +1214,12 @@ void Application::setForegroundOrientationForWindow(uint wid)
     }
 
 }
+
+void Application::setOrientationLocked(bool locked)
+{
+    orientationLocked = locked;
+    if (locked)
+        emit stopOrientationSensor();
+    else
+        emit startOrientationSensor();
+}

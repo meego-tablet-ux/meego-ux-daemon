@@ -33,6 +33,7 @@ class Application : public QApplication
 {
     Q_OBJECT
     Q_PROPERTY(int orientation READ getOrientation NOTIFY orientationChanged)
+    Q_PROPERTY(bool orientationLocked READ getOrientationLocked WRITE setOrientationLocked);
     Q_PROPERTY(int foregroundOrientation READ getForegroundOrientation NOTIFY foregroundOrientationChanged);
     Q_PROPERTY(QDeclarativeListProperty<Desktop> runningApps READ runningApps NOTIFY runningAppsChanged)
     Q_PROPERTY(int runningAppsLimit READ runningAppsLimit WRITE setRunningAppsLimit);
@@ -51,6 +52,11 @@ public:
         orientation = o;
         emit orientationChanged();
     }
+
+    bool getOrientationLocked() {
+        return orientationLocked;
+    }
+    void setOrientationLocked(bool locked);
 
     int getForegroundOrientation();
 
@@ -117,6 +123,8 @@ signals:
     void haveAppStoreChanged();
     void foregroundWindowChanged();
     void foregroundOrientationChanged();
+    void stopOrientationSensor();
+    void startOrientationSensor();
 
 private slots:
     void cleanupTaskSwitcher();
@@ -144,6 +152,7 @@ private:
     void setForegroundOrientationForWindow(uint wid);
 
     int orientation;
+    bool orientationLocked;
     bool useOpenGL;
     Dialog *taskSwitcher;
     Dialog *lockScreen;
