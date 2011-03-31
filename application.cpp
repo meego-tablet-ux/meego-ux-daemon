@@ -90,7 +90,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     m_homeActive(false),
     m_homePressTime(0),
     m_haveAppStore(QFile::exists("/usr/share/applications/com.intel.appup-tablet.desktop")),
-    m_foregroundOrientation(1),
+    m_foregroundOrientation(2),
     m_notificationDataStore(NotificationDataStore::instance()),
     m_notificationModel(new NotificationModel),
     m_lastNotificationId(0)
@@ -148,7 +148,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     MGConfItem *landscapeItem = new MGConfItem("/meego/ux/PreferredLandscapeOrientation", this);
     if (!landscapeItem || landscapeItem->value() == QVariant::Invalid)
     {
-        m_preferredLandscapeOrientation = 0;
+        m_preferredLandscapeOrientation = 1;
     }
     else
     {
@@ -158,7 +158,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     MGConfItem *portraitItem = new MGConfItem("/meego/ux/PreferredPortraitOrientation", this);
     if (!portraitItem || portraitItem->value() == QVariant::Invalid)
     {
-        m_preferredPortraitOrientation = 1;
+        m_preferredPortraitOrientation = 2;
     }
     else
     {
