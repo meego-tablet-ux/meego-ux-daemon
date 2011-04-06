@@ -461,6 +461,12 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     QDBusConnection::sessionBus().registerService("com.lockstatus");
     QDBusConnection::sessionBus().registerObject("/com.lockstatus/query", this);
 
+    MGConfItem *homeKeyName = new MGConfItem("/meego/ux/HomeKey", this);
+    if (homeKeyName && homeKeyName->value() != QVariant::Invalid)
+    {
+        grabHomeKey(homeKeyName->value().toByteArray());
+    }
+
     grabHomeKey("Super_L");
     grabHomeKey("Super_R");
     grabHomeKey("XF86AudioMedia"); // WeTab's corner key
