@@ -575,43 +575,16 @@ bool Application::x11EventFilter(XEvent *event)
     else if (event->type == PropertyNotify &&
              event->xproperty.atom == inhibitScreenSaverAtom)
     {
-        Display *dpy = QX11Info::display();
-        Atom actualType;
-        int actualFormat;
-        unsigned long numWindowItems, bytesLeft;
-        unsigned char *data = NULL;
-
-        int result = XGetWindowProperty(dpy,
-                                        DefaultRootWindow(dpy),
-                                        inhibitScreenSaverAtom,
-                                        0, 0x7fffffff,
-                                        false, XA_WINDOW,
-                                        &actualType,
-                                        &actualFormat,
-                                        &numWindowItems,
-                                        &bytesLeft,
-                                        &data);
-
-        if (result == Success && data != None)
+        Window w = event->xproperty.window;
+        if (inhibitList.contains(w))
         {
-            Window w = event->xproperty.window;
-            bool inhibit = *(bool *)data;
-            if (inhibit)
-            {
-                inhibitList << w;
-            }
-            else
-            {
-                inhibitList.removeAll(w);
-            }
-
-            if ((int)w == m_foregroundWindow)
-            {
-                updateScreenSaver(w);
-            }
-
-            XFree(data);
+            inhibitList.removeAll(w);
         }
+        else
+        {
+            inhibitList << w;
+        }
+        updateScreenSaver(w);
     }
 
     if (event->type == m_ss_event)
