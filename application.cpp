@@ -20,6 +20,7 @@
 
 #include "application.h"
 #include "notificationsmanageradaptor.h"
+#include "hardnotificationsadaptor.h"
 #include "statusindicatormenuadaptor.h"
 #include "dialog.h"
 #include "desktop.h"
@@ -83,6 +84,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     orientation(1),
     useOpenGL(opengl),
     taskSwitcher(NULL),
+    hardNotification(NULL),
     lockScreen(NULL),
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
@@ -241,6 +243,10 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     QDBusConnection::sessionBus().registerService("com.meego.core.MNotificationManager");
     QDBusConnection::sessionBus().registerObject("/notificationmanager", this);
 
+    new HardNotificationsAdaptor(this);
+    QDBusConnection::sessionBus().registerService("com.meego.ux.hardnotifications");
+    QDBusConnection::sessionBus().registerObject("/hardnotifications", this);
+
     new StatusIndicatorMenuAdaptor(this);
     QDBusConnection::sessionBus().registerService("com.nokia.systemui");
     QDBusConnection::sessionBus().registerObject("/statusindicatormenu", this);
@@ -388,6 +394,11 @@ void Application::minimizeWindow(int windowId)
 void Application::cleanupTaskSwitcher()
 {
     taskSwitcher->hide();
+}
+
+void Application::cleanupHardNotification()
+{
+    hardNotification->hide();
 }
 
 void Application::cleanupLockscreen()
@@ -1268,3 +1279,24 @@ void Application::screenSaverTimeoutChanged()
     m_screenSaverTimeout = m_screenSaverTimeoutItem->value().toInt();
     updateScreenSaver((Window)m_foregroundWindow);
 }
+
+void Application::showHardNotification(const QString message, uint id)
+{
+    if (hardNotification)
+    {
+        hardNotification->activateWindow();
+        hardNotification->raise();
+        hardNotification->show();
+        return;
+    }
+
+    hardNotification = new Dialog(true, false, useOpenGL);
+    hardNotification->rootContext()->setContextProperty("notifyMessage", message);
+    hardNotification->rootContext()->setContextProperty("notifyId", id);
+    hardNotification->setSkipAnimation();
+    connect(hardNotification->engine(), SIGNAL(quit()), this, SLOT(cleanupHardNotification()));
+    hardNotification->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
+    hardNotification->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/hardnotification.qml"));
+    hardNotification->show();
+}
+

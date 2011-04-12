@@ -95,6 +95,7 @@ public slots:
     void closeDesktopByName(QString name);
     void openStatusIndicatorMenu();
     void clearAllNotifications();
+    void showHardNotification(const QString message, uint id);
 
     // MNotificationManager Interface
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
@@ -128,6 +129,7 @@ signals:
 
 private slots:
     void cleanupTaskSwitcher();
+    void cleanupHardNotification();
     void cleanupLockscreen();
     void updateApps(const QList<WindowInfo> &windowList);
     void toggleSwitcher();
@@ -157,6 +159,7 @@ private:
     bool orientationLocked;
     bool useOpenGL;
     Dialog *taskSwitcher;
+    Dialog *hardNotification;
     Dialog *lockScreen;
     Dialog *gridScreen;
     Dialog *panelsScreen;

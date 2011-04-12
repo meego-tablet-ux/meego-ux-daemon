@@ -10,6 +10,7 @@ SOURCES += main.cpp \
     desktop.cpp \
     process.cpp \
     notificationsmanageradaptor.cpp \
+    hardnotificationsadaptor.cpp \
     notificationdatastore.cpp \
     statusindicatormenuadaptor.cpp \
     notificationmodel.cpp
@@ -20,6 +21,7 @@ HEADERS += \
     desktop.h \
     process.h \
     notificationsmanageradaptor.h \
+    hardnotificationsadaptor.h \
     notificationdatastore.h \
     statusindicatormenuadaptor.h \
     notificationitem.h \
@@ -48,7 +50,8 @@ OTHER_FILES += \
     interfaces/notificationmanager.xml \
     com.meego.meego-ux-daemon.context \
     statusindicatormenu.qml \
-    NotificationDelegate.qml
+    NotificationDelegate.qml \
+    hardnotification.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 VERSION = 0.2.2
