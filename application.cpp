@@ -115,6 +115,18 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     windowStateAtom = XInternAtom(dpy, "_NET_WM_STATE", false);
     activeWindowAtom = XInternAtom(dpy, "_NET_ACTIVE_WINDOW", false);
     foregroundOrientationAtom = XInternAtom(dpy, "_MEEGO_ORIENTATION", false);
+    inhibitScreenSaverAtom = XInternAtom(dpy, "_MEEGO_INHIBIT_SCREENSAVER", false);
+
+    m_screenSaverTimeoutItem = new MGConfItem("/meego/ux/ScreenSaverTimeout", this);
+    if (!m_screenSaverTimeoutItem || m_screenSaverTimeoutItem->value() == QVariant::Invalid)
+    {
+        m_screenSaverTimeout = 180;
+    }
+    else
+    {
+        m_screenSaverTimeout = m_screenSaverTimeoutItem->value().toInt();
+    }
+    connect(m_screenSaverTimeoutItem, SIGNAL(valueChanged()), this, SLOT(screenSaverTimeoutChanged()));
 
     if (!XScreenSaverQueryExtension(dpy, &m_ss_event, &m_ss_error))
     {
@@ -133,9 +145,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
         XScreenSaverUnregister(dpy, screen);
     }
 
-    // TODO: Pull timeout from a gconf key and listen for changes
-    //       to the setting and reset config
-    XSetScreenSaver(dpy, 180, 180, DefaultBlanking, DontAllowExposures);
+    XSetScreenSaver(dpy, m_screenSaverTimeout, 0, DefaultBlanking, DontAllowExposures);
 
     XSync(dpy, FALSE);
     XSetErrorHandler(oldXErrorHandler);
@@ -532,6 +542,8 @@ bool Application::x11EventFilter(XEvent *event)
                 XSelectInput(QX11Info::display(), w, PropertyChangeMask);
                 setForegroundOrientationForWindow(w);
 
+                updateScreenSaver(w);
+
                 if (m_showPanelsAsHome)
                 {
                     if (m_foregroundWindow == panelsScreen->winId())
@@ -558,6 +570,47 @@ bool Application::x11EventFilter(XEvent *event)
         else
         {
             qDebug() << "XXX active window ???";
+        }
+    }
+    else if (event->type == PropertyNotify &&
+             event->xproperty.atom == inhibitScreenSaverAtom)
+    {
+        Display *dpy = QX11Info::display();
+        Atom actualType;
+        int actualFormat;
+        unsigned long numWindowItems, bytesLeft;
+        unsigned char *data = NULL;
+
+        int result = XGetWindowProperty(dpy,
+                                        DefaultRootWindow(dpy),
+                                        inhibitScreenSaverAtom,
+                                        0, 0x7fffffff,
+                                        false, XA_WINDOW,
+                                        &actualType,
+                                        &actualFormat,
+                                        &numWindowItems,
+                                        &bytesLeft,
+                                        &data);
+
+        if (result == Success && data != None)
+        {
+            Window w = event->xproperty.window;
+            bool inhibit = *(bool *)data;
+            if (inhibit)
+            {
+                inhibitList << w;
+            }
+            else
+            {
+                inhibitList.removeAll(w);
+            }
+
+            if ((int)w == m_foregroundWindow)
+            {
+                updateScreenSaver(w);
+            }
+
+            XFree(data);
         }
     }
 
@@ -1222,4 +1275,23 @@ void Application::setOrientationLocked(bool locked)
         emit stopOrientationSensor();
     else
         emit startOrientationSensor();
+}
+
+void Application::updateScreenSaver(Window window)
+{
+    Display *dpy = QX11Info::display();
+    if (inhibitList.contains(window))
+    {
+        XSetScreenSaver(dpy, -1, 0, DefaultBlanking, DontAllowExposures);
+    }
+    else
+    {
+        XSetScreenSaver(dpy, m_screenSaverTimeout, 0, DefaultBlanking, DontAllowExposures);
+    }
+}
+
+void Application::screenSaverTimeoutChanged()
+{
+    m_screenSaverTimeout = m_screenSaverTimeoutItem->value().toInt();
+    updateScreenSaver((Window)m_foregroundWindow);
 }

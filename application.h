@@ -132,6 +132,7 @@ private slots:
     void updateApps(const QList<WindowInfo> &windowList);
     void toggleSwitcher();
     void cleanupStatusIndicatorMenu();
+    void screenSaverTimeoutChanged();
 
 protected:
     /*! \reimp
@@ -150,6 +151,7 @@ private:
     void raiseWindow(int windowId);
     void closeWindow(int windowId);
     void setForegroundOrientationForWindow(uint wid);
+    void updateScreenSaver(Window window);
 
     int orientation;
     bool orientationLocked;
@@ -170,6 +172,7 @@ private:
     Atom windowStateAtom;
     Atom activeWindowAtom;
     Atom foregroundOrientationAtom;
+    Atom inhibitScreenSaverAtom;
 
     int  m_ss_event;
     int  m_ss_error;
@@ -209,6 +212,10 @@ private:
     NotificationDataStore *m_notificationDataStore;
     NotificationModel *m_notificationModel;
     uint m_lastNotificationId;
+
+    MGConfItem *m_screenSaverTimeoutItem;
+    int m_screenSaverTimeout;
+    QList<Window> inhibitList;
 };
 
 #endif // APPLICATION_H
