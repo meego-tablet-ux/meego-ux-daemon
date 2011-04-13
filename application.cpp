@@ -884,9 +884,14 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
                     setForegroundOrientationForWindow(info.window());
                 }
                 if (m_runningApps.length() < m_runningAppsLimit)
+                {
                     m_runningApps << d;
+                    emit runningAppsChanged();
+                }
                 else
+                {
                     m_runningAppsOverflow << d;
+                }
             }
         }
     }
@@ -1004,11 +1009,14 @@ void Application::launchDesktopByName(QString name)
     Desktop *d = new Desktop(name, this);
     d->launch();
     if (m_runningApps.length() < m_runningAppsLimit)
+    {
         m_runningApps << d;
+        emit runningAppsChanged();
+    }
     else
+    {
         m_runningAppsOverflow << d;
-
-    emit runningAppsChanged();
+    }
 }
 
 void Application::closeDesktopByName(QString name)
@@ -1023,7 +1031,9 @@ void Application::closeDesktopByName(QString name)
             m_runningApps.takeAt(i);
             d->deleteLater();
             if (m_runningAppsOverflow.length() > 0 || m_runningApps.length() > m_runningAppsLimit)
+            {
                 m_runningApps << m_runningAppsOverflow.takeFirst();
+            }
             emit runningAppsChanged();
             return;
         }
