@@ -120,7 +120,7 @@ public slots:
 
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
     void started();
-    void kill();
+    void terminate();
 
 signals:
     void typeChanged();

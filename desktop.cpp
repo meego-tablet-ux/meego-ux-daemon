@@ -12,6 +12,9 @@
 
 #include "desktop.h"
 
+#include <sys/types.h>
+#include <signal.h>
+
 Desktop::Desktop(const QString &fileName, QObject *parent):
     QObject(parent),
     m_filename(fileName),
@@ -52,9 +55,17 @@ void Desktop::finished(int, QProcess::ExitStatus)
     m_wid = -1;
 }
 
-void Desktop::kill()
+void Desktop::terminate()
 {
-    m_process->kill();
+    if (m_pid == m_process->pid())
+    {
+        m_process->terminate();
+    }
+    else if (m_pid > 0)
+    {
+        // we didn't start this process, so manually send a SIGTERM
+        kill(m_pid, SIGTERM);
+    }
 }
 
 QML_DECLARE_TYPE(Desktop);

@@ -149,7 +149,6 @@ private:
     void loadTranslators();
     void grabHomeKey(const char* key);
     void raiseWindow(int windowId);
-    void closeWindow(int windowId);
     void setForegroundOrientationForWindow(uint wid);
     void updateScreenSaver(Window window);
 

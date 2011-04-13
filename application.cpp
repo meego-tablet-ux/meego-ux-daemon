@@ -1018,15 +1018,7 @@ void Application::closeDesktopByName(QString name)
         Desktop *d = m_runningApps.at(i);
         if (d->filename() == name)
         {
-            if (d->wid() > 0)
-            {
-                closeWindow(d->wid());
-            }
-            else if(d->pid() > 0)
-            {
-                // send kill
-
-            }
+            d->terminate();
 
             m_runningApps.takeAt(i);
             d->deleteLater();
@@ -1054,27 +1046,6 @@ void Application::raiseWindow(int windowId)
     ev.xclient.data.l[0]    = 1;
     ev.xclient.data.l[1]    = CurrentTime;
     ev.xclient.data.l[2]    = 0;
-
-    XSendEvent(display,
-               rootWin, False,
-               SubstructureRedirectMask, &ev);
-}
-
-void Application::closeWindow(int windowId)
-{
-    XEvent ev;
-    memset(&ev, 0, sizeof(ev));
-
-    Display *display = QX11Info::display();
-
-    Window rootWin = QX11Info::appRootWindow(QX11Info::appScreen());
-
-    ev.xclient.type         = ClientMessage;
-    ev.xclient.window       = windowId;
-    ev.xclient.message_type = closeWindowAtom;
-    ev.xclient.format       = 32;
-    ev.xclient.data.l[0]    = CurrentTime;
-    ev.xclient.data.l[1]    = rootWin;
 
     XSendEvent(display,
                rootWin, False,
