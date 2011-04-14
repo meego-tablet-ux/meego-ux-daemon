@@ -8,42 +8,8 @@
 
 #include "application.h"
 
-#include <QOrientationSensor>
-#include <QOrientationFilter>
-#include <QOrientationReading>
 #include <QPluginLoader>
 #include <context_provider.h>
-
-QTM_USE_NAMESPACE
-
-class OrientationSensorFilter : public QOrientationFilter
-{
-public:
-    bool filter(QOrientationReading *reading)
-    {
-        Application *app = (Application *)qApp;
-
-        switch (reading->orientation())
-        {
-        case QOrientationReading::TopUp:
-            app->setOrientation(1);
-            break;
-        case QOrientationReading::TopDown:
-            app->setOrientation(3);
-            break;
-        case QOrientationReading::LeftUp:
-            app->setOrientation(2);
-            break;
-        case QOrientationReading::RightUp:
-            app->setOrientation(0);
-            break;
-        default:
-            break;
-        }
-
-        return false;
-    }
-};
 
 int main(int argc, char *argv[])
 {
@@ -58,14 +24,6 @@ int main(int argc, char *argv[])
     }
 
     Application app(argc, argv, opengl);
-
-    QOrientationSensor sensor;
-    OrientationSensorFilter filter;
-    sensor.addFilter(&filter);
-    sensor.start();
-
-    QObject::connect(&app, SIGNAL(startOrientationSensor()), &sensor, SLOT(start()));
-    QObject::connect(&app, SIGNAL(stopOrientationSensor()), &sensor, SLOT(stop()));
 
     foreach (QString path, QCoreApplication::libraryPaths())
     {

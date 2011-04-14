@@ -14,6 +14,7 @@
 #include <QLibraryInfo>
 #include <QSettings>
 #include <QTimer>
+#include <QInputContext>
 #include <QInputContextFactory>
 #include <MGConfItem>
 #include <context_provider.h>
@@ -98,6 +99,9 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     setApplicationName("meego-ux-daemon");
 
     setQuitOnLastWindowClosed(false);
+
+    orientationSensor.start();
+    connect(&orientationSensor, SIGNAL(readingChanged()), SLOT(updateOrientation()));
 
     int (*oldXErrorHandler)(Display*, XErrorEvent*);
 
@@ -1222,15 +1226,6 @@ void Application::setForegroundOrientationForWindow(uint wid)
 
 }
 
-void Application::setOrientationLocked(bool locked)
-{
-    orientationLocked = locked;
-    if (locked)
-        emit stopOrientationSensor();
-    else
-        emit startOrientationSensor();
-}
-
 void Application::updateScreenSaver(Window window)
 {
     Display *dpy = QX11Info::display();
@@ -1248,4 +1243,46 @@ void Application::screenSaverTimeoutChanged()
 {
     m_screenSaverTimeout = m_screenSaverTimeoutItem->value().toInt();
     updateScreenSaver((Window)m_foregroundWindow);
+}
+
+namespace M {
+    enum OrientationAngle { Angle0=0, Angle90=90, Angle180=180, Angle270=270 };
+}
+
+void Application::updateOrientation()
+{
+    int orientation = orientationSensor.reading()->orientation();
+    qDebug() << "XXX orientation" << orientation;
+
+    int qmlOrient;
+    M::OrientationAngle mtfOrient;
+    switch (orientation)
+    {
+    case QOrientationReading::LeftUp:
+        mtfOrient = M::Angle270;
+        qmlOrient = 2;
+        break;
+    case QOrientationReading::TopDown:
+        mtfOrient = M::Angle180;
+        qmlOrient = 3;
+        break;
+    case QOrientationReading::RightUp:
+        mtfOrient = M::Angle90;
+        qmlOrient = 0;
+        break;
+    default: // assume QOrientationReading::TopUp
+        mtfOrient = M::Angle0;
+        qmlOrient = 1;
+        break;
+    }
+
+    if (panelsScreen)
+    {
+        panelsScreen->setOrientation(qmlOrient);
+    }
+
+    // Need to tell the MInputContext plugin to rotate the VKB too
+    QMetaObject::invokeMethod(inputContext(),
+                              "notifyOrientationChanged",
+                              Q_ARG(M::OrientationAngle, mtfOrient));
 }

@@ -17,6 +17,9 @@
 #include <MNotification>
 #include <mnotificationgroup.h>
 
+#include <QOrientationSensor>
+QTM_USE_NAMESPACE
+
 #include "desktop.h"
 #include "dialog.h"
 
@@ -48,15 +51,19 @@ public:
     int getOrientation() {
         return orientation;
     }
-    void setOrientation(int o) {
-        orientation = o;
-        emit orientationChanged();
-    }
 
+    // We have the multiple top level windows, each of which could
+    // choose to lock or unlock the orientation, so the qApp based
+    // locking will not work here.  Leaving the property in place
+    // so the QML doesn't explode, but this will be property handled
+    // in the switch to MeeGo.Components which has a different approach
+    // to orientation locking.
     bool getOrientationLocked() {
         return orientationLocked;
     }
-    void setOrientationLocked(bool locked);
+    void setOrientationLocked(bool locked) {
+        orientationLocked = locked;
+    }
 
     int getForegroundOrientation();
 
@@ -111,6 +118,9 @@ public slots:
     bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
+
+private slots:
+    void updateOrientation();
 
 signals:
     /*!
@@ -215,6 +225,8 @@ private:
     MGConfItem *m_screenSaverTimeoutItem;
     int m_screenSaverTimeout;
     QList<Window> inhibitList;
+
+    QOrientationSensor orientationSensor;
 };
 
 #endif // APPLICATION_H
