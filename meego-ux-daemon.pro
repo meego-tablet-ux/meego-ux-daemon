@@ -51,7 +51,7 @@ OTHER_FILES += \
     NotificationDelegate.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
-VERSION = 0.2.2
+VERSION = 0.2.3
 PROJECT_NAME = meego-ux-daemon
 
 dist.commands += rm -fR $${PROJECT_NAME}-$${VERSION} &&
