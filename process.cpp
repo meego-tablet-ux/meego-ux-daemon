@@ -6,6 +6,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#include <QTimer>
 #include "process.h"
 
 Process::Process(QString cgroup, QObject *parent) :
@@ -17,4 +18,16 @@ Process::Process(QString cgroup, QObject *parent) :
 void Process::setupChildProcess()
 {
     // add process to the cgroup
+}
+
+void Process::tryAndDelete()
+{
+    if (state() == QProcess::NotRunning)
+    {
+        deleteLater();
+    }
+    else
+    {
+        QTimer::singleShot(5000, this, SLOT(tryAndDelete()));
+    }
 }

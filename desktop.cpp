@@ -22,13 +22,19 @@ Desktop::Desktop(const QString &fileName, QObject *parent):
     m_pid(-1),
     m_wid(-1)
 {
-    m_process = new Process(cgroup(), this);
+    m_process = new Process(cgroup());
     connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(finished(int,QProcess::ExitStatus)));
     connect(m_process, SIGNAL(started()), this, SLOT(started()));
 }
 
 Desktop::~Desktop()
 {
+    // ~QProcess will block the UI thread until it's associated process has
+    // finished exiting, so we need to tryAndDelete which will setup a timer
+    // to keep checking for the process state before destroying itself.
+    //
+    // This fixes BMC #16286
+    m_process->tryAndDelete();
 }
 
 void Desktop::launch()

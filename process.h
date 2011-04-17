@@ -17,6 +17,9 @@ class Process : public QProcess
 public:
     explicit Process(QString cgroup, QObject *parent = 0);
 
+public slots:
+    void tryAndDelete();
+
 protected:
     void setupChildProcess();
 
