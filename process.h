@@ -15,7 +15,7 @@ class Process : public QProcess
 {
     Q_OBJECT
 public:
-    explicit Process(QString cgroup, QObject *parent = 0);
+    explicit Process(const QString cgroup, const QStringList controllers, QObject *parent = 0);
 
 public slots:
     void tryAndDelete();
@@ -25,6 +25,7 @@ protected:
 
 private:
     QString m_cgroup;
+    QStringList m_controllers;
 };
 
 #endif // PROCESS_H

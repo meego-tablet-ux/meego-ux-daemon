@@ -22,7 +22,7 @@ Desktop::Desktop(const QString &fileName, QObject *parent):
     m_pid(-1),
     m_wid(-1)
 {
-    m_process = new Process(cgroup());
+    m_process = new Process(cgroup(), controllers());
     connect(m_process, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(finished(int,QProcess::ExitStatus)));
     connect(m_process, SIGNAL(started()), this, SLOT(started()));
 }

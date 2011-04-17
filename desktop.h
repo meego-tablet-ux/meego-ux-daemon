@@ -31,6 +31,7 @@ class Desktop : public QObject
     Q_PROPERTY(int pid READ pid WRITE setPid);
     Q_PROPERTY(int wid READ wid WRITE setWid);
     Q_PROPERTY(QString cgroup READ cgroup);
+    Q_PROPERTY(QStringList controllers READ controllers);
 
 public:
     Desktop(const QString &filename, QObject *parent = 0);
@@ -100,10 +101,23 @@ public:
     }
 
     QString cgroup() const {
-        if (contains("Desktop Entry/X-MEEGO-CGROUP"))
-            return value("Desktop Entry/X-MEEGO-CGROUP");
+        if (contains("Desktop Entry/X-MEEGO-CGROUP-PATH"))
+            return value("Desktop Entry/X-MEEGO-CGROUP-PATH");
         else
             return QString("unknown");
+    }
+
+    QStringList controllers() const {
+        QStringList list;
+        if (contains("Desktop Entry/X-MEEGO-CGROUP-CONTROLLERS"))
+        {
+            list = value("Desktop Entry/X-MEEGO-CGROUP-CONTROLLERS").split(',');
+        }
+        else
+        {
+            list << "freezer";
+        }
+        return list;
     }
 
 public slots:
