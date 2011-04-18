@@ -117,7 +117,7 @@ void NotificationModel::refreshViewableList ()
             endRemoveRows();
         }
         
-	if(!filteredList.isEmpty())
+        if(!filteredList.isEmpty())
         {
             beginInsertRows(QModelIndex(), 0, filteredList.count()-1);
             displayData = filteredList;
@@ -126,7 +126,6 @@ void NotificationModel::refreshViewableList ()
     }
     else
     {
-
         if(!displayData.isEmpty())
         {
             beginRemoveRows(QModelIndex(), 0, displayData.count()-1);
@@ -136,25 +135,22 @@ void NotificationModel::refreshViewableList ()
 
         for (int k=0; k < m_data->notificationCount(); k++)
         {
-        	tmpList << m_data->notificationAt(k);    
+            tmpList << m_data->notificationAt(k);
         }
-	
-	if (!tmpList.isEmpty())
-	{
-	  beginInsertRows(QModelIndex(), 0, tmpList.count()-1);
-	  displayData = tmpList;
-	  endInsertRows();
-	}
 
+        if (!tmpList.isEmpty())
+        {
+            beginInsertRows(QModelIndex(), 0, tmpList.count()-1);
+            displayData = tmpList;
+            endInsertRows();
+        }
     }
-
 }
 
 void NotificationModel::addFilter(QString filter)
 {
-
     if (!listFilters.contains(filter))
-    	listFilters.append(filter);
+        listFilters.append(filter);
 }
 
 void NotificationModel::removeFilter(QString filter)

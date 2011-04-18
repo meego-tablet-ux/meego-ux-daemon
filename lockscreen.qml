@@ -24,8 +24,8 @@ Window {
 
     function initializeModelFilters()
     {
-        notificationModel.addFilter("im.received");	//temporary until settings page sets these
-	notificationModel.addFilter("phone.missed");
+        notificationModel.addFilter("im.received");
+        notificationModel.addFilter("phone.missed");
         notificationModel.refreshViewableList();
         notificationsList.currentIndex = 0;
     }
@@ -41,15 +41,15 @@ Window {
 
             Image {
                 id: iconImage
-		anchors.centerIn: parent
-		height: 70
-		width: 70
+                anchors.centerIn: parent
+                height: 70
+                width: 70
                 source: imageURI != "" ? imageURI : "image://meegotheme/icons/launchers/meego-app-widgets" 
             }
 
             Text{
                 id: multipleNum
-		width: 70
+                width: 70
                 text: count > 1 ? "x " + count : ""   	
             }
         }
@@ -134,10 +134,10 @@ Window {
             id: notificationsList
             anchors.top: dateTimeItem.bottom
             anchors.horizontalCenter: parent.horizontalCenter
-	    width: parent.width - 40
+            width: parent.width - 40
             model: notificationModel
-	    cellWidth: 140
-	    cellHeight: 140
+            cellWidth: 140
+            cellHeight: 140
 
             height: 400
 
