@@ -22,13 +22,6 @@ Window {
         id: backgroundModel
     }
 
-    function initializeModelFilters()
-    {
-        notificationModel.applyLockscreenFilters();
-        notificationModel.refreshViewableList();
-        notificationsList.currentIndex = 0;
-    }
-
     Component {
         id: lockscreenNotificationDelegate
 
@@ -65,7 +58,6 @@ Window {
         Component.onCompleted: {
             initializeModelFilters();
         }
-        Component.onDestruction: notificationModel.clearFilters()
         Rectangle {
             anchors.fill: parent
             color: "black"

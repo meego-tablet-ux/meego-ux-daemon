@@ -14,6 +14,7 @@
 
 NotificationModel::NotificationModel(QObject *parent) :
     QAbstractListModel(parent),
+    m_filtersItem(NULL),
     m_data(NotificationDataStore::instance())
 {
     QHash<int, QByteArray> roles;
@@ -168,29 +169,31 @@ void NotificationModel::clearFilters()
     emit modelReset();  
 }
 
-void NotificationModel::applyLockscreenFilters()
+void NotificationModel::applyFilters()
 {
-    MGConfItem* notificationSettings[MAXCUSTOMNOTIFICATIONS];
-
-    notificationSettings[0] = new MGConfItem("/meego/ux/settings/lockscreen/visibleNotification1");
-    notificationSettings[1] = new MGConfItem("/meego/ux/settings/lockscreen/visibleNotification2");
-    notificationSettings[2] = new MGConfItem("/meego/ux/settings/lockscreen/visibleNotification3");
-    notificationSettings[3] = new MGConfItem("/meego/ux/settings/lockscreen/visibleNotification4");
-
-    //Custom lockscreen notifications
-
-    for (int i = 0; i < MAXCUSTOMNOTIFICATIONS; i++)
+    listFilters.clear();
+    if (m_filtersItem->value() != QVariant::Invalid)
     {
-        if (notificationSettings[i] != NULL && notificationSettings[i]->value() != QVariant::Invalid)
+        QStringList filterList = m_filtersItem->value().toStringList();
+
+        foreach (QString filter, filterList)
         {
-            addFilter(notificationSettings[i]->value().toString());
+            addFilter(filter);
         }
     }
+    refreshViewableList();
+    emit modelReset();
+}
 
-    //Default lockscreen notifications
-    addFilter("x-nokia.call");
-    addFilter(MNotification::MessageEvent);
-    addFilter(MNotification::MessageArrivedEvent);
+void NotificationModel::setFilterKey(const QString key)
+{
+    if (m_filtersItem)
+    {
+        delete m_filtersItem;
+    }
+    m_filtersItem = new MGConfItem(key, this);
+    connect(m_filtersItem, SIGNAL(valueChanged()), this, SLOT(applyFilters()));
+    applyFilters();
 }
 
 QML_DECLARE_TYPE(NotificationModel);

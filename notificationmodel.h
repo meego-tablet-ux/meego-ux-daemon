@@ -22,6 +22,8 @@ class NotificationModel : public QAbstractListModel
 {
     Q_OBJECT
     Q_PROPERTY(int count READ getCount NOTIFY modelReset);
+    Q_PROPERTY(QString filterKey READ filterKey WRITE setFilterKey);
+
 public:
     explicit NotificationModel(QObject *parent = 0);
 
@@ -29,6 +31,11 @@ public:
     virtual QVariant data(const QModelIndex &index, int role) const;
 
     int getCount();
+
+    QString filterKey() const {
+        return m_filterKey;
+    }
+    void setFilterKey(const QString key);
 
 signals:
     void modelReset();
@@ -39,12 +46,14 @@ public slots:
     void addFilter(QString filter);
     void removeFilter(QString filter);
     void clearFilters();
-    void applyLockscreenFilters();
+    void applyFilters();
 
 private slots:
     void onDataStoreUpdated();
 
 private:
+    QString m_filterKey;
+    MGConfItem *m_filtersItem;
     QList<NotificationItem *> displayData;
     QList<QString> listFilters;
     NotificationDataStore *m_data;

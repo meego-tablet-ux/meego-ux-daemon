@@ -444,7 +444,11 @@ void Application::lock()
             lockScreen = new Dialog(true, true, useOpenGL);
             connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
             lockScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
-            lockScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel); 
+
+            NotificationModel *model = new NotificationModel(lockScreen);
+            model->setFilterKey("/meego/ux/settings/lockscreen/filters");
+            lockScreen->rootContext()->setContextProperty("notificationModel", model);
+
             lockScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/lockscreen.qml"));
             lockScreen->show();
         }
