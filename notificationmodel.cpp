@@ -73,8 +73,8 @@ QVariant NotificationModel::data(const QModelIndex &index, int role) const
         if (role == NotificationItem::Timestamp)
             return displayData[index.row()]->getTimestamp();
     }
-	
-return QVariant();
+
+    return QVariant();
 }
 
 void NotificationModel::onDataStoreUpdated()

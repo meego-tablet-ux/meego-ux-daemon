@@ -63,8 +63,10 @@ Window {
         y: 0
 
         property bool animateAway: false
-        Component.onCompleted: initializeModelFilters()
- 	Component.onDestruction: notificationModel.clearFilters()	
+        Component.onCompleted: {
+            initializeModelFilters();
+        }
+        Component.onDestruction: notificationModel.clearFilters()
         Rectangle {
             anchors.fill: parent
             color: "black"
@@ -89,20 +91,25 @@ Window {
             }
         }
 
-        LocalTime {
-            id: localTime
-            interval: 60000
-        }
         Item {
-	    id: dateTimeItem
+            id: dateTimeItem
             anchors.top: parent.top
             anchors.topMargin: height
             width: parent.width
-            height: parent.height/4
+            height: 150
+            Rectangle {
+                anchors.fill: parent
+                color: theme_lockscreenShapeTimeColor
+                opacity: theme_lockscreenShapeTimeOpacity
+            }
+            LocalTime {
+                id: localTime
+                interval: 60000
+            }
             Text {
                 id: timeText
                 anchors.centerIn: parent
-                anchors.verticalCenterOffset: -dateText.height * 2
+                anchors.verticalCenterOffset: -dateText.height
                 height: font.pixelSize
                 text: localTime.shortTime
                 horizontalAlignment: Text.AlignHCenter
@@ -129,32 +136,40 @@ Window {
                 styleColor: theme_lockscreenDateFontDropshadowColor
             }
         }
-
         GridView {
             id: notificationsList
             anchors.top: dateTimeItem.bottom
             anchors.horizontalCenter: parent.horizontalCenter
             width: parent.width - 40
-            model: notificationModel
             cellWidth: 140
             cellHeight: 140
-
             height: 400
-
+            model: notificationModel
             delegate: lockscreenNotificationDelegate
         }
 
-        Image {
+        BorderImage {
             id: lockbutton
             anchors.bottom: parent.bottom
             anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width
+            height: 86
+
             property bool pressed: false
             property int startMouseY
-            source: pressed ? "image://meegotheme/widgets/apps/lockscreen/lock-button-active" : "image://meegotheme/widgets/apps/lockscreen/lock-button"
+            source: pressed ? "image://meegotheme/widgets/apps/lockscreen/lockscreen-unlockbar-active" : "image://meegotheme/widgets/apps/lockscreen/lockscreen-unlockbar"
+
+            Image {
+                id: pointerIcon
+                anchors.bottom: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                source: "image://meegotheme/widgets/apps/lockscreen/lockscreen-direction"
+            }
+
             Image {
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
-                source: lockbutton.pressed ? "image://meegotheme/widgets/apps/lockscreen/lock-active" : "image://meegotheme/widgets/apps/lockscreen/lock"
+                source: lockbutton.pressed ? "image://meegotheme/widgets/apps/lockscreen/lockscreen-lock-active" : "image://meegotheme/widgets/apps/lockscreen/lockscreen-lock"
             }
             MouseArea {
                 anchors.fill: parent
@@ -167,18 +182,19 @@ Window {
                     {
                         var pos = parent.mapToItem(scene.content, mouseX, mouseY);
                         mainContent.y = pos.y - mainContent.height;
+                        if ((littleBlueDot.y - mainContent.height) > mainContent.y - (lockbutton.height + 30))
+                            mainContent.animateAway = true;
                     }
                 }
 
                 onReleased: {
                     lockbutton.pressed = false;
-                    if (mainContent.y < -10)
-                        mainContent.animateAway = true;
-                    else
-                        mainContent.y = 0;
+                    if (!mainContent.animateAway)
+                        mainContent.y = 0
                 }
             }
         }
+
         states: State {
             name: "closing"
             when:  mainContent.animateAway
@@ -201,5 +217,15 @@ Window {
                 }
             }
         }
+    }
+
+    Image {
+        id: littleBlueDot
+        parent: scene.content
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: parent.height/4
+        visible: lockbutton.pressed
+        source: "image://meegotheme/widgets/apps/lockscreen/lockscreen-mark-unlock"
     }
 }
