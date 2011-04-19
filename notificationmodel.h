@@ -11,7 +11,11 @@
 
 #include <QObject>
 #include <QAbstractListModel>
+#include <MGConfItem>
 #include "notificationitem.h"
+
+#define MAXCUSTOMNOTIFICATIONS 4
+
 class NotificationDataStore;
 
 class NotificationModel : public QAbstractListModel
@@ -35,6 +39,8 @@ public slots:
     void addFilter(QString filter);
     void removeFilter(QString filter);
     void clearFilters();
+    void applyLockscreenFilters();
+
 private slots:
     void onDataStoreUpdated();
 

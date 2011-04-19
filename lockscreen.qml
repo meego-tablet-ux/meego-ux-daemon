@@ -24,8 +24,7 @@ Window {
 
     function initializeModelFilters()
     {
-        notificationModel.addFilter("im.received");
-        notificationModel.addFilter("phone.missed");
+        notificationModel.applyLockscreenFilters();
         notificationModel.refreshViewableList();
         notificationsList.currentIndex = 0;
     }
