@@ -49,7 +49,7 @@ Window {
             Text{
                 id: multipleNum
                 width: 70
-                text: count > 1 ? "x " + count : ""   	
+                text: count > 1 ? "x " + count : ""
             }
         }
     }
