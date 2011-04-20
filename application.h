@@ -17,6 +17,8 @@
 #include <MNotification>
 #include <mnotificationgroup.h>
 
+#include <QAmbientLightReading>
+#include <QAmbientLightSensor>
 #include <QOrientationSensor>
 QTM_USE_NAMESPACE
 
@@ -31,6 +33,7 @@ class MGConfItem;
 class QSettings;
 class NotificationDataStore;
 class NotificationModel;
+class DisplayInfo;
 
 class Application : public QApplication
 {
@@ -119,9 +122,6 @@ public slots:
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
 
-private slots:
-    void updateOrientation();
-
 signals:
     /*!
      * \brief A signal for notifying that the window list has been updated
@@ -143,6 +143,10 @@ private slots:
     void toggleSwitcher();
     void cleanupStatusIndicatorMenu();
     void screenSaverTimeoutChanged();
+    void automaticBacklightControlChanged();
+    void updateBacklight();
+    void updateOrientation();
+    void updateAmbientLight();
 
 protected:
     /*! \reimp
@@ -161,6 +165,7 @@ private:
     void raiseWindow(int windowId);
     void setForegroundOrientationForWindow(uint wid);
     void updateScreenSaver(Window window);
+    void setBacklight(int percentage);
 
     int orientation;
     bool orientationLocked;
@@ -182,6 +187,7 @@ private:
     Atom activeWindowAtom;
     Atom foregroundOrientationAtom;
     Atom inhibitScreenSaverAtom;
+    Atom backlightAtom;
 
     int  m_ss_event;
     int  m_ss_error;
@@ -226,6 +232,12 @@ private:
     int m_screenSaverTimeout;
     QList<Window> inhibitList;
 
+    MGConfItem *m_automaticBacklightItem;
+    bool m_automaticBacklight;
+    MGConfItem *m_manualBacklightItem;
+    QList<DisplayInfo *> displayList;
+
+    QAmbientLightSensor ambientLightSensor;
     QOrientationSensor orientationSensor;
 };
 

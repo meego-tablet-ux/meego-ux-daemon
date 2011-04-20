@@ -1,7 +1,7 @@
 QT += declarative opengl network dbus
 CONFIG += mobility link_pkgconfig
 MOBILITY += sensors
-PKGCONFIG += xscrnsaver gconf-2.0 mlite contextprovider-1.0
+PKGCONFIG += xscrnsaver gconf-2.0 mlite contextprovider-1.0 xrandr
 TARGET = meego-ux-daemon
 TEMPLATE = app
 SOURCES += main.cpp \

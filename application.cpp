@@ -31,6 +31,7 @@
 #include <X11/Xatom.h>
 #include <X11/keysymdef.h>
 #include <X11/extensions/scrnsaver.h>
+#include <X11/extensions/Xrandr.h>
 
 #define CONTEXT_NOTIFICATIONS_LAST "Notifications.Last"
 #define CONTEXT_NOTIFICATIONS_UNREAD "Notifications.Unread"
@@ -73,6 +74,27 @@ static int grabKey(const char* key)
              true, GrabModeAsync, GrabModeAsync);
     return code;
 }
+
+class DisplayInfo {
+public:
+    DisplayInfo(RROutput output, int minBrightness, int maxBrightness) :
+        m_output(output),
+        m_minBrightness(minBrightness),
+        m_maxBrightness(maxBrightness) {}
+
+    RROutput output() {
+        return m_output;
+    }
+
+    int valueForPercentage(int percentage) {
+        return ((percentage * (m_maxBrightness - m_minBrightness))/100);
+    }
+
+private:
+    RROutput m_output;
+    int m_minBrightness;
+    int m_maxBrightness;
+};
 
 void Application::grabHomeKey(const char* key)
 {
@@ -120,6 +142,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     activeWindowAtom = XInternAtom(dpy, "_NET_ACTIVE_WINDOW", false);
     foregroundOrientationAtom = XInternAtom(dpy, "_MEEGO_ORIENTATION", false);
     inhibitScreenSaverAtom = XInternAtom(dpy, "_MEEGO_INHIBIT_SCREENSAVER", false);
+    backlightAtom = XInternAtom(dpy, "Backlight", True);
 
     m_screenSaverTimeoutItem = new MGConfItem("/meego/ux/ScreenSaverTimeout", this);
     if (!m_screenSaverTimeoutItem || m_screenSaverTimeoutItem->value() == QVariant::Invalid)
@@ -158,6 +181,51 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
     Pixmap blank_pix = XCreatePixmap (dpy, root, 1, 1, 1);
     XScreenSaverRegister(dpy, screen, blank_pix, XA_PIXMAP);
+
+    // Query all the info we will need for setting backlight values
+    int major, minor;
+    if (XRRQueryVersion (dpy, &major, &minor))
+    {
+        XRRScreenResources  *resources = XRRGetScreenResources (dpy, root);
+        for (int index = 0; index < resources->noutput; index++)
+        {
+            unsigned long   nitems;
+            unsigned long   bytes_after;
+            unsigned char   *prop;
+            Atom actual_type;
+            int actual_format;
+
+            RROutput output = resources->outputs[index];
+            if (XRRGetOutputProperty (dpy, output, backlightAtom,
+                                      0, 4, False, False, None,
+                                      &actual_type, &actual_format,
+                                      &nitems, &bytes_after, &prop) == Success)
+            {
+                if (actual_type == XA_INTEGER &&
+                        nitems == 1 && actual_format == 32)
+                {
+                    XRRPropertyInfo *info = XRRQueryOutputProperty(dpy, output, backlightAtom);
+                    if (info->range && info->num_values == 2)
+                    {
+                        displayList << new DisplayInfo(output, info->values[0], info->values[1]);
+                    }
+                    XFree(info);
+                }
+                XFree(prop);
+            }
+        }
+    }
+
+    m_automaticBacklightItem = new MGConfItem("/meego/ux/AutomaticBacklightControl", this);
+    connect(m_automaticBacklightItem, SIGNAL(valueChanged()), this, SLOT(automaticBacklightControlChanged()));
+
+    m_manualBacklightItem = new MGConfItem("/meego/ux/ManualBacklightValue", this);
+    connect(m_manualBacklightItem, SIGNAL(valueChanged()), this, SLOT(updateBacklight()));
+
+    // This will trigger the backlight to be updated either using a value
+    // from the ambient light sensor, or from the manually setting, or
+    // full brightness.
+    automaticBacklightControlChanged();
 
     MGConfItem *landscapeItem = new MGConfItem("/meego/ux/PreferredLandscapeOrientation", this);
     if (!landscapeItem || landscapeItem->value() == QVariant::Invalid)
@@ -294,6 +362,8 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
 Application::~Application()
 {
+    while (!displayList.isEmpty())
+        delete displayList.takeLast();
 }
 
 void Application::setRunningAppsLimit(int limit)
@@ -1253,6 +1323,30 @@ namespace M {
     enum OrientationAngle { Angle0=0, Angle90=90, Angle180=180, Angle270=270 };
 }
 
+void Application::updateAmbientLight()
+{
+    QAmbientLightReading *reading = ambientLightSensor.reading();
+    switch(reading->lightLevel())
+    {
+    case QAmbientLightReading::Dark:
+        setBacklight(20);
+        break;
+    case QAmbientLightReading::Twilight:
+        setBacklight(40);
+        break;
+    case QAmbientLightReading::Light:
+        setBacklight(60);
+        break;
+    case QAmbientLightReading::Bright:
+        setBacklight(80);
+        break;
+    case QAmbientLightReading::Sunny:
+    case QAmbientLightReading::Undefined:
+        setBacklight(100);
+        break;
+    }
+}
+
 void Application::updateOrientation()
 {
     int orientation = orientationSensor.reading()->orientation();
@@ -1289,4 +1383,50 @@ void Application::updateOrientation()
     QMetaObject::invokeMethod(inputContext(),
                               "notifyOrientationChanged",
                               Q_ARG(M::OrientationAngle, mtfOrient));
+}
+
+void Application::automaticBacklightControlChanged()
+{
+    m_automaticBacklight = m_automaticBacklightItem->value().toBool();
+    if (m_automaticBacklight)
+    {
+        ambientLightSensor.start();
+    }
+    else
+    {
+        ambientLightSensor.stop();
+    }
+    updateBacklight();
+}
+
+void Application::updateBacklight()
+{
+    if (m_automaticBacklight)
+    {
+        updateAmbientLight();
+        return;
+    }
+
+    int requested = 100; // default to full brightness
+    if (m_manualBacklightItem->value() != QVariant::Invalid)
+    {
+        requested = m_manualBacklightItem->value().toInt();
+        if (requested > 100) requested = 100;
+        if (requested < 0) requested = 0;
+    }
+
+    setBacklight(requested);
+}
+
+void Application::setBacklight(int percentage)
+{
+    foreach (DisplayInfo *info, displayList)
+    {
+        long value = info->valueForPercentage(percentage);
+        XRRChangeOutputProperty (QX11Info::display(), info->output(),
+                                 backlightAtom,
+                                 XA_INTEGER, 32,
+                                 PropModeReplace,
+                                 (unsigned char *) &value, 1);
+    }
 }
