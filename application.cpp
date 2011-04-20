@@ -77,10 +77,12 @@ static int grabKey(const char* key)
 
 class DisplayInfo {
 public:
-    DisplayInfo(RROutput output, int minBrightness, int maxBrightness) :
+    DisplayInfo(RROutput output, int minBrightness, int maxBrightness, Atom backlightAtom) :
         m_output(output),
         m_minBrightness(minBrightness),
-        m_maxBrightness(maxBrightness) {}
+        m_maxBrightness(maxBrightness),
+        m_backlightAtom(backlightAtom) {
+    }
 
     RROutput output() {
         return m_output;
@@ -90,10 +92,15 @@ public:
         return ((percentage * (m_maxBrightness - m_minBrightness))/100);
     }
 
+    Atom backlightAtom() {
+        return m_backlightAtom;
+    }
+
 private:
     RROutput m_output;
     int m_minBrightness;
     int m_maxBrightness;
+    Atom m_backlightAtom;
 };
 
 void Application::grabHomeKey(const char* key)
@@ -142,7 +149,6 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     activeWindowAtom = XInternAtom(dpy, "_NET_ACTIVE_WINDOW", false);
     foregroundOrientationAtom = XInternAtom(dpy, "_MEEGO_ORIENTATION", false);
     inhibitScreenSaverAtom = XInternAtom(dpy, "_MEEGO_INHIBIT_SCREENSAVER", false);
-    backlightAtom = XInternAtom(dpy, "Backlight", True);
 
     m_screenSaverTimeoutItem = new MGConfItem("/meego/ux/ScreenSaverTimeout", this);
     if (!m_screenSaverTimeoutItem || m_screenSaverTimeoutItem->value() == QVariant::Invalid)
@@ -191,28 +197,55 @@ Application::Application(int & argc, char ** argv, bool opengl) :
         {
             unsigned long   nitems;
             unsigned long   bytes_after;
-            unsigned char   *prop;
+            unsigned char *prop = NULL;
             Atom actual_type;
             int actual_format;
 
             RROutput output = resources->outputs[index];
-            if (XRRGetOutputProperty (dpy, output, backlightAtom,
+
+            // Attempt to support both the "Backlight" and
+            // "BACKLIGHT" convention
+            Atom atom = XInternAtom(dpy, "Backlight", True);
+            if ((XRRGetOutputProperty (dpy, output, atom,
                                       0, 4, False, False, None,
                                       &actual_type, &actual_format,
-                                      &nitems, &bytes_after, &prop) == Success)
+                                      &nitems, &bytes_after,
+                                      &prop) != Success) ||
+                    (actual_type != XA_INTEGER) ||
+                    (nitems != 1) ||
+                    (actual_format != 32))
             {
-                if (actual_type == XA_INTEGER &&
-                        nitems == 1 && actual_format == 32)
+                if (prop)
                 {
-                    XRRPropertyInfo *info = XRRQueryOutputProperty(dpy, output, backlightAtom);
-                    if (info->range && info->num_values == 2)
-                    {
-                        displayList << new DisplayInfo(output, info->values[0], info->values[1]);
-                    }
-                    XFree(info);
+                    XFree(prop);
+                    prop = NULL;
                 }
-                XFree(prop);
+
+                atom = XInternAtom(dpy, "BACKLIGHT", True);
+                if ((XRRGetOutputProperty (dpy, output, atom,
+                                          0, 4, False, False, None,
+                                          &actual_type, &actual_format,
+                                          &nitems, &bytes_after,
+                                          &prop) != Success) ||
+                        (actual_type != XA_INTEGER) ||
+                        (nitems != 1) ||
+                        (actual_format != 32))
+                {
+                    if (prop)
+                    {
+                        XFree(prop);
+                    }
+                    continue;
+                }
             }
+            XFree(prop);
+
+            XRRPropertyInfo *info = XRRQueryOutputProperty(dpy, output, atom);
+            if (info->range && info->num_values == 2)
+            {
+                displayList << new DisplayInfo(output, info->values[0], info->values[1], atom);
+            }
+            XFree(info);
         }
     }
 
@@ -1350,7 +1383,6 @@ void Application::updateAmbientLight()
 void Application::updateOrientation()
 {
     int orientation = orientationSensor.reading()->orientation();
-    qDebug() << "XXX orientation" << orientation;
 
     int qmlOrient;
     M::OrientationAngle mtfOrient;
@@ -1424,7 +1456,7 @@ void Application::setBacklight(int percentage)
     {
         long value = info->valueForPercentage(percentage);
         XRRChangeOutputProperty (QX11Info::display(), info->output(),
-                                 backlightAtom,
+                                 info->backlightAtom(),
                                  XA_INTEGER, 32,
                                  PropModeReplace,
                                  (unsigned char *) &value, 1);

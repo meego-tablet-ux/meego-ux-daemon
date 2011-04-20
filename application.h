@@ -187,7 +187,6 @@ private:
     Atom activeWindowAtom;
     Atom foregroundOrientationAtom;
     Atom inhibitScreenSaverAtom;
-    Atom backlightAtom;
 
     int  m_ss_event;
     int  m_ss_error;
