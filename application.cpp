@@ -9,6 +9,7 @@
 #include <QDBusArgument>
 #include <QDBusInterface>
 #include <QDBusConnection>
+#include <QDBusPendingCall>
 #include <QDeclarativeEngine>
 #include <QDeclarativeContext>
 #include <QLibraryInfo>
@@ -353,8 +354,28 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     grabHomeKey("Super_L");
     grabHomeKey("Super_R");
     grabHomeKey("XF86AudioMedia"); // WeTab's corner key
+    grabHomeKey("XF86HomePage");
 
+    // enable developers quick access to the application switcher
     menu = grabKey("Menu");
+
+    // listen for the media control keys so that when bluez maps the A2DP
+    // controls to the standard media keys, we can control media playback
+    // regardless of which application is in the foreground
+    mediaPlayKey     = grabKey("XF86AudioPlay");
+    mediaStopKey     = grabKey("XF86AudioStop");
+    mediaPreviousKey = grabKey("XF86AudioPrev");
+    mediaNextKey     = grabKey("XF86AudioNext");
+
+    // listen for the standard volume control keys
+    volumeUpKey   = grabKey("XF86AudioRaiseVolume");
+    volumeDownKey = grabKey("XF86AudioLowerVolume");
+    volumeMuteKey = grabKey("XF86AudioMute");
+
+    m_player = new QDBusInterface("com.meego.app.music",
+                                  "/com/meego/app/music",
+                                  "com.meego.app.music");
+
 
     if (m_showPanelsAsHome)
     {
@@ -397,6 +418,8 @@ Application::~Application()
 {
     while (!displayList.isEmpty())
         delete displayList.takeLast();
+
+    delete m_player;
 }
 
 void Application::setRunningAppsLimit(int limit)
@@ -587,6 +610,34 @@ bool Application::x11EventFilter(XEvent *event)
         else if (keyEvent->keycode == menu)
         {
             toggleSwitcher();
+        }
+        else if (keyEvent->keycode == mediaPlayKey)
+        {
+            m_player->asyncCall("play");
+        }
+        else if (keyEvent->keycode == mediaStopKey)
+        {
+            m_player->asyncCall("pause");
+        }
+        else if (keyEvent->keycode == mediaPreviousKey)
+        {
+            m_player->asyncCall("prev");
+        }
+        else if (keyEvent->keycode == mediaNextKey)
+        {
+            m_player->asyncCall("next");
+        }
+        else if (keyEvent->keycode == volumeUpKey)
+        {
+            // increase volume and show UI indication
+        }
+        else if (keyEvent->keycode == volumeDownKey)
+        {
+            // decrease volume and show UI indication
+        }
+        else if (keyEvent->keycode == volumeMuteKey)
+        {
+            // mute volume and show UI indication
         }
     }
 

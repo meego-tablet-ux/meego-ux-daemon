@@ -195,6 +195,13 @@ private:
 
     QSet<KeyCode> homeKeys;
     KeyCode menu;
+    KeyCode mediaPlayKey;
+    KeyCode mediaStopKey;
+    KeyCode mediaPreviousKey;
+    KeyCode mediaNextKey;
+    KeyCode volumeUpKey;
+    KeyCode volumeDownKey;
+    KeyCode volumeMuteKey;
 
     QTranslator qtTranslator;
     QTranslator commonTranslator;
@@ -230,6 +237,8 @@ private:
     MGConfItem *m_screenSaverTimeoutItem;
     int m_screenSaverTimeout;
     QList<Window> inhibitList;
+
+    QDBusInterface *m_player;
 
     MGConfItem *m_automaticBacklightItem;
     bool m_automaticBacklight;
