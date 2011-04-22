@@ -27,6 +27,13 @@ QTM_USE_NAMESPACE
 
 #include "windowinfo.h"
 
+#define CG_CONTROLLER_MAX 100
+
+struct cgroup_group_spec {
+        char path[FILENAME_MAX];
+        const char *controllers[CG_CONTROLLER_MAX];
+};
+
 class Dialog;
 class Desktop;
 class MGConfItem;

@@ -10,14 +10,8 @@
 #include <QTimer>
 #include <libcgroup.h>
 
+#include "application.h"
 #include "process.h"
-
-#define CG_CONTROLLER_MAX 100
-
-struct cgroup_group_spec {
-        char path[FILENAME_MAX];
-        const char *controllers[CG_CONTROLLER_MAX];
-};
 
 Process::Process(const QString cgroup, const QStringList controllers, QObject *parent) :
     QProcess(parent),

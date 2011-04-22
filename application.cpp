@@ -19,6 +19,7 @@
 #include <QInputContextFactory>
 #include <MGConfItem>
 #include <context_provider.h>
+#include <libcgroup.h>
 
 #include "application.h"
 #include "notificationsmanageradaptor.h"
@@ -467,6 +468,19 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     context_provider_init (DBUS_BUS_SESSION, "com.meego.meego-ux-daemon");
     context_provider_install_key(CONTEXT_NOTIFICATIONS_LAST, true, NULL, NULL);
     context_provider_install_key(CONTEXT_NOTIFICATIONS_UNREAD, false, NULL, NULL);
+
+    struct cgroup_group_spec spec = {
+        "unlimited", { "freezer"}
+    };
+
+    if (!cgroup_init())
+    {
+        if (!cgroup_register_unchanged_process(::getpid(), 0))
+        {
+            cgroup_change_cgroup_path(spec.path, ::getpid(), spec.controllers);
+        }
+    }
+    send_ux_msg(UX_CMD_LAUNCHED, ::getpid());
 }
 
 Application::~Application()
@@ -611,6 +625,8 @@ void Application::lock()
                          QDBusConnection::systemBus());
     if(iface.isValid())
     {
+        // TODO: We need a way of letting trm know that a third
+        //       party lockscreen is now in the foreground
         iface.call("lockscreen_open", (unsigned)0, false, false);
     }
     else
@@ -633,6 +649,7 @@ void Application::lock()
             lockScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/lockscreen.qml"));
             lockScreen->show();
         }
+        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
     }
 }
 
@@ -771,9 +788,14 @@ bool Application::x11EventFilter(XEvent *event)
                 if (m_showPanelsAsHome)
                 {
                     if (m_foregroundWindow == panelsScreen->winId())
+                    {
                         m_homeActive = true;
+                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+                    }
                     else
+                    {
                         m_homeActive = false;
+                    }
 
                     if (!taskSwitcher && m_foregroundWindow != gridScreen->winId())
                         minimizeWindow(gridScreen->winId());
@@ -781,9 +803,14 @@ bool Application::x11EventFilter(XEvent *event)
                 else
                 {
                     if (m_foregroundWindow == gridScreen->winId())
+                    {
                         m_homeActive = true;
+                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+                    }
                     else
+                    {
                         m_homeActive = false;
+                    }
 
                     if (!taskSwitcher && m_foregroundWindow != panelsScreen->winId())
                         minimizeWindow(panelsScreen->winId());
