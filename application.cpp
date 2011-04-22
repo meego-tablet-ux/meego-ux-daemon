@@ -39,6 +39,7 @@
 #include <X11/keysymdef.h>
 #include <X11/extensions/scrnsaver.h>
 #include <X11/extensions/Xrandr.h>
+#include <X11/extensions/dpms.h>
 
 #define APPS_SOCK_PATH "/var/run/trm-app.sock"
 
@@ -424,6 +425,8 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     volumeDownKey = grabKey("XF86AudioLowerVolume");
     volumeMuteKey = grabKey("XF86AudioMute");
 
+    powerKey = grabKey("XF86PowerOff");
+
     m_player = new QDBusInterface("com.meego.app.music",
                                   "/com/meego/app/music",
                                   "com.meego.app.music");
@@ -690,6 +693,13 @@ bool Application::x11EventFilter(XEvent *event)
         else if (keyEvent->keycode == volumeMuteKey)
         {
             // mute volume and show UI indication
+        }
+        else if (keyEvent->keycode == powerKey)
+        {
+            // turn off the display and trigger the lockscreen
+            DPMSForceLevel(QX11Info::display(), DPMSModeOff);
+            if (!lockScreen)
+                lock();
         }
     }
 

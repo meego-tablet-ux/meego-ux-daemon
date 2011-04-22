@@ -202,6 +202,7 @@ private:
     KeyCode volumeUpKey;
     KeyCode volumeDownKey;
     KeyCode volumeMuteKey;
+    KeyCode powerKey;
 
     QTranslator qtTranslator;
     QTranslator commonTranslator;
