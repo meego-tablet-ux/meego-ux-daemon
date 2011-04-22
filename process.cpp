@@ -6,9 +6,9 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  */
 
+#include <QFile>
 #include <QTimer>
 #include <libcgroup.h>
-
 
 #include "process.h"
 

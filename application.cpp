@@ -28,17 +28,69 @@
 #include "notificationdatastore.h"
 #include "notificationmodel.h"
 
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/un.h>
+
 #include <QX11Info>
 #include <X11/Xatom.h>
 #include <X11/keysymdef.h>
 #include <X11/extensions/scrnsaver.h>
 #include <X11/extensions/Xrandr.h>
 
+#define APPS_SOCK_PATH "/var/run/trm-app.sock"
+
 #define CONTEXT_NOTIFICATIONS_LAST "Notifications.Last"
 #define CONTEXT_NOTIFICATIONS_UNREAD "Notifications.Unread"
 
 Q_DECLARE_METATYPE(QList<MNotification>);
 Q_DECLARE_METATYPE(QList<MNotificationGroup>);
+
+
+enum ux_info_cmd {
+    UX_CMD_FOREGROUND = 1,
+    UX_CMD_LAUNCHED,
+    UX_CMD_SCREEN_OFF,
+    UX_CMD_SCREEN_ON
+};
+
+struct ux_msg {
+    unsigned int data;
+    enum ux_info_cmd cmd;
+};
+
+static void send_ux_msg(ux_info_cmd cmd, unsigned int data)
+{
+    struct ux_msg *msg = (struct ux_msg *) malloc(sizeof(struct ux_msg));
+    if (!msg)
+        return;
+
+    msg->cmd = cmd;
+    msg->data = data;
+
+    int sockfd;
+    struct sockaddr_un servaddr;
+
+    if (!QFile::exists(APPS_SOCK_PATH))
+    {
+        free(msg);
+        return;
+    }
+
+    sockfd = socket(AF_LOCAL, SOCK_STREAM, 0);
+
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sun_family = AF_LOCAL;
+    strcpy(servaddr.sun_path, APPS_SOCK_PATH);
+
+    connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+    write(sockfd, msg, sizeof(struct ux_msg));
+
+    free(msg);
+    close(sockfd);
+}
 
 void messageHandler(QtMsgType type, const char *msg)
 {
@@ -754,8 +806,13 @@ bool Application::x11EventFilter(XEvent *event)
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *) event;
         if (sevent->state == ScreenSaverOn)
         {
+            send_ux_msg(UX_CMD_SCREEN_ON, 0);
             lock();
             return true;
+        }
+        else if (sevent->state == ScreenSaverOff)
+        {
+            send_ux_msg(UX_CMD_SCREEN_OFF, 0);
         }
     }
     return QApplication::x11EventFilter(event);
@@ -866,6 +923,10 @@ void Application::updateWindowList()
                 if (result == Success && propPid != 0)
                 {
                     pid = *((unsigned long *)propPid);
+                    if ((int)wins[i] == m_foregroundWindow)
+                    {
+                        send_ux_msg(UX_CMD_FOREGROUND, pid);
+                    }
                     XFree(propPid);
                 }
 
@@ -1170,6 +1231,7 @@ void Application::launchDesktopByName(QString name)
 
     Desktop *d = new Desktop(name, this);
     d->launch();
+    send_ux_msg(UX_CMD_LAUNCHED, d->pid());
     if (m_runningApps.length() < m_runningAppsLimit)
     {
         m_runningApps << d;
