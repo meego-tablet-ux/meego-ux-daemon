@@ -112,6 +112,7 @@ public slots:
     void closeDesktopByName(QString name);
     void openStatusIndicatorMenu();
     void clearAllNotifications();
+    void desktopLaunched(int pid);
 
     // MNotificationManager Interface
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);

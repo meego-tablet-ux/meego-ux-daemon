@@ -1267,8 +1267,8 @@ void Application::launchDesktopByName(QString name)
     }
 
     Desktop *d = new Desktop(name, this);
+    connect(d, SIGNAL(launched(int)), this, SLOT(desktopLaunched(int)));
     d->launch();
-    send_ux_msg(UX_CMD_LAUNCHED, d->pid());
     if (m_runningApps.length() < m_runningAppsLimit)
     {
         m_runningApps << d;
@@ -1455,6 +1455,11 @@ void Application::openStatusIndicatorMenu()
 void Application::clearAllNotifications()
 {
     m_notificationDataStore->clearAllNotifications();
+}
+
+void Application::desktopLaunched(int pid)
+{
+    send_ux_msg(UX_CMD_LAUNCHED, pid);
 }
 
 void Application::setForegroundOrientationForWindow(uint wid)

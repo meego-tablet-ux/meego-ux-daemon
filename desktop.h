@@ -142,6 +142,7 @@ signals:
     void iconChanged();
     void execChanged();
     void commentChanged();
+    void launched(int pid);
 
 private:
     QString m_filename;
