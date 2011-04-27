@@ -1,3 +1,5 @@
+VERSION = 0.2.4
+
 QT += declarative opengl network dbus
 CONFIG += mobility link_pkgconfig
 MOBILITY += sensors
@@ -58,7 +60,6 @@ OTHER_FILES += \
     NotificationDelegate.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
-VERSION = 0.2.3
 PROJECT_NAME = meego-ux-daemon
 
 dist.commands += rm -fR $${PROJECT_NAME}-$${VERSION} &&
