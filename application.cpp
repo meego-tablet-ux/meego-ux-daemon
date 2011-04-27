@@ -65,6 +65,15 @@ struct ux_msg {
 
 static void send_ux_msg(ux_info_cmd cmd, unsigned int data)
 {
+    // don't send repeated foreground notifications for the same pid
+    static unsigned int lastForegroundId = 0;
+    if (cmd == UX_CMD_FOREGROUND)
+    {
+        if (data == lastForegroundId)
+            return;
+        lastForegroundId = data;
+    }
+
     struct ux_msg *msg = (struct ux_msg *) malloc(sizeof(struct ux_msg));
     if (!msg)
         return;
@@ -777,43 +786,27 @@ bool Application::x11EventFilter(XEvent *event)
             if ((!taskSwitcher || !taskSwitcher->isVisible()) &&
                     (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()))
             {
-                m_foregroundWindow = (int)w;
-                emit foregroundWindowChanged();
-
-                XSelectInput(QX11Info::display(), w, PropertyChangeMask);
-                setForegroundOrientationForWindow(w);
-
-                updateScreenSaver(w);
-
-                if (m_showPanelsAsHome)
+                if (m_foregroundWindow != (int)w)
                 {
-                    if (m_foregroundWindow == panelsScreen->winId())
-                    {
-                        m_homeActive = true;
-                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
-                    }
-                    else
-                    {
-                        m_homeActive = false;
-                    }
+                    m_foregroundWindow = (int)w;
+                    emit foregroundWindowChanged();
 
-                    if (!taskSwitcher && m_foregroundWindow != gridScreen->winId())
-                        minimizeWindow(gridScreen->winId());
-                }
-                else
-                {
-                    if (m_foregroundWindow == gridScreen->winId())
-                    {
-                        m_homeActive = true;
-                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
-                    }
-                    else
-                    {
-                        m_homeActive = false;
-                    }
+                    XSelectInput(QX11Info::display(), w, PropertyChangeMask);
+                    setForegroundOrientationForWindow(w);
 
-                    if (!taskSwitcher && m_foregroundWindow != panelsScreen->winId())
-                        minimizeWindow(panelsScreen->winId());
+                    updateScreenSaver(w);
+
+                    int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
+                    int altWinId = m_showPanelsAsHome ? gridScreen->winId() : panelsScreen->winId();
+                    m_homeActive = m_foregroundWindow == homeWinId;
+
+                    if (m_homeActive)
+                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+                    else
+                        updateWindowList();
+
+                    if (!taskSwitcher && m_foregroundWindow != altWinId)
+                        minimizeWindow(altWinId);
                 }
             }
             XFree(data);
