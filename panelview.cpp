@@ -151,6 +151,7 @@ void PanelView::invalidate(void)
 {
 	dirty = true;
 	viewport()->update();
+	return;
 }
 
 
