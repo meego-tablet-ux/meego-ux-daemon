@@ -3,12 +3,22 @@
 
 #include<QString>
 #include<QSize>
-#include<QDeclarativeView>
+#include<QUrl>
+
+#include<QPixmap>
+#include<QPainter>
+#include<QGraphicsView>
+#include<QGraphicsScene>
+#include<QWidget>
+
 #include<QPaintEvent>
 #include<QKeyEvent>
 #include<QMouseEvent>
 #include<QTabletEvent>
+
+#include<QDeclarativeContext>
 #include<QDeclarativeImageProvider>
+#include<QDeclarativeView>
 
 #include"dialog.h"
 
@@ -50,7 +60,7 @@ private:
 	bool dirty;
 	QPixmap *cache;
 	QPainter *p;
-	PMonitor *real;
+	PMonitor *r;
 };
 
 #endif 
