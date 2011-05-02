@@ -193,8 +193,8 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
     setQuitOnLastWindowClosed(false);
 
-    orientationSensor.start();
     connect(&orientationSensor, SIGNAL(readingChanged()), SLOT(updateOrientation()));
+    orientationSensor.start();
 
     int (*oldXErrorHandler)(Display*, XErrorEvent*);
 
