@@ -152,7 +152,7 @@ void PanelView::regenerate(void)
 	return;
 }
 
-QPixmap PanelView::requestPixmap(const QString *&id, QSize *size, 
+QPixmap PanelView::requestPixmap(const QString &id, QSize *size, 
 		const QSize &resize) 
 {
 	return *cache;

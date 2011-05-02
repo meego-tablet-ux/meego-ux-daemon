@@ -39,7 +39,7 @@ public:
 
 
 class PanelView : public Dialog,
-		  public QDeclarativeImageProvidier {
+		  public QDeclarativeImageProvider {
 
 	Q_OBJECT
 public:
