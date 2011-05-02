@@ -32,6 +32,7 @@
 #include "desktop.h"
 #include "notificationdatastore.h"
 #include "notificationmodel.h"
+#include "panelview.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -535,10 +536,9 @@ Application::Application(int & argc, char ** argv) :
 
     if (m_showPanelsAsHome)
     {
-        panelsScreen = new Dialog(false, false, false);
+        panelsScreen = new PanelView();
         panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
-        panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
         panelsScreen->show();
         gridScreen = NULL;
     }
@@ -677,7 +677,7 @@ void Application::showPanels()
         }
         else
         {
-            panelsScreen = new Dialog(false, false, false);
+            panelsScreen = new PanelsView();
             connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
             panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
             panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
