@@ -34,7 +34,7 @@ PanelView::PanelView(void) : Dialog(false),
 	r = new PMonitor();
 	
 	/* FIXME hardcoded width */
-	r->rootObject()->setProperty("width", 5000);
+	r->rootObject()->setProperty("width", 4200);
 	r->rootObject()->setProperty("height", height);
 
 	QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)), 
