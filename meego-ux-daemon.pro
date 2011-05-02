@@ -26,7 +26,8 @@ SOURCES += main.cpp \
     notificationmodel.cpp \
     volumecontrol.cpp \
     lockscreenadaptor.cpp \
-    atoms.cpp
+    atoms.cpp \
+    panelview.cpp
 HEADERS += \
     application.h \
     dialog.h \
@@ -40,7 +41,8 @@ HEADERS += \
     notificationmodel.h \
     volumecontrol.h \
     lockscreenadaptor.h \
-    atoms.h
+    atoms.h \
+    panelview.h
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
