@@ -10,6 +10,7 @@
 #include<QGraphicsView>
 #include<QGraphicsScene>
 #include<QWidget>
+#include<QDesktopWidget>
 
 #include<QPaintEvent>
 #include<QKeyEvent>

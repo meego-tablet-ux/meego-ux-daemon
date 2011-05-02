@@ -12,7 +12,7 @@ PMonitor::PMonitor(void) : Dialog(false)
 	setAttribute(Qt::WA_NoBackground);
 	setCacheMode(QGraphicsView::CacheNone);
 	setOptimizationFlags(
-		QGraphicsView::DontSavePainter State | 
+		QGraphicsView::DontSavePainterState | 
 		QGraphicsView::DontAdjustForAntialiasing);
 
 	viewport()->setAttribute(Qt::WA_TranslucentBackground, false);
