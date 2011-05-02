@@ -56,10 +56,11 @@ PanelView::PanelView(void) : Dialog(false),
 
 	/* FIXME hardcoded path to dummy QML */
 	setSource(QUrl::fromLocalFile("/home/meego/panelview/real.qml"));
-
+/*
 	QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(rootObject());
 	i->setProperty("width", r->width());
 	i->setProperty("height", r->height());
+*/
 	
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setOptimizationFlags(
