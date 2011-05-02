@@ -86,7 +86,18 @@ void PanelView::paintEvent(QPaintEvent *e)
 {
 	if(dirty) {
 		regenerate();
-		/*TODO Finish This */
+
+		/*TODO Revamp This */
+		QList<QObject*> tmp;
+		QDeclarativeItem *i =  qobject_cast<QDeclarativeItem*>(rootObject());
+		tmp = i->children();
+		QString meh = tmp.at(1)->property("source").toString();
+		meh += '0';
+		qDebug() << meh;
+		tmp.at(1)->setProperty("source", meh);
+
+		dirty = false;
+	
 	}
 	QDeclarativeView::paintEvent(e);
 	return;
