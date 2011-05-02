@@ -24,6 +24,7 @@
 #include <context_provider.h>
 #include <libcgroup.h>
 
+#include "panelview.h"
 #include "application.h"
 #include "notificationsmanageradaptor.h"
 #include "statusindicatormenuadaptor.h"
@@ -32,7 +33,6 @@
 #include "desktop.h"
 #include "notificationdatastore.h"
 #include "notificationmodel.h"
-#include "panelview.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
