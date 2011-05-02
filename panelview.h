@@ -17,6 +17,7 @@
 #include<QMouseEvent>
 #include<QTabletEvent>
 
+#include<QDeclarativeEngine>
 #include<QDeclarativeContext>
 #include<QDeclarativeImageProvider>
 #include<QDeclarativeView>
