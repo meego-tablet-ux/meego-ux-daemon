@@ -25,7 +25,7 @@ PMonitor::PMonitor(void) : Dialog(false)
 	setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
 }
 
-PanelView::PanelView : Dialog(false), 
+PanelView::PanelView(void) : Dialog(false), 
 		QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
 {
 	const int width = qApp->desktop()->rect().width();
