@@ -19,6 +19,9 @@
 #include<QDeclarativeContext>
 #include<QDeclarativeImageProvider>
 #include<QDeclarativeView>
+#include<QDeclarativeItem>
+
+#include<QApplication>
 
 #include"dialog.h"
 
