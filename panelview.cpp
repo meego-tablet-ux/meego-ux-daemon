@@ -138,6 +138,7 @@ void PanelView::mousePressEvent(QMouseEvent *e)
 void PanelView::mouseReleaseEvent(QMouseEvent *e)
 {
 	r->mouseReleaseEvent(e);
+	QDeclarativeView::mouseReleaseEvent(e);
 	return;
 }
 
