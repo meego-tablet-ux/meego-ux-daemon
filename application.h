@@ -26,6 +26,7 @@ QTM_USE_NAMESPACE
 #include "volumecontrol.h"
 #include "desktop.h"
 #include "dialog.h"
+#include "panelview.h"
 
 #include "windowinfo.h"
 
@@ -207,7 +208,7 @@ private:
     Dialog *taskSwitcher;
     Dialog *lockScreen;
     Dialog *gridScreen;
-    Dialog *panelsScreen;
+    PanelView *panelsScreen;
     Dialog *statusIndicatorMenu;
     Atom windowTypeAtom;
     Atom windowTypeNormalAtom;
