@@ -8,6 +8,8 @@ Flickable {
 	Image { 
 		width: 4200;
 		height: 600;
+		anchors.top: parent.top;
+		anchors.bottom: parent.bottom;
 		source: "image://gen/panel";
 	 }
 }
