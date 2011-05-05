@@ -924,6 +924,22 @@ void Application::updateWindowList()
                     }
                 }
 
+		// If _NET_WM_ICON_NAME invalid, try WM_ICON_NAME
+		if (!meegoIconName)
+		{
+		    XGetIconName(dpy,
+				 wins[i],
+				 (char**)&meegoIconName);
+		}
+
+		// If WM_ICON_NAME invalid, try WM_NAME
+		if (!meegoIconName)
+		{
+		    XFetchName(dpy,
+			       wins[i],
+			       (char**)&meegoIconName);
+		}
+
                 Atom notifyAtom = XInternAtom(dpy, "_MEEGO_TABLET_NOTIFY", False);
                 result = XGetWindowProperty(dpy,
                                             wins[i],
