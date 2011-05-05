@@ -1105,6 +1105,39 @@ void Application::updateWindowList()
     }
 }
 
+bool Application::namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const
+{
+    QString d_name, d_exec, d_fn, w_name, w_title;
+
+    // Filter the WindowInfo name
+    w_name = w.iconName();
+    if( w.iconName().isEmpty() ) {
+        w_name = w.title();
+    }
+    w_name = w_name.toLower().replace("-","").replace("_","");
+
+    if( w_name.isEmpty() ) {
+        return false;
+    }
+
+    // Filter the Desktop names
+    d_name = d.title().toLower().replace("-","").replace("_","");
+    d_fn = d.filename().toLower().replace("-","").replace("_","");
+    d_exec = d.exec().toLower().replace("-","").replace("_","");
+
+    if( d_name.isEmpty() && d_fn.isEmpty() && d_exec.isEmpty() ) {
+        return false;
+    }
+
+    if( d_name.contains(w_name) ||
+        d_fn.contains(w_name) ||
+	d_exec.contains(w_name) ) {
+        return true;
+    }
+
+    return false;    
+}
+
 void Application::updateApps(const QList<WindowInfo> &windowList)
 {
     foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
@@ -1143,10 +1176,14 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
         foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
         {
             if (d->wid() == (int)info.window() ||
-                d->pid() == (int)info.pid() ||
-                (!info.iconName().isEmpty() &&
-                 d->filename().contains(info.iconName())))
+                d->pid() == (int)info.pid())
             {
+                found = true;
+            }
+
+            if(!found && namesMatchFuzzy(*d, info))
+            {
+                d->setWid( info.window() );
                 found = true;
             }
         }

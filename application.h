@@ -172,6 +172,7 @@ private:
     void setForegroundOrientationForWindow(uint wid);
     void updateScreenSaver(Window window);
     void setBacklight(int percentage);
+    bool namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const;
 
     int orientation;
     bool orientationLocked;
