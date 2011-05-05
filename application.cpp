@@ -1083,6 +1083,10 @@ void Application::updateWindowList()
                     }
                     XFree(typeData);
                 }
+		if(meegoIconName)
+		    XFree ((char *)meegoIconName);
+		if(notifyIconName)
+		    XFree ((char *)notifyIconName);
             }
         }
 
