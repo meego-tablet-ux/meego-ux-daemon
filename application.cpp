@@ -426,6 +426,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     // controls to the standard media keys, we can control media playback
     // regardless of which application is in the foreground
     mediaPlayKey     = grabKey("XF86AudioPlay");
+    mediaPauseKey     = grabKey("XF86AudioPause");
     mediaStopKey     = grabKey("XF86AudioStop");
     mediaPreviousKey = grabKey("XF86AudioPrev");
     mediaNextKey     = grabKey("XF86AudioNext");
@@ -696,8 +697,13 @@ bool Application::x11EventFilter(XEvent *event)
         {
             m_player->asyncCall("play");
         }
+        else if (keyEvent->keycode == mediaPauseKey)
+        {
+            m_player->asyncCall("pause");
+        }
         else if (keyEvent->keycode == mediaStopKey)
         {
+            // The service does not really have a stop method, so just pause
             m_player->asyncCall("pause");
         }
         else if (keyEvent->keycode == mediaPreviousKey)

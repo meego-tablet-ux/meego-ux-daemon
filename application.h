@@ -204,6 +204,7 @@ private:
     QSet<KeyCode> homeKeys;
     KeyCode menu;
     KeyCode mediaPlayKey;
+    KeyCode mediaPauseKey;
     KeyCode mediaStopKey;
     KeyCode mediaPreviousKey;
     KeyCode mediaNextKey;
