@@ -33,9 +33,8 @@ Window {
         id: favorites
     }
 
-    Item {
+    overlayItem: Item {
         id: page
-        parent: scene.overlayItem
         anchors.fill: parent
         Rectangle {
             anchors.fill: parent

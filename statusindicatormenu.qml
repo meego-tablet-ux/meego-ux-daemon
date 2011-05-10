@@ -70,9 +70,8 @@ Window {
         }
     }
 
-    Item {
+    overlayItem: Item {
         id: notificationContainer
-        parent: scene.overlayItem
         width: parent.width
         height: parent.height
 
