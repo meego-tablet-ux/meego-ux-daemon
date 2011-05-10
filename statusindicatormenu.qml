@@ -7,18 +7,26 @@
  */
 
 import Qt 4.7
-import MeeGo.Labs.Components 0.1
+import MeeGo.Components 0.1
+import MeeGo.Labs.Components 0.1 as Labs
 import MeeGo.Settings 0.1
 import MeeGo.Panels 0.1
 
 Window {
     id: scene
-    transparent: true
-    fullscreen: true
     fullContent: true
-    showtoolbar: false
-    orientationLocked: true
-    orientation: qApp.foregroundOrientation
+    fullScreen: true
+
+    lockOrientationIn: {
+        if (qApp.foregroundOrientation == 1)
+            "landscape";
+        else if (qApp.foregroundOrientation == 2)
+            "portrait";
+        else if (qApp.foregroundOrientation == 3)
+            "invertedLandscape";
+        else
+            "invertedPortrait";
+    }
 
     Connections {
         target: mainWindow
@@ -64,7 +72,7 @@ Window {
 
     Item {
         id: notificationContainer
-        parent: scene.content
+        parent: scene.overlayItem
         width: parent.width
         height: parent.height
 
@@ -119,7 +127,7 @@ Window {
             function startSpinner() {
                 indicatorContainer.open = false;
             }
-            ApplicationsModel {
+            Labs.ApplicationsModel {
                     id: appsModel
                     directories: [ "/usr/share/meego-ux-appgrid/applications", "/usr/share/applications", "~/.local/share/applications" ]
             }
@@ -210,7 +218,7 @@ Window {
                     anchors.right: parent.right
                     anchors.rightMargin: 10
                     anchors.verticalCenter: parent.verticalCenter
-                    title: qsTr("Clear")
+                    text: qsTr("Clear")
                     onClicked: {
                         qApp.clearAllNotifications();
                     }
