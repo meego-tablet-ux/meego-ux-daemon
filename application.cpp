@@ -739,7 +739,6 @@ bool Application::x11EventFilter(XEvent *event)
         event->xproperty.window == DefaultRootWindow(QX11Info::display()) &&
         event->xproperty.atom == clientListAtom)
     {
-        m_homeActive = false;
         updateWindowList();
         return true;
     }
