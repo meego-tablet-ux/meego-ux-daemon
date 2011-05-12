@@ -1214,10 +1214,10 @@ void Application::loadTranslators()
                           QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     homescreenTranslator.load(m_homeScreenDirectoryName + "_" + QLocale::system().name() + ".qm",
                               QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    panelsTranslator.load("meego-ux-panels_" + QLocale::system().name(),
-                          QLibraryInfo::location(QLibraryInfo::TranslationsPath) + ".qm");
-    daemonTranslator.load("meego-ux-daemon_" + QLocale::system().name(),
-                          QLibraryInfo::location(QLibraryInfo::TranslationsPath) + ".qm");
+    panelsTranslator.load("meego-ux-panels_" + QLocale::system().name() + ".qm",
+                          QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    daemonTranslator.load("meego-ux-daemon_" + QLocale::system().name() + ".qm",
+                          QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     mediaTranslator.load("meego-ux-media-qml_" + QLocale::system().name() + ".qm",
                          QLibraryInfo::location(QLibraryInfo::TranslationsPath));
 }
