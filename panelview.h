@@ -54,8 +54,6 @@ public:
 	void mousePressEvent(QMouseEvent *);
 	void mouseReleaseEvent(QMouseEvent *);
 	void tabletEvent(QTabletEvent *);
-
-	void regenerate(void);
 	
 	QPixmap requestPixmap(const QString&, QSize *, const QSize&);
 	

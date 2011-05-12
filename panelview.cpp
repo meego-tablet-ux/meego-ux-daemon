@@ -51,7 +51,7 @@ PanelView::PanelView(void) : Dialog(false),
 	p->setRenderHint(QPainter::SmoothPixmapTransform, false);
 	p->setRenderHint(QPainter::HighQualityAntialiasing, false);
 	
-	regenerate();
+	r->viewport()->render(p);
 	engine()->addImageProvider(QLatin1String("gen"), this);
 
 	/* FIXME hardcoded path to dummy QML */
@@ -86,8 +86,6 @@ PanelView::~PanelView(void)
 void PanelView::paintEvent(QPaintEvent *e)
 {
 	if(dirty) {
-		regenerate();
-
 		/*TODO Revamp This */
 		QList<QObject*> tmp;
 		QDeclarativeItem *i =  qobject_cast<QDeclarativeItem*>(rootObject());
@@ -148,12 +146,6 @@ void PanelView::tabletEvent(QTabletEvent *e)
 	return;
 }
 
-void PanelView::regenerate(void)
-{
-	r->viewport()->render(p);
-	return;
-}
-
 QPixmap PanelView::requestPixmap(const QString &id, QSize *size, 
 		const QSize &resize) 
 {
@@ -163,6 +155,7 @@ QPixmap PanelView::requestPixmap(const QString &id, QSize *size,
 void PanelView::invalidate(void)
 {
 	dirty = true;
+	r->viewport()->render(p);
 	viewport()->update();
 	return;
 }
