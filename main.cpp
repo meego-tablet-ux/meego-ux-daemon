@@ -23,6 +23,9 @@ int main(int argc, char *argv[])
         }
     }
 
+    // Fix for BMC #17521
+    XInitThreads();
+
     Application app(argc, argv, opengl);
 
     foreach (QString path, QCoreApplication::libraryPaths())
