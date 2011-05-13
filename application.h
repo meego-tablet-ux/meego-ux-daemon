@@ -22,6 +22,7 @@
 #include <QOrientationSensor>
 QTM_USE_NAMESPACE
 
+#include "volumecontrol.h"
 #include "desktop.h"
 #include "dialog.h"
 
@@ -131,9 +132,6 @@ public slots:
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
 
 signals:
-    /*!
-     * \brief A signal for notifying that the window list has been updated
-     */
     void windowListUpdated(const QList<WindowInfo> &windowList);
     void activateLock();
     void orientationChanged();
@@ -257,6 +255,8 @@ private:
 
     QAmbientLightSensor ambientLightSensor;
     QOrientationSensor orientationSensor;
+
+    VolumeControl volumeControl;
 };
 
 #endif // APPLICATION_H

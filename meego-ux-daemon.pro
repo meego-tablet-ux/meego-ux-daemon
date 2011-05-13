@@ -10,7 +10,9 @@ PKGCONFIG += \
     contextprovider-1.0 \
     xrandr \
     libcgroup \
-    xext
+    xext \
+    libpulse \
+    libpulse-mainloop-glib
 TARGET = meego-ux-daemon
 TEMPLATE = app
 SOURCES += main.cpp \
@@ -21,7 +23,8 @@ SOURCES += main.cpp \
     notificationsmanageradaptor.cpp \
     notificationdatastore.cpp \
     statusindicatormenuadaptor.cpp \
-    notificationmodel.cpp
+    notificationmodel.cpp \
+    volumecontrol.cpp
 HEADERS += \
     application.h \
     dialog.h \
@@ -32,7 +35,8 @@ HEADERS += \
     notificationdatastore.h \
     statusindicatormenuadaptor.h \
     notificationitem.h \
-    notificationmodel.h
+    notificationmodel.h \
+    volumecontrol.h
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc

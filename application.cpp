@@ -716,15 +716,18 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (keyEvent->keycode == volumeUpKey)
         {
-            // increase volume and show UI indication
+            volumeControl.setVolume(qMin(volumeControl.volume() + 10, 100));
+            // TODO: splash a volume indication UI
         }
         else if (keyEvent->keycode == volumeDownKey)
         {
-            // decrease volume and show UI indication
+            volumeControl.setVolume(qMax(volumeControl.volume() - 10, 0));
+            // TODO: splash a volume indication UI
         }
         else if (keyEvent->keycode == volumeMuteKey)
         {
-            // mute volume and show UI indication
+            volumeControl.mute(!volumeControl.muted());
+            // TODO: splash a volume indication UI
         }
         else if (keyEvent->keycode == powerKey)
         {
