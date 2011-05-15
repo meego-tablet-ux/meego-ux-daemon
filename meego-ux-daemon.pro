@@ -37,6 +37,7 @@ HEADERS += \
     notificationitem.h \
     notificationmodel.h \
     volumecontrol.h
+LIBS += -lalarmd
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
@@ -61,7 +62,8 @@ OTHER_FILES += \
     interfaces/notificationmanager.xml \
     com.meego.meego-ux-daemon.context \
     statusindicatormenu.qml \
-    NotificationDelegate.qml
+    NotificationDelegate.qml \
+    alarm.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-daemon

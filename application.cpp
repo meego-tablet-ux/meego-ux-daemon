@@ -180,6 +180,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     lockScreen(NULL),
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
+    alarmDialog(NULL),
     m_runningAppsLimit(16),
     m_homeActive(false),
     m_homePressTime(0),
@@ -442,7 +443,6 @@ Application::Application(int & argc, char ** argv, bool opengl) :
                                   "/com/meego/app/music",
                                   "com.meego.app.music");
 
-
     if (m_showPanelsAsHome)
     {
         gridScreen = new Dialog(false, false, useOpenGL);
@@ -478,6 +478,15 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     context_provider_init (DBUS_BUS_SESSION, "com.meego.meego-ux-daemon");
     context_provider_install_key(CONTEXT_NOTIFICATIONS_LAST, true, NULL, NULL);
     context_provider_install_key(CONTEXT_NOTIFICATIONS_UNREAD, false, NULL, NULL);
+
+    m_alarmService = AlarmInterface::instance(this);
+
+    QDBusConnection::sessionBus().
+            connect(MEEGO_ALARM_DBUS_SERVICE,
+                    "/com/meego/Alarm",
+                    "com.meego.Alarm",
+                    "Alarm", this,
+                    SLOT(alarmHandler(QDBusMessage)));
 
     struct cgroup_group_spec spec = {
         "unlimited", { "freezer"}
@@ -537,6 +546,27 @@ void Application::showTaskSwitcher()
     taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
     taskSwitcher->show();
+}
+
+void Application::showAlarmDialog(int alarmId, QString title, QString message, bool snooze, QString soundUri)
+{
+    if (alarmDialog)
+    {
+        alarmDialog->activateWindow();
+        alarmDialog->raise();
+        alarmDialog->show();
+    }
+    else
+    {
+        alarmDialog = new Dialog(true, false, useOpenGL);
+        alarmDialog->setSkipAnimation();
+        connect(alarmDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupAlarmDialog()));
+        alarmDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
+        alarmDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/alarm.qml"));
+        alarmDialog->show();
+    }
+
+    emit alarm(alarmId, title, message, snooze, soundUri);
 }
 
 void Application::showPanels()
@@ -610,6 +640,12 @@ void Application::cleanupStatusIndicatorMenu()
     statusIndicatorMenu->hide();
 }
 
+void Application::cleanupAlarmDialog()
+{
+    alarmDialog->deleteLater();
+    alarmDialog = NULL;
+}
+
 void Application::goHome()
 {
     if (taskSwitcher)
@@ -620,6 +656,11 @@ void Application::goHome()
     {
         cleanupStatusIndicatorMenu();
     }
+    if (alarmDialog)
+    {
+        cleanupAlarmDialog();
+    }
+
     // Minimize all windows
     foreach (Window win, openWindows)
     {
@@ -792,7 +833,8 @@ bool Application::x11EventFilter(XEvent *event)
         {
             Window w = *(Window *)data;
             if ((!taskSwitcher || !taskSwitcher->isVisible()) &&
-                    (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()))
+                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()) &&
+                (!alarmDialog || !alarmDialog->isVisible()))
             {
                 if (m_foregroundWindow != (int)w)
                 {
@@ -813,7 +855,7 @@ bool Application::x11EventFilter(XEvent *event)
                     else
                         updateWindowList();
 
-                    if (!taskSwitcher && m_foregroundWindow != altWinId)
+                    if (m_foregroundWindow != altWinId)
                         minimizeWindow(altWinId);
                 }
             }
@@ -924,21 +966,21 @@ void Application::updateWindowList()
                     }
                 }
 
-		// If _NET_WM_ICON_NAME invalid, try WM_ICON_NAME
-		if (!meegoIconName)
-		{
-		    XGetIconName(dpy,
-				 wins[i],
-				 (char**)&meegoIconName);
-		}
+                // If _NET_WM_ICON_NAME invalid, try WM_ICON_NAME
+                if (!meegoIconName)
+                {
+                    XGetIconName(dpy,
+                                 wins[i],
+                                 (char**)&meegoIconName);
+                }
 
-		// If WM_ICON_NAME invalid, try WM_NAME
-		if (!meegoIconName)
-		{
-		    XFetchName(dpy,
-			       wins[i],
-			       (char**)&meegoIconName);
-		}
+                // If WM_ICON_NAME invalid, try WM_NAME
+                if (!meegoIconName)
+                {
+                    XFetchName(dpy,
+                               wins[i],
+                               (char**)&meegoIconName);
+                }
 
                 Atom notifyAtom = XInternAtom(dpy, "_MEEGO_TABLET_NOTIFY", False);
                 result = XGetWindowProperty(dpy,
@@ -1083,10 +1125,10 @@ void Application::updateWindowList()
                     }
                     XFree(typeData);
                 }
-		if(meegoIconName)
-		    XFree ((char *)meegoIconName);
-		if(notifyIconName)
-		    XFree ((char *)notifyIconName);
+                if(meegoIconName)
+                    XFree ((char *)meegoIconName);
+                if(notifyIconName)
+                    XFree ((char *)notifyIconName);
             }
         }
 
@@ -1131,7 +1173,8 @@ bool Application::namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const
 
     if( d_name.contains(w_name) ||
         d_fn.contains(w_name) ||
-	d_exec.contains(w_name) ) {
+        d_exec.contains(w_name) )
+    {
         return true;
     }
 
@@ -1674,4 +1717,20 @@ void Application::setBacklight(int percentage)
                                  PropModeReplace,
                                  (unsigned char *) &value, 1);
     }
+}
+
+void Application::alarmHandler(const QDBusMessage &msg)
+{
+    int id = msg.arguments()[0].toInt();
+    bool snooze = msg.arguments()[1].toBool();
+    QString title = msg.arguments()[2].toString();
+    QString message = msg.arguments()[3].toString();
+    QString soundUri = msg.arguments()[4].toString();
+
+    showAlarmDialog(id, title, message, snooze, soundUri);
+}
+
+void Application::stopSnooze(int id)
+{
+    m_alarmService->stopSnooze(id);
 }
