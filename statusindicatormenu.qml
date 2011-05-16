@@ -75,25 +75,6 @@ Window {
         width: parent.width
         height: parent.height
 
-        // Expected by the WifiDialog we use right out of the
-        // panels components
-        Item {
-            id: panelSize
-            property int baseSize: parent.width
-            property int oneHalf: Math.round(baseSize/2)
-            property int oneThird: Math.round(baseSize/3)
-            property int oneFourth: Math.round(baseSize/4)
-            property int oneSixth: Math.round(baseSize/6)
-            property int oneEigth: Math.round(baseSize/8)
-            property int oneTenth: Math.round(baseSize/10)
-            property int oneTwentieth: Math.round(baseSize/20)
-            property int oneTwentyFifth: Math.round(baseSize/25)
-            property int oneThirtieth: Math.round(baseSize/30)
-            property int oneSixtieth: Math.round(baseSize/60)
-            property int oneEightieth: Math.round(baseSize/80)
-            property int oneHundredth: Math.round(baseSize/100)
-        }
-
         VolumeDialog {
             id: volumeDialog
             visible: false
@@ -102,7 +83,6 @@ Window {
 
         WifiDialog {
             id: wifiDialog
-            visible: false
             z: 100
         }
 
@@ -162,9 +142,8 @@ Window {
                         anchors.fill: parent
                         onClicked: {
                             var pos = parent.mapToItem(notificationContainer, mouse.x, mouse.y);
-                            wifiDialog.dlgX = pos.x;
-                            wifiDialog.dlgY = pos.y;
-                            wifiDialog.visible = true;
+                            wifiDialog.setPosition(pos.x, pos.y);
+                            wifiDialog.show();
                         }
                     }
                 }
