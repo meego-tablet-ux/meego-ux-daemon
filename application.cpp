@@ -1638,34 +1638,30 @@ void Application::updateAmbientLight()
 
 void Application::updateOrientation()
 {
-    int orientation = orientationSensor.reading()->orientation();
+    orientation = orientationSensor.reading()->orientation();
 
-    int qmlOrient;
     M::OrientationAngle mtfOrient;
     switch (orientation)
     {
     case QOrientationReading::LeftUp:
         mtfOrient = M::Angle270;
-        qmlOrient = 2;
+        orientation = 2;
         break;
     case QOrientationReading::TopDown:
         mtfOrient = M::Angle180;
-        qmlOrient = 3;
+        orientation = 3;
         break;
     case QOrientationReading::RightUp:
         mtfOrient = M::Angle90;
-        qmlOrient = 0;
+        orientation = 0;
         break;
     default: // assume QOrientationReading::TopUp
         mtfOrient = M::Angle0;
-        qmlOrient = 1;
+        orientation = 1;
         break;
     }
 
-    if (panelsScreen)
-    {
-        panelsScreen->setOrientation(qmlOrient);
-    }
+    emit orientationChanged();
 
     // Need to tell the MInputContext plugin to rotate the VKB too
     QMetaObject::invokeMethod(inputContext(),

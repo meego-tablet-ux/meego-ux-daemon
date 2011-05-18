@@ -19,7 +19,6 @@ class Dialog : public QDeclarativeView
     Q_OBJECT
     Q_PROPERTY(int winId READ winId NOTIFY winIdChanged)
     Q_PROPERTY(int actualOrientation READ actualOrientation WRITE setActualOrientation)
-    Q_PROPERTY(int orientation READ orientation NOTIFY orientationChanged)
 
 public:
     explicit Dialog(bool translucent, bool forceOnTop = false, bool opengl = false, QWidget * parent = 0);
@@ -39,14 +38,6 @@ public:
     void activateWindow() {
         emit activateContent();
         QWidget::activateWindow();
-    }
-
-    int orientation() {
-        return m_orientation;
-    }
-    void setOrientation(int o) {
-        m_orientation = o;
-        emit orientationChanged();
     }
 
 public slots:
@@ -70,6 +61,5 @@ private:
 
     bool m_forceOnTop;
     int m_actualOrientation;
-    int m_orientation;
 };
 #endif // DIALOG_H
