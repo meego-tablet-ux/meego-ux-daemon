@@ -11,7 +11,7 @@ import QtMultimediaKit 1.1
 import MeeGo.Components 0.1
 
 Window {
-    id: scene
+    id: window
     fullContent: true
     fullScreen: true
     lockOrientationIn: {
@@ -31,7 +31,7 @@ Window {
 
         Rectangle {
             anchors.fill: parent
-            anchors.margins: -scene.width
+            anchors.margins: -page.width
             color: theme_dialogFogColor
             opacity:  theme_dialogFogOpacity
         }

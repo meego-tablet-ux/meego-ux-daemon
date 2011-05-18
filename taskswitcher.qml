@@ -12,7 +12,7 @@ import MeeGo.Components 0.1
 import MeeGo.Labs.Components 0.1 as Labs
 
 Window {
-    id: scene
+    id: window
     fullContent: true
     fullScreen: true
     lockOrientationIn: {
@@ -38,7 +38,7 @@ Window {
         anchors.fill: parent
         Rectangle {
             anchors.fill: parent
-            anchors.margins: -scene.width
+            anchors.margins: -window.width
             color: theme_dialogFogColor
             opacity:  theme_dialogFogOpacity
             MouseArea {
@@ -229,7 +229,7 @@ Window {
                         ContextMenu {
                             id: contextMenu
                             content: ActionMenu {
-                                model: [scene.openText, scene.closeText]
+                                model: [window.openText, window.closeText]
                                 payload: [0, 1]
                                 onTriggered: {
                                     if (index == 0)

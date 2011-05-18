@@ -13,7 +13,7 @@ import MeeGo.Settings 0.1
 import MeeGo.Panels 0.1
 
 Window {
-    id: scene
+    id: window
     fullContent: true
     fullScreen: true
 
@@ -42,7 +42,7 @@ Window {
     Component {
         id: notificationDelegateComponent
         NotificationDelegate {
-            width: scene.content.width
+            width: window.overlayItem.width
             itemSummary: summary
             itemBody: body
             timestamp: fuzzy.getFuzzy(time)
@@ -216,7 +216,7 @@ Window {
 
                 clip: true
                 interactive: height < contentHeight
-                property int maxHeight: scene.content.height - notificationsStatusBar.height - controls.height - banner.height - grabby.height
+                property int maxHeight: window.overlayItem.height - notificationsStatusBar.height - controls.height - banner.height - grabby.height
 
                 Behavior on height {
                     NumberAnimation {
@@ -275,7 +275,7 @@ Window {
                 anchors.top: parent.top
                 width: parent.width
                 height: theme_statusBarHeight
-                active: scene.foreground
+                active: qApp.foregroundWindow == mainWindow.winId
                 backgroundOpacity: theme_panelStatusBarOpacity
             }
 
