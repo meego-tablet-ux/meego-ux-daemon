@@ -14,16 +14,8 @@ import MeeGo.Labs.Components 0.1 as Labs
 Window {
     id: window
     fullScreen: true
-    lockOrientationIn: {
-        if (qApp.foregroundOrientation == 1)
-            "landscape";
-        else if (qApp.foregroundOrientation == 2)
-            "portrait";
-        else if (qApp.foregroundOrientation == 3)
-            "invertedLandscape";
-        else
-            "invertedPortrait";
-    }
+    orientationLock: qApp.foregroundOrientation
+    blockOrientationWhenInactive: false
 
     property string closeText: qsTr("Close")
     property string openText: qsTr("Open")

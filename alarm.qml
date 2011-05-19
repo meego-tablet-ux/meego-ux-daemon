@@ -13,16 +13,8 @@ import MeeGo.Components 0.1
 Window {
     id: window
     fullScreen: true
-    lockOrientationIn: {
-        if (qApp.foregroundOrientation == 1)
-            "landscape";
-        else if (qApp.foregroundOrientation == 2)
-            "portrait";
-        else if (qApp.foregroundOrientation == 3)
-            "invertedLandscape";
-        else
-            "invertedPortrait";
-    }
+    orientationLock: qApp.foregroundOrientation
+    blockOrientationWhenInactive: false
 
     overlayItem: Item {
         id: page
