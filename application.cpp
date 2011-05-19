@@ -188,7 +188,8 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     m_foregroundOrientation(2),
     m_notificationDataStore(NotificationDataStore::instance()),
     m_notificationModel(new NotificationModel),
-    m_lastNotificationId(0)
+    m_lastNotificationId(0),
+    m_screenOn(true)
 {
     setApplicationName("meego-ux-daemon");
 
@@ -670,6 +671,8 @@ void Application::goHome()
 
 void Application::lock()
 {
+    setScreenOn(false);
+
     QDBusInterface iface("com.acer.AcerLockScreen",
                          "/com/acer/AcerLockScreen/request",
                          "com.acer.AcerLockScreen.request",
@@ -891,6 +894,7 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (sevent->state == ScreenSaverOff)
         {
+            screenOnChanged();
             send_ux_msg(UX_CMD_SCREEN_OFF, 0);
         }
     }
@@ -1713,4 +1717,22 @@ void Application::alarmHandler(const QDBusMessage &msg)
 void Application::stopSnooze(int id)
 {
     m_alarmService->stopSnooze(id);
+}
+
+void Application::setScreenOn(bool value)
+{
+    if (value == m_screenOn)
+        return;
+
+    m_screenOn = value;
+    emit screenOnChanged();
+
+    if (m_screenOn)
+    {
+        orientationSensor.start();
+    }
+    else
+    {
+        orientationSensor.stop();
+    }
 }

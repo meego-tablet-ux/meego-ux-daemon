@@ -265,7 +265,7 @@ Window {
                 anchors.top: parent.top
                 width: parent.width
                 height: theme_statusBarHeight
-                active: qApp.foregroundWindow == mainWindow.winId
+                active: qApp.screenOn
                 backgroundOpacity: theme_panelStatusBarOpacity
             }
 

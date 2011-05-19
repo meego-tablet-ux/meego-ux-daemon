@@ -58,6 +58,8 @@ class Application : public QApplication
     Q_PROPERTY(int preferredPortraitOrientation READ preferredPortraitOrientation);
     Q_PROPERTY(bool haveAppStore READ haveAppStore NOTIFY haveAppStoreChanged);
     Q_PROPERTY(int foregroundWindow READ foregroundWindow NOTIFY foregroundWindowChanged);
+    Q_PROPERTY(bool screenOn READ screenOn NOTIFY screenOnChanged)
+
 public:
     explicit Application(int & argc, char ** argv, bool opengl);
     ~Application();
@@ -105,6 +107,11 @@ public:
         return m_foregroundWindow;
     }
 
+    bool screenOn() {
+        return m_screenOn;
+    }
+    void setScreenOn(bool value);
+
 public slots:
     void showTaskSwitcher();
     void showPanels();
@@ -149,6 +156,7 @@ signals:
     void stopOrientationSensor();
     void startOrientationSensor();
     void alarm(int alarmId, QString title, QString message, bool snooze, QString soundUri);
+    void screenOnChanged();
 
 private slots:
     void cleanupTaskSwitcher();
@@ -271,6 +279,8 @@ private:
     VolumeControl volumeControl;
 
     AlarmInterface *m_alarmService;
+
+    bool m_screenOn;
 };
 
 #endif // APPLICATION_H
