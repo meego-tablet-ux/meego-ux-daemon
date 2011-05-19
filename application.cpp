@@ -1339,13 +1339,6 @@ void Application::launchDesktopByName(QString name)
     {
         if (d->filename() == name)
         {
-            foreach (Window win, openWindows)
-            {
-                if ((int)win != d->wid())
-                {
-                    minimizeWindow(win);
-                }
-            }
             if (d->wid() > 0)
             {
                 raiseWindow(d->wid());
@@ -1355,14 +1348,6 @@ void Application::launchDesktopByName(QString name)
                 d->launch();
             }
             return;
-        }
-    }
-
-    foreach (Window win, openWindows)
-    {
-        if (gridScreen && (int)win != gridScreen->winId())
-        {
-            minimizeWindow(win);
         }
     }
 
