@@ -30,11 +30,18 @@ PanelView::PanelView(void) : Dialog(false),
 {
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
+	int fwidth;
+	QObject *i;
 
 	r = new PMonitor();
+
+	/* TODO maybe some error handling in case i == NULL at any step here */
+	i = r->rootObject()->findChild<QDeclarativeItem *>("deviceScreen");
+	i = i->findChild<QDeclarativeItem *>("PC");
+	i = i->findChild<QDeclarativeItem *>("PFLICK");
+	fwidth = i->property("contentWidth").toInt();
 	
-	/* FIXME hardcoded width */
-	r->rootObject()->setProperty("width", 4200);
+	r->rootObject()->setProperty("width", fwidth);
 	r->rootObject()->setProperty("height", height);
 
 	QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)), 
@@ -42,8 +49,7 @@ PanelView::PanelView(void) : Dialog(false),
 
 	setSceneRect(0, 0, width, height);
 
-	/* FIXME hardcoded width */
-	cache = new QPixmap(4200, height);
+	cache = new QPixmap(fwidth, height);
 
 	p = new QPainter(cache);
 	p->setRenderHint(QPainter::Antialiasing, false);
@@ -56,11 +62,11 @@ PanelView::PanelView(void) : Dialog(false),
 
 	/* FIXME hardcoded path to dummy QML */
 	setSource(QUrl::fromLocalFile("/home/meego/panelview/real.qml"));
-/*
-	QDeclarativeItem *i = qobject_cast<QDeclarativeItem *>(rootObject());
-	i->setProperty("width", r->width());
-	i->setProperty("height", r->height());
-*/
+	
+	rootObject()->setProperty("contentWidth", fwidth);
+	rootObject()->setProperty("contentHeight", height);
+	rootObject()->setProperty("width", width);
+	rootObject()->setProperty("height", height);
 	
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 	setOptimizationFlags(
