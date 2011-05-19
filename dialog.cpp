@@ -61,6 +61,8 @@ Dialog::Dialog(bool translucent, bool forceOnTop, bool opengl, QWidget * parent)
         }
     }
 
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    setAttribute(Qt::WA_NoSystemBackground);
     if (opengl)
     {
         QGLFormat format = QGLFormat::defaultFormat();
@@ -70,12 +72,17 @@ Dialog::Dialog(bool translucent, bool forceOnTop, bool opengl, QWidget * parent)
         setViewport(new QGLWidget(format));
     }
 
+    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+    viewport()->setAttribute(Qt::WA_NoSystemBackground);
+
     if (translucent)
         viewport()->setAttribute(Qt::WA_TranslucentBackground);
 
     setWindowFlags(Qt::FramelessWindowHint);
     if (translucent)
         setAttribute(Qt::WA_TranslucentBackground);
+
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
 }
 
 Dialog::~Dialog()
