@@ -671,8 +671,6 @@ void Application::goHome()
 
 void Application::lock()
 {
-    setScreenOn(false);
-
     QDBusInterface iface("com.acer.AcerLockScreen",
                          "/com/acer/AcerLockScreen/request",
                          "com.acer.AcerLockScreen.request",
@@ -888,6 +886,7 @@ bool Application::x11EventFilter(XEvent *event)
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *) event;
         if (sevent->state == ScreenSaverOn)
         {
+            setScreenOn(false);
             send_ux_msg(UX_CMD_SCREEN_ON, 0);
             lock();
             return true;
