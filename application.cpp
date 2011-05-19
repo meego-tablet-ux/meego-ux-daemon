@@ -894,7 +894,7 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (sevent->state == ScreenSaverOff)
         {
-            screenOnChanged();
+            setScreenOn(true);
             send_ux_msg(UX_CMD_SCREEN_OFF, 0);
         }
     }
