@@ -14,7 +14,6 @@ import MeeGo.Panels 0.1
 
 Window {
     id: window
-    fullContent: true
     fullScreen: true
 
     lockOrientationIn: {

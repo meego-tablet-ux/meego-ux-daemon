@@ -12,7 +12,6 @@ import MeeGo.Components 0.1
 
 Window {
     id: window
-    fullContent: true
     fullScreen: true
     lockOrientationIn: {
         if (qApp.foregroundOrientation == 1)
