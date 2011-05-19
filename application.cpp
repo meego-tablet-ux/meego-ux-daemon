@@ -541,6 +541,7 @@ void Application::showTaskSwitcher()
     }
 
     taskSwitcher = new Dialog(true, false, useOpenGL);
+    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
     taskSwitcher->setSkipAnimation();
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
@@ -558,6 +559,7 @@ void Application::showAlarmDialog(int alarmId, QString title, QString message, b
     else
     {
         alarmDialog = new Dialog(true, false, useOpenGL);
+        alarmDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
         alarmDialog->setSkipAnimation();
         connect(alarmDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupAlarmDialog()));
         alarmDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/alarm.qml"));
@@ -1541,6 +1543,7 @@ void Application::openStatusIndicatorMenu()
     }
 
     statusIndicatorMenu = new Dialog(true, false, useOpenGL);
+    statusIndicatorMenu->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
     connect(statusIndicatorMenu->engine(), SIGNAL(quit()), this, SLOT(cleanupStatusIndicatorMenu()));
     statusIndicatorMenu->rootContext()->setContextProperty("notificationModel", m_notificationModel);
     statusIndicatorMenu->setSkipAnimation();
