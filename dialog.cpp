@@ -107,14 +107,12 @@ void Dialog::showTaskSwitcher()
 
 bool Dialog::event (QEvent * event)
 {
-    if (event->type() == QEvent::Show)
+    if (event->type() == QEvent::Show && m_forceOnTop)
     {
-        if (m_forceOnTop)
-        {
-            Atom stackingAtom = XInternAtom(QX11Info::display(), "_MEEGO_STACKING_LAYER", False);
-            long layer = 2;
-            XChangeProperty(QX11Info::display(), internalWinId(), stackingAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&layer, 1);
-        }
+        Atom stackingAtom = XInternAtom(QX11Info::display(), "_MEEGO_STACKING_LAYER", False);
+        long layer = 2;
+        XChangeProperty(QX11Info::display(), internalWinId(), stackingAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&layer, 1);
+
         excludeFromTaskBar();
     }
     return QDeclarativeView::event(event);
