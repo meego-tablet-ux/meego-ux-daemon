@@ -79,7 +79,7 @@ Window {
                 if (appCount >= theme_taskSwitcherNumCols * theme_taskSwitcherNumRows)
                     return theme_taskSwitcherNumRows;
 
-                return Math.ceil(appCount / theme_taskSwitcherNumRows);
+                return Math.ceil(appCount / theme_taskSwitcherNumCols);
             }
 
 
