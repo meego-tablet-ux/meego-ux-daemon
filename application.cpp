@@ -697,6 +697,7 @@ void Application::lock()
             model->setFilterKey("/meego/ux/settings/lockscreen/filters");
             lockScreen->rootContext()->setContextProperty("notificationModel", model);
 
+            lockScreen->setSkipAnimation();
             lockScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/lockscreen.qml"));
             lockScreen->show();
         }
