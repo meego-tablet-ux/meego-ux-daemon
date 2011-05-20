@@ -74,7 +74,8 @@ Dialog::Dialog(bool translucent, bool forceOnTop, bool opengl, QWidget * parent)
 
     viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
     viewport()->setAttribute(Qt::WA_NoSystemBackground);
-
+    viewport()->setAutoFillBackground(false);
+    
     if (translucent)
         viewport()->setAttribute(Qt::WA_TranslucentBackground);
 
