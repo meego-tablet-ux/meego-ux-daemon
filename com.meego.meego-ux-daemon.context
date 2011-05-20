@@ -4,4 +4,5 @@
           service="com.meego.meego-ux-daemon">
     <key name="Notifications.Last" />
     <key name="Notifications.Unread" />
+    <key name="Session.State" />
 </provider>

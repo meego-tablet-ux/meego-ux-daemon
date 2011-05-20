@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     context_provider_init (DBUS_BUS_SESSION, "com.meego.meego-ux-daemon");
     context_provider_install_key("Notifications.Last", true, NULL, NULL);
     context_provider_install_key("Notifications.Unread", false, NULL, NULL);
+    context_provider_install_key("Session.State",false, NULL ,NULL);
 
     // As long as we do not support persisting notifications across boot
     // then this is a safe assumption

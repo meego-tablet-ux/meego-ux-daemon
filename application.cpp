@@ -890,12 +890,14 @@ bool Application::x11EventFilter(XEvent *event)
             setScreenOn(false);
             send_ux_msg(UX_CMD_SCREEN_ON, 0);
             lock();
+            context_provider_set_string("Session.State", "normal");
             return true;
         }
         else if (sevent->state == ScreenSaverOff)
         {
             setScreenOn(true);
             send_ux_msg(UX_CMD_SCREEN_OFF, 0);
+            context_provider_set_string("Session.State", "blanked");
         }
     }
     return QApplication::x11EventFilter(event);
