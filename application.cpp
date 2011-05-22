@@ -195,8 +195,29 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
     setQuitOnLastWindowClosed(false);
 
+    if (QSensor::sensorsForType("QOrientationSensor").length() > 0)
+    {
+        m_orientationSensorAvailable = true;
+    }
+    else
+    {
+        m_orientationSensorAvailable = false;
+    }
+
+    if (QSensor::sensorsForType("QAmbientLightReading").length() > 0)
+    {
+        m_ambientLightSensorAvailable = true;
+    }
+    else
+    {
+        m_ambientLightSensorAvailable = false;
+    }
+
     connect(&orientationSensor, SIGNAL(readingChanged()), SLOT(updateOrientation()));
-    orientationSensor.start();
+    if (m_orientationSensorAvailable)
+    {
+        orientationSensor.start();
+    }
 
     int (*oldXErrorHandler)(Display*, XErrorEvent*);
 
@@ -1604,6 +1625,9 @@ namespace M {
 
 void Application::updateAmbientLight()
 {
+    if (!m_ambientLightSensorAvailable)
+        return;
+
     QAmbientLightReading *reading = ambientLightSensor.reading();
     switch(reading->lightLevel())
     {
@@ -1662,13 +1686,16 @@ void Application::updateOrientation()
 void Application::automaticBacklightControlChanged()
 {
     m_automaticBacklight = m_automaticBacklightItem->value().toBool();
-    if (m_automaticBacklight)
+    if (m_ambientLightSensorAvailable)
     {
-        ambientLightSensor.start();
-    }
-    else
-    {
-        ambientLightSensor.stop();
+        if (m_automaticBacklight)
+        {
+            ambientLightSensor.start();
+        }
+        else
+        {
+            ambientLightSensor.stop();
+        }
     }
     updateBacklight();
 }
@@ -1731,10 +1758,16 @@ void Application::setScreenOn(bool value)
 
     if (m_screenOn)
     {
-        orientationSensor.start();
+        if (m_orientationSensorAvailable)
+            orientationSensor.start();
+        if (m_ambientLightSensorAvailable)
+            ambientLightSensor.stop();
     }
     else
     {
-        orientationSensor.stop();
+        if (m_orientationSensorAvailable)
+            orientationSensor.stop();
+        if (m_ambientLightSensorAvailable)
+            ambientLightSensor.stop();
     }
 }

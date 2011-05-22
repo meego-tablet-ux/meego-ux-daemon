@@ -281,6 +281,9 @@ private:
     AlarmInterface *m_alarmService;
 
     bool m_screenOn;
+
+    bool m_orientationSensorAvailable;
+    bool m_ambientLightSensorAvailable;
 };
 
 #endif // APPLICATION_H
