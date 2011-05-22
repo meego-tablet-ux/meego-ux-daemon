@@ -32,7 +32,7 @@ Window {
     Component {
         id: notificationDelegateComponent
         NotificationDelegate {
-            width: window.overlayItem.width
+            width: notificationContainer.width
             itemSummary: summary
             itemBody: body
             timestamp: fuzzy.getFuzzy(time)
@@ -206,7 +206,7 @@ Window {
 
                 clip: true
                 interactive: height < contentHeight
-                property int maxHeight: window.overlayItem.height - notificationsStatusBar.height - controls.height - banner.height - grabby.height
+                property int maxHeight: notificationContainer.height - notificationsStatusBar.height - controls.height - banner.height - grabby.height
 
                 Behavior on height {
                     NumberAnimation {
