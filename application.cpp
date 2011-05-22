@@ -1685,7 +1685,7 @@ void Application::updateOrientation()
 
 void Application::automaticBacklightControlChanged()
 {
-    m_automaticBacklight = m_automaticBacklightItem->value().toBool();
+    m_automaticBacklight = m_automaticBacklightItem->value(true).toBool();
     if (m_ambientLightSensorAvailable)
     {
         if (m_automaticBacklight)
