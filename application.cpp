@@ -563,7 +563,7 @@ void Application::showTaskSwitcher()
     }
 
     taskSwitcher = new Dialog(true, false, useOpenGL);
-    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
+    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
     taskSwitcher->setSkipAnimation();
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
