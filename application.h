@@ -125,6 +125,7 @@ public slots:
     void openStatusIndicatorMenu();
     void clearAllNotifications();
     void desktopLaunched(int pid);
+    void activateScreenSaver();
 
     // MNotificationManager Interface
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
@@ -147,7 +148,6 @@ public slots:
 
 signals:
     void windowListUpdated(const QList<WindowInfo> &windowList);
-    void activateLock();
     void orientationChanged();
     void runningAppsChanged();
     void haveAppStoreChanged();

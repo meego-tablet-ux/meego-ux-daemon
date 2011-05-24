@@ -1,0 +1,10 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="com.lockstatus.query">
+    <method name="lockscreen_status">
+      <arg name="status" type="b" direction="out"/>
+    </method>
+    <method name="lockscreen">
+    </method>
+  </interface>
+</node>

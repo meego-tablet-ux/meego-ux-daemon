@@ -24,7 +24,8 @@ SOURCES += main.cpp \
     notificationdatastore.cpp \
     statusindicatormenuadaptor.cpp \
     notificationmodel.cpp \
-    volumecontrol.cpp
+    volumecontrol.cpp \
+    lockscreenadaptor.cpp
 HEADERS += \
     application.h \
     dialog.h \
@@ -36,7 +37,8 @@ HEADERS += \
     statusindicatormenuadaptor.h \
     notificationitem.h \
     notificationmodel.h \
-    volumecontrol.h
+    volumecontrol.h \
+    lockscreenadaptor.h
 LIBS += -lalarmd
 
 OBJECTS_DIR = .obj

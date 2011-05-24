@@ -24,6 +24,7 @@
 #include "application.h"
 #include "notificationsmanageradaptor.h"
 #include "statusindicatormenuadaptor.h"
+#include "lockscreenadaptor.h"
 #include "dialog.h"
 #include "desktop.h"
 #include "notificationdatastore.h"
@@ -437,6 +438,10 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     QDBusConnection::sessionBus().registerService("com.nokia.systemui");
     QDBusConnection::sessionBus().registerObject("/statusindicatormenu", this);
 
+    new LockscreenAdaptor(this);
+    QDBusConnection::sessionBus().registerService("com.lockstatus");
+    QDBusConnection::sessionBus().registerObject("/com.lockstatus/query", this);
+
     grabHomeKey("Super_L");
     grabHomeKey("Super_R");
     grabHomeKey("XF86AudioMedia"); // WeTab's corner key
@@ -690,6 +695,11 @@ void Application::goHome()
     }
 }
 
+void Application::activateScreenSaver()
+{
+    XActivateScreenSaver(QX11Info::display());
+}
+
 void Application::lock()
 {
     QDBusInterface iface("com.acer.AcerLockScreen",
@@ -794,10 +804,7 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (keyEvent->keycode == powerKey)
         {
-            // turn off the display and trigger the lockscreen
-            DPMSForceLevel(QX11Info::display(), DPMSModeOff);
-            if (!lockScreen)
-                lock();
+            XActivateScreenSaver(QX11Info::display());
         }
     }
 
