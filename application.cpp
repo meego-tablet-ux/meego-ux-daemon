@@ -870,7 +870,8 @@ bool Application::x11EventFilter(XEvent *event)
                     m_foregroundWindow = (int)w;
                     emit foregroundWindowChanged();
 
-                    XSelectInput(QX11Info::display(), w, PropertyChangeMask);
+                    XSelectInput(QX11Info::display(), w,
+                                 PropertyChangeMask|KeyPressMask|KeyReleaseMask);
                     setForegroundOrientationForWindow(w);
 
                     updateScreenSaver(w);
