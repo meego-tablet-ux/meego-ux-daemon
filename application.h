@@ -256,7 +256,8 @@ private:
     int m_foregroundWindow;
     int m_foregroundOrientation;
 
-    QString m_homeScreenDirectoryName;
+    QString m_appLauncherPath;
+    QString m_lockscreenPath;
 
     NotificationDataStore *m_notificationDataStore;
     NotificationModel *m_notificationModel;

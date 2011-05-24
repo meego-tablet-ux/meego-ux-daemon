@@ -378,16 +378,28 @@ Application::Application(int & argc, char ** argv, bool opengl) :
         m_showPanelsAsHome = showPanelsItem->value().toBool();
     }
 
-    MGConfItem *homeScreenDirectoryName = new MGConfItem("/meego/ux/HomeScreenDirectoryName", this);
-    if (!homeScreenDirectoryName ||
-        homeScreenDirectoryName->value() == QVariant::Invalid ||
-        !QFile::exists("/usr/share/" + homeScreenDirectoryName->value().toString()))
+    MGConfItem *appLauncherPathItem = new MGConfItem("/meego/ux/AppLauncherPath", this);
+    if (!appLauncherPathItem ||
+        appLauncherPathItem->value() == QVariant::Invalid ||
+        !QFile::exists(appLauncherPathItem->value().toString()))
     {
-        m_homeScreenDirectoryName = QString("meego-ux-appgrid");
+        m_appLauncherPath = QString("/usr/share/meego-ux-appgrid/main.qml");
     }
     else
     {
-        m_homeScreenDirectoryName = homeScreenDirectoryName->value().toString();
+        m_appLauncherPath = appLauncherPathItem->value().toString();
+    }
+
+    MGConfItem *lockScreenPathItem = new MGConfItem("/meego/ux/LockScreenPath", this);
+    if (!lockScreenPathItem ||
+        lockScreenPathItem->value() == QVariant::Invalid ||
+        !QFile::exists(lockScreenPathItem->value().toString()))
+    {
+        m_lockscreenPath = QString("/usr/share/meego-ux-daemon/lockscreen.qml");
+    }
+    else
+    {
+        m_lockscreenPath = lockScreenPathItem->value().toString();
     }
 
     QString theme = MGConfItem("/meego/ux/theme").value().toString();
@@ -473,7 +485,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     if (m_showPanelsAsHome)
     {
         gridScreen = new Dialog(false, false, useOpenGL);
-        gridScreen->setSource(QUrl::fromLocalFile("/usr/share/" + m_homeScreenDirectoryName + "/main.qml"));
+        gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
 
         panelsScreen = new Dialog(false, false, useOpenGL);
         panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
@@ -489,7 +501,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
         gridScreen = new Dialog(false, false, useOpenGL);
         gridScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
-        gridScreen->setSource(QUrl::fromLocalFile("/usr/share/" + m_homeScreenDirectoryName + "/main.qml"));
+        gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
         gridScreen->show();
     }
 
@@ -1267,10 +1279,10 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
 
         if (!found && !info.iconName().isEmpty())
         {
-            QString path = "/usr/share/" + m_homeScreenDirectoryName + "/applications/" + info.iconName() + ".desktop";
+            QString path =  "/usr/share/meego-ux-appgrid/applications/" + info.iconName() + ".desktop";
             if (QFile::exists(path))
             {
-                Desktop *d = new Desktop("/usr/share/" + m_homeScreenDirectoryName + "/applications/" + info.iconName() + ".desktop");
+                Desktop *d = new Desktop(path);
                 d->setPid(info.pid());
                 d->setWid(info.window());
 
@@ -1348,7 +1360,7 @@ void Application::loadTranslators()
                       QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     commonTranslator.load("meegolabs-ux-components_" + QLocale::system().name() + ".qm",
                           QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    homescreenTranslator.load(m_homeScreenDirectoryName + "_" + QLocale::system().name() + ".qm",
+    homescreenTranslator.load("meego-ux-appgrid_" + QLocale::system().name() + ".qm",
                               QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     panelsTranslator.load("meego-ux-panels_" + QLocale::system().name() + ".qm",
                           QLibraryInfo::location(QLibraryInfo::TranslationsPath));
