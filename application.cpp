@@ -574,12 +574,12 @@ QStringList Application::applicationDirectories ()
     QStringList dirs_list;
     MGConfItem *appDirsItem = new MGConfItem("/meego/ux/ApplicationDirectories", this);
     if (!appDirsItem || appDirsItem->value() == QVariant::Invalid){
-	dirs_list=appDirsItem->value().toStringList();
-    }else{
 	dirs_list<<"/usr/share/meego-ux-appgrid/virtual-applications";
 	dirs_list<<"/usr/share/meego-ux-appgrid/applications";
 	dirs_list<<"/usr/share/applications";
 	dirs_list<<"~/.local/share/applications"; 
+    }else{
+	dirs_list=appDirsItem->value().toStringList();
     }
     return dirs_list;
 }
