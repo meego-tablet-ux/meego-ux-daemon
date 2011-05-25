@@ -402,6 +402,13 @@ Application::Application(int & argc, char ** argv, bool opengl) :
         m_lockscreenPath = lockScreenPathItem->value().toString();
     }
 
+    m_applicationDirectoriesItem = new MGConfItem("/meego/ux/ApplicationDirectories", this);
+    if (m_applicationDirectoriesItem)
+    {
+        connect(m_applicationDirectoriesItem, SIGNAL(valueChanged()), this, SLOT(applicationDirectoriesUpdated()));
+    }
+    applicationDirectoriesUpdated();
+
     QString theme = MGConfItem("/meego/ux/theme").value().toString();
     QString themeFile = QString("/usr/share/themes/") + theme + "/theme.ini";
     if(!QFile::exists(themeFile))
@@ -569,20 +576,6 @@ QDeclarativeListProperty<Desktop> Application::runningApps()
     return QDeclarativeListProperty<Desktop>(this, m_runningApps);
 }
 
-QStringList Application::applicationDirectories ()
-{
-    QStringList dirs_list;
-    MGConfItem *appDirsItem = new MGConfItem("/meego/ux/ApplicationDirectories", this);
-    if (!appDirsItem || appDirsItem->value() == QVariant::Invalid){
-	dirs_list<<"/usr/share/meego-ux-appgrid/virtual-applications";
-	dirs_list<<"/usr/share/meego-ux-appgrid/applications";
-	dirs_list<<"/usr/share/applications";
-	dirs_list<<"~/.local/share/applications"; 
-    }else{
-	dirs_list=appDirsItem->value().toStringList();
-    }
-    return dirs_list;
-}
 void Application::showTaskSwitcher()
 {
     if (taskSwitcher)
@@ -1804,4 +1797,24 @@ void Application::setScreenOn(bool value)
         if (m_ambientLightSensorAvailable)
             ambientLightSensor.stop();
     }
+}
+
+void Application::applicationDirectoriesUpdated()
+{
+    m_applicationDirectories.clear();
+    if (!m_applicationDirectoriesItem ||
+         m_applicationDirectoriesItem->value() == QVariant::Invalid)
+    {
+        // Fallback for images that are not setting this config
+        m_applicationDirectories << "/usr/share/meego-ux-appgrid/virtual-applications";
+        m_applicationDirectories << "/usr/share/meego-ux-appgrid/applications";
+        m_applicationDirectories << "~/.local/share/applications";
+        m_applicationDirectories << "/usr/share/applications";
+    }
+    else
+    {
+        m_applicationDirectories = m_applicationDirectoriesItem->value().toStringList();
+    }
+
+    emit applicationDirectoriesChanged();
 }

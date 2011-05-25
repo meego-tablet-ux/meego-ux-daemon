@@ -59,7 +59,7 @@ class Application : public QApplication
     Q_PROPERTY(bool haveAppStore READ haveAppStore NOTIFY haveAppStoreChanged);
     Q_PROPERTY(int foregroundWindow READ foregroundWindow NOTIFY foregroundWindowChanged);
     Q_PROPERTY(bool screenOn READ screenOn NOTIFY screenOnChanged)
-    Q_PROPERTY(QStringList applicationDirectories READ applicationDirectories);
+    Q_PROPERTY(QStringList applicationDirectories READ applicationDirectories NOTIFY applicationDirectoriesChanged);
 
 public:
     explicit Application(int & argc, char ** argv, bool opengl);
@@ -92,7 +92,10 @@ public:
     void setRunningAppsLimit(int limit);
     QDeclarativeListProperty<Desktop> runningApps();
 
-    QStringList applicationDirectories() ;
+    QStringList applicationDirectories() const {
+        return m_applicationDirectories;
+    }
+
     int preferredLandscapeOrientation() {
         return m_preferredLandscapeOrientation;
     }
@@ -159,6 +162,7 @@ signals:
     void startOrientationSensor();
     void alarm(int alarmId, QString title, QString message, bool snooze, QString soundUri);
     void screenOnChanged();
+    void applicationDirectoriesChanged();
 
 private slots:
     void cleanupTaskSwitcher();
@@ -173,6 +177,7 @@ private slots:
     void updateOrientation();
     void updateAmbientLight();
     void alarmHandler(const QDBusMessage &msg);
+    void applicationDirectoriesUpdated();
 
 protected:
     /*! \reimp
@@ -268,6 +273,9 @@ private:
     MGConfItem *m_screenSaverTimeoutItem;
     int m_screenSaverTimeout;
     QList<Window> inhibitList;
+
+    MGConfItem *m_applicationDirectoriesItem;
+    QStringList m_applicationDirectories;
 
     QDBusInterface *m_player;
 
