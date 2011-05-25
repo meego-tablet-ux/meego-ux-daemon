@@ -59,6 +59,7 @@ class Application : public QApplication
     Q_PROPERTY(bool haveAppStore READ haveAppStore NOTIFY haveAppStoreChanged);
     Q_PROPERTY(int foregroundWindow READ foregroundWindow NOTIFY foregroundWindowChanged);
     Q_PROPERTY(bool screenOn READ screenOn NOTIFY screenOnChanged)
+    Q_PROPERTY(QStringList applicationDirectories READ applicationDirectories);
 
 public:
     explicit Application(int & argc, char ** argv, bool opengl);
@@ -91,6 +92,7 @@ public:
     void setRunningAppsLimit(int limit);
     QDeclarativeListProperty<Desktop> runningApps();
 
+    QStringList applicationDirectories() ;
     int preferredLandscapeOrientation() {
         return m_preferredLandscapeOrientation;
     }

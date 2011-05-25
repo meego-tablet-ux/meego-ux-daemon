@@ -569,6 +569,20 @@ QDeclarativeListProperty<Desktop> Application::runningApps()
     return QDeclarativeListProperty<Desktop>(this, m_runningApps);
 }
 
+QStringList Application::applicationDirectories ()
+{
+    QStringList dirs_list;
+    MGConfItem *appDirsItem = new MGConfItem("/meego/ux/ApplicationDirectories", this);
+    if (!appDirsItem || appDirsItem->value() == QVariant::Invalid){
+	dirs_list=appDirsItem->value().toStringList();
+    }else{
+	dirs_list<<"/usr/share/meego-ux-appgrid/virtual-applications";
+	dirs_list<<"/usr/share/meego-ux-appgrid/applications";
+	dirs_list<<"/usr/share/applications";
+	dirs_list<<"~/.local/share/applications"; 
+    }
+    return dirs_list;
+}
 void Application::showTaskSwitcher()
 {
     if (taskSwitcher)
