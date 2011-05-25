@@ -748,7 +748,7 @@ void Application::lock()
             lockScreen->rootContext()->setContextProperty("notificationModel", model);
 
             lockScreen->setSkipAnimation();
-            lockScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/lockscreen.qml"));
+            lockScreen->setSource(QUrl::fromLocalFile(m_lockscreenPath));
             lockScreen->show();
         }
         send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
