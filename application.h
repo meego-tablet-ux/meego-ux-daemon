@@ -152,7 +152,6 @@ public slots:
     void stopSnooze(int id);
 
 signals:
-    void windowListUpdated(const QList<WindowInfo> &windowList);
     void orientationChanged();
     void runningAppsChanged();
     void haveAppStoreChanged();

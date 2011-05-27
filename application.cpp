@@ -519,8 +519,6 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     // Lock the screen
     lock();
 
-    connect(this, SIGNAL(windowListUpdated(QList<WindowInfo>)), this, SLOT(updateApps(QList<WindowInfo>)));
-
     context_provider_init (DBUS_BUS_SESSION, "com.meego.meego-ux-daemon");
     context_provider_install_key(CONTEXT_NOTIFICATIONS_LAST, true, NULL, NULL);
     context_provider_install_key(CONTEXT_NOTIFICATIONS_UNREAD, false, NULL, NULL);
@@ -1196,7 +1194,7 @@ void Application::updateWindowList()
             }
         }
 
-        emit windowListUpdated(windowList);
+        updateApps(windowList);
     }
 }
 
