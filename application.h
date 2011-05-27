@@ -123,6 +123,7 @@ public slots:
     void showGrid();
     void showAppStore();
     void showAlarmDialog(int alarmId, QString title, QString message, bool snooze, QString soundUri);
+    void showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint notificationUserId, uint m_lastNotificationId);
     void goHome();
     void lock();
     void launchDesktopByName(QString name);
@@ -160,6 +161,7 @@ signals:
     void stopOrientationSensor();
     void startOrientationSensor();
     void alarm(int alarmId, QString title, QString message, bool snooze, QString soundUri);
+    void hardNotification(QString subject, QString body, QString remoteAction, uint userId, uint notificationId);
     void screenOnChanged();
     void applicationDirectoriesChanged();
 
@@ -167,6 +169,7 @@ private slots:
     void cleanupTaskSwitcher();
     void cleanupLockscreen();
     void cleanupAlarmDialog();
+    void cleanupHardNotificationDialog();
     void updateApps(const QList<WindowInfo> &windowList);
     void toggleSwitcher();
     void cleanupStatusIndicatorMenu();
@@ -207,6 +210,7 @@ private:
     Dialog *panelsScreen;
     Dialog *statusIndicatorMenu;
     Dialog *alarmDialog;
+    Dialog *hardNotificationDialog;
     Atom windowTypeAtom;
     Atom windowTypeNormalAtom;
     Atom windowTypeDesktopAtom;

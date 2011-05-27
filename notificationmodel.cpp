@@ -95,6 +95,11 @@ void NotificationModel::trigger(uint userId, uint notificationId)
     m_data->deleteNotification(userId, notificationId);
 }
 
+void NotificationModel::deleteNotification(uint userId, uint notificationId)
+{ 
+    m_data->deleteNotification(userId, notificationId);
+}
+
 void NotificationModel::refreshViewableList ()
 {
     QList<NotificationItem *> filteredList;

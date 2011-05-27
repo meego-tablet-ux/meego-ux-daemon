@@ -182,6 +182,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
     alarmDialog(NULL),
+    hardNotificationDialog(NULL),
     m_runningAppsLimit(16),
     m_homeActive(false),
     m_homePressTime(0),
@@ -619,6 +620,29 @@ void Application::showAlarmDialog(int alarmId, QString title, QString message, b
     emit alarm(alarmId, title, message, snooze, soundUri);
 }
 
+void Application::showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint userId, uint notificationId)
+{  
+    if (hardNotificationDialog)
+    {	
+        hardNotificationDialog->activateWindow();	
+        hardNotificationDialog->raise();	
+        hardNotificationDialog->show();	
+    }
+    else
+    {	
+        hardNotificationDialog = new Dialog(true, true, useOpenGL);
+        hardNotificationDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
+        NotificationModel *model = new NotificationModel(hardNotificationDialog);
+        hardNotificationDialog->rootContext()->setContextProperty("notificationModel", model);
+        hardNotificationDialog->setSkipAnimation();
+        connect(hardNotificationDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupHardNotificationDialog()));
+	hardNotificationDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/HardNotification.qml"));
+        hardNotificationDialog->show();
+    }
+
+    emit hardNotification(subject, body, remoteAction, userId, notificationId);
+}
+
 void Application::showPanels()
 {
     if (m_showPanelsAsHome)
@@ -696,6 +720,12 @@ void Application::cleanupAlarmDialog()
     alarmDialog = NULL;
 }
 
+void Application::cleanupHardNotificationDialog()
+{   
+    hardNotificationDialog->deleteLater();    
+    hardNotificationDialog = NULL;
+}
+
 void Application::goHome()
 {
     if (taskSwitcher)
@@ -711,10 +741,12 @@ void Application::goHome()
         cleanupAlarmDialog();
     }
 
-    // Minimize all windows
-    foreach (Window win, openWindows)
+    if (!hardNotificationDialog || !hardNotificationDialog->isVisible())
     {
-        minimizeWindow(win);
+        foreach (Window win, openWindows)
+        {
+            minimizeWindow(win);
+        }
     }
 }
 
@@ -1490,20 +1522,27 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
 
 uint Application::addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
-    void *map = context_provider_map_new();
-    context_provider_map_set_string(map, "notificationType", eventType.toAscii());
-    context_provider_map_set_string(map, "notificationSummary", summary.toAscii());
-    context_provider_map_set_string(map, "notificationBody", body.toAscii());
-    context_provider_map_set_string(map, "notificationAction", action.toAscii());
-    context_provider_map_set_string(map, "notificationImage", imageURI.toAscii());
-
-
-    context_provider_set_map(CONTEXT_NOTIFICATIONS_LAST, map, 0);
-    context_provider_map_free(map);
-
-    context_provider_set_boolean(CONTEXT_NOTIFICATIONS_UNREAD, true);
-
     m_lastNotificationId = m_notificationDataStore->storeNotification(notificationUserId, groupId, eventType, summary, body, action, imageURI, count, identifier);
+
+    if (eventType != MNotification::PhoneIncomingCall && eventType != MNotification::ImIncomingVideoChat)
+    {
+        void *map = context_provider_map_new();
+        context_provider_map_set_string(map, "notificationType", eventType.toAscii());
+        context_provider_map_set_string(map, "notificationSummary", summary.toAscii());
+        context_provider_map_set_string(map, "notificationBody", body.toAscii());
+        context_provider_map_set_string(map, "notificationAction", action.toAscii());
+        context_provider_map_set_string(map, "notificationImage", imageURI.toAscii());
+
+        context_provider_set_map(CONTEXT_NOTIFICATIONS_LAST, map, 0);
+        context_provider_map_free(map);
+
+        context_provider_set_boolean(CONTEXT_NOTIFICATIONS_UNREAD, true);
+    }
+
+    else
+    {
+        showHardNotificationDialog(summary, body, action, notificationUserId, m_lastNotificationId);
+    }
 
     return m_lastNotificationId;
 }

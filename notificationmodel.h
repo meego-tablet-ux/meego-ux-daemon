@@ -47,6 +47,7 @@ public slots:
     void removeFilter(QString filter);
     void clearFilters();
     void applyFilters();
+    void deleteNotification(uint userId, uint notificationId);
 
 private slots:
     void onDataStoreUpdated();
