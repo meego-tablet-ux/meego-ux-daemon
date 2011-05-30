@@ -30,6 +30,7 @@
 #include "notificationdatastore.h"
 #include "notificationmodel.h"
 
+#include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -93,11 +94,18 @@ static void send_ux_msg(ux_info_cmd cmd, unsigned int data)
 
     sockfd = socket(AF_LOCAL, SOCK_STREAM, 0);
 
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sun_family = AF_LOCAL;
     strcpy(servaddr.sun_path, APPS_SOCK_PATH);
 
     connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+
+    // This is a fire-n-forget message, so we don't care if there is
+    // an error recieving, and we set a flag to prevent blocking incase
+    // trm is borked and blocks the socket
     write(sockfd, msg, sizeof(struct ux_msg));
 
     free(msg);
