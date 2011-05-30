@@ -96,7 +96,7 @@ void NotificationModel::trigger(uint userId, uint notificationId)
 }
 
 void NotificationModel::deleteNotification(uint userId, uint notificationId)
-{ 
+{
     m_data->deleteNotification(userId, notificationId);
 }
 

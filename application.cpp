@@ -621,22 +621,22 @@ void Application::showAlarmDialog(int alarmId, QString title, QString message, b
 }
 
 void Application::showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint userId, uint notificationId)
-{  
+{
     if (hardNotificationDialog)
-    {	
-        hardNotificationDialog->activateWindow();	
-        hardNotificationDialog->raise();	
-        hardNotificationDialog->show();	
+    {
+        hardNotificationDialog->activateWindow();
+        hardNotificationDialog->raise();
+        hardNotificationDialog->show();
     }
     else
-    {	
+    {
         hardNotificationDialog = new Dialog(true, true, useOpenGL);
         hardNotificationDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
         NotificationModel *model = new NotificationModel(hardNotificationDialog);
         hardNotificationDialog->rootContext()->setContextProperty("notificationModel", model);
         hardNotificationDialog->setSkipAnimation();
         connect(hardNotificationDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupHardNotificationDialog()));
-	hardNotificationDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/HardNotification.qml"));
+        hardNotificationDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/HardNotification.qml"));
         hardNotificationDialog->show();
     }
 
@@ -721,8 +721,8 @@ void Application::cleanupAlarmDialog()
 }
 
 void Application::cleanupHardNotificationDialog()
-{   
-    hardNotificationDialog->deleteLater();    
+{
+    hardNotificationDialog->deleteLater();
     hardNotificationDialog = NULL;
 }
 
