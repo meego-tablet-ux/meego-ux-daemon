@@ -636,7 +636,7 @@ void Application::showHardNotificationDialog(QString subject, QString body, QStr
         hardNotificationDialog->rootContext()->setContextProperty("notificationModel", model);
         hardNotificationDialog->setSkipAnimation();
         connect(hardNotificationDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupHardNotificationDialog()));
-        hardNotificationDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/HardNotification.qml"));
+        hardNotificationDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/hardnotification.qml"));
         hardNotificationDialog->show();
     }
 

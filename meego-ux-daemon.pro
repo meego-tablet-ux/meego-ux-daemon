@@ -66,7 +66,7 @@ OTHER_FILES += \
     statusindicatormenu.qml \
     NotificationDelegate.qml \
     alarm.qml \
-    HardNotification.qml
+    hardnotification.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-daemon
