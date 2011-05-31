@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Intel Corporation.
+* Copyright 2011 Intel Corporation.
  *
  * This program is licensed under the terms and conditions of the
  * Apache License, version 2.0.  The full text of the Apache License is at 
@@ -7,7 +7,6 @@
  */
 
 import Qt 4.7
-import QtMultimediaKit 1.1
 import MeeGo.Components 0.1
 
 Window {
@@ -16,72 +15,49 @@ Window {
     orientationLock: qApp.foregroundOrientation
     blockOrientationWhenInactive: false
 
-    overlayItem: Item {
-        id: page
-        anchors.fill: parent
+    overlayItem:  ModalDialog {
+        id: dialog
+        title: qsTr("")
+        cancelButtonText: qsTr("Decline")
+        acceptButtonText: qsTr("Accept")
+        showCancelButton: true
+        showAcceptButton: true
 
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -page.width
-            color: theme_dialogFogColor
-            opacity:  theme_dialogFogOpacity
+        property string body: ""
+        property string remoteAction: ""
+        property string uId: ""
+        property string notificationId: ""
+
+        Connections {
+            target: qApp
+            onHardNotification: {
+
+                dialog.title = subject;
+                dialog.body = body;
+                dialog.remoteAction = remoteAction;
+                dialog.uId = userId;
+                dialog.notificationId = notificationId;
+                dialog.show();
+
+            }
         }
 
-        ModalDialog {
-            id: dialog
-            title: qsTr("Alarm")
-            cancelButtonText: qsTr("Snooze")
+        content: Text {
+            anchors.centerIn: parent
+            width: parent.width - 20
+            wrapMode: Text.Wrap
+            text: dialog.body
+        }
 
-            property int alarmId: 0
-            property string message: ""
-            property bool showSnoozeButton: false
-            property string uri: ""
+        onAccepted: {
 
-            Connections {
-                target: qApp
-                onAlarm: {
-                    dialog.alarmId = alarmId;
-                    dialog.title = title;
-                    dialog.message = message;
-                    dialog.showCancelButton = snooze;
-                    dialog.uri = soundUri;
-                    dialog.show();
-                    audio.play();
-                }
-            }
+            notificationModel.trigger(dialog.uId, dialog.notificationId);
+            Qt.quit();
+        }
+        onRejected: {
 
-            Audio {
-                id: audio
-                autoLoad: true
-                source: dialog.uri
-            }
-
-            content: Text {
-                text: dialog.message
-            }
-
-            onAccepted: {
-                if (dialog.uri != "")
-                {
-                    // unload the alarm sound
-                }
-                if (dialog.showCancelButton)
-                {
-                    qApp.stopSnooze(dialog.alarmId);
-                }
-                audio.stop();
-                dialog.hide();
-                Qt.quit();
-            }
-            onRejected: {
-                if (dialog.uri != "")
-                {
-                    // unload the alarm sound
-                }
-                audio.stop();
-                dialog.hide();
-                Qt.quit();
-            }
+            notificationModel.deleteNotification(dialog.uId, dialog.notificationId);
+            Qt.quit();
         }
     }
 }
