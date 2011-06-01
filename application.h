@@ -45,6 +45,7 @@ class QSettings;
 class NotificationDataStore;
 class NotificationModel;
 class DisplayInfo;
+class LockscreenAdaptor;
 
 class Application : public QApplication
 {
@@ -298,6 +299,8 @@ private:
 
     bool m_orientationSensorAvailable;
     bool m_ambientLightSensorAvailable;
+
+    LockscreenAdaptor *m_lockScreenAdaptor;
 };
 
 #endif // APPLICATION_H

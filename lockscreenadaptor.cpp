@@ -47,3 +47,7 @@ bool LockscreenAdaptor::lockscreen_status()
     return !status;
 }
 
+void LockscreenAdaptor::home()
+{
+    emit home_activated();
+}

@@ -467,7 +467,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     QDBusConnection::sessionBus().registerService("com.nokia.systemui");
     QDBusConnection::sessionBus().registerObject("/statusindicatormenu", this);
 
-    new LockscreenAdaptor(this);
+    m_lockScreenAdaptor = new LockscreenAdaptor(this);
     QDBusConnection::sessionBus().registerService("com.lockstatus");
     QDBusConnection::sessionBus().registerObject("/com.lockstatus/query", this);
 
@@ -757,6 +757,8 @@ void Application::goHome()
             minimizeWindow(win);
         }
     }
+
+    m_lockScreenAdaptor->home();
 }
 
 void Application::activateScreenSaver()
