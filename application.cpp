@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QInputContext>
 #include <QInputContextFactory>
+#include <QtCore/qmath.h>
 #include <MGConfItem>
 #include <context_provider.h>
 #include <libcgroup.h>
@@ -852,13 +853,17 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (keyEvent->keycode == volumeUpKey)
         {
-            volumeControl.setVolume(qMin(volumeControl.volume() + 10, 100));
-            // TODO: splash a volume indication UI
+            // Lower the volume in 16 levels
+            int v = qMin(volumeControl.volume() + qCeil(100.0/16.0), 100);
+            //qDebug() << "Increasing volume from " << volumeControl.volume() << " to " << v;
+            volumeControl.setVolume(v);
         }
         else if (keyEvent->keycode == volumeDownKey)
         {
-            volumeControl.setVolume(qMax(volumeControl.volume() - 10, 0));
-            // TODO: splash a volume indication UI
+            // Raise the volume in 16 levels
+            int v = qMax(volumeControl.volume() - qFloor(100.0/16.0), 0);
+            //qDebug() << "Decreasing volume from " << volumeControl.volume() << " to " << v;
+            volumeControl.setVolume(v);
         }
         else if (keyEvent->keycode == volumeMuteKey)
         {
