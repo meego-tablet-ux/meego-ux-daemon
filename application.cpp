@@ -1544,7 +1544,7 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
         void *map = context_provider_map_new();
         context_provider_map_set_string(map, "notificationType", eventType.toAscii());
         context_provider_map_set_string(map, "notificationSummary", summary.toAscii());
-        context_provider_map_set_string(map, "notificationBody", body.toAscii());
+        context_provider_map_set_string(map, "notificationBody", body.toUtf8());
         context_provider_map_set_string(map, "notificationAction", action.toAscii());
         context_provider_map_set_string(map, "notificationImage", imageURI.toAscii());
 
