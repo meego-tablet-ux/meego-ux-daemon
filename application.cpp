@@ -768,38 +768,26 @@ void Application::activateScreenSaver()
 
 void Application::lock()
 {
-    QDBusInterface iface("com.acer.AcerLockScreen",
-                         "/com/acer/AcerLockScreen/request",
-                         "com.acer.AcerLockScreen.request",
-                         QDBusConnection::systemBus());
-    if(iface.isValid())
+    if (lockScreen)
     {
-        // TODO: We need a way of letting trm know that a third
-        //       party lockscreen is now in the foreground
-        iface.call("lockscreen_open", (unsigned)0, false, false);
+        lockScreen->activateWindow();
+        lockScreen->raise();
     }
     else
     {
-        if (lockScreen)
-        {
-            lockScreen->activateWindow();
-            lockScreen->raise();
-        }
-        else
-        {
-            lockScreen = new Dialog(true, true, useOpenGL);
-            connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
+        lockScreen = new Dialog(true, true, useOpenGL);
+        connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
 
-            NotificationModel *model = new NotificationModel(lockScreen);
-            model->setFilterKey("/meego/ux/settings/lockscreen/filters");
-            lockScreen->rootContext()->setContextProperty("notificationModel", model);
+        NotificationModel *model = new NotificationModel(lockScreen);
+        model->setFilterKey("/meego/ux/settings/lockscreen/filters");
+        lockScreen->rootContext()->setContextProperty("notificationModel", model);
 
-            lockScreen->setSkipAnimation();
-            lockScreen->setSource(QUrl::fromLocalFile(m_lockscreenPath));
-            lockScreen->show();
-        }
-        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+        lockScreen->setSkipAnimation();
+        lockScreen->setSource(QUrl::fromLocalFile(m_lockscreenPath));
+        lockScreen->show();
     }
+
+    send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
 }
 
 bool Application::x11EventFilter(XEvent *event)
