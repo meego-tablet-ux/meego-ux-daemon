@@ -976,7 +976,6 @@ bool Application::x11EventFilter(XEvent *event)
         {
             setScreenOn(false);
             send_ux_msg(UX_CMD_SCREEN_ON, 0);
-            lock();
             context_provider_set_string("Session.State", "normal");
             return true;
         }
@@ -1835,13 +1834,32 @@ void Application::setScreenOn(bool value)
             orientationSensor.start();
         if (m_ambientLightSensorAvailable)
             ambientLightSensor.stop();
+
+        // Re-enable updates
+        if (lockScreen)
+        {
+            lockScreen->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+        }
     }
     else
     {
+        // Open the lockscreen so that it's ready when the screen comes back on,
+        // and to ensure all apps take measures to save power because they are
+        // no longer in the foreground
+        lock();
+
         if (m_orientationSensorAvailable)
             orientationSensor.stop();
         if (m_ambientLightSensorAvailable)
             ambientLightSensor.stop();
+
+        // The lookscreen window is still visible as far as Qt knows, so
+        // manually disable updates to prevent issues with painting while the
+        // screen is off
+        if (lockScreen)
+        {
+            lockScreen->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
+        }
     }
 }
 
