@@ -63,7 +63,7 @@ class Application : public QApplication
     Q_PROPERTY(QStringList applicationDirectories READ applicationDirectories NOTIFY applicationDirectoriesChanged);
 
 public:
-    explicit Application(int & argc, char ** argv, bool opengl);
+    explicit Application(int & argc, char ** argv);
     ~Application();
 
     int getOrientation() {

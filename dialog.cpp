@@ -19,6 +19,7 @@
 #include <QGLFormat>
 #include <QGLWidget>
 #include <QSettings>
+#include <QTimer>
 #include <MGConfItem>
 #include <QX11Info>
 #include <X11/Xlib.h>
@@ -26,9 +27,11 @@
 #include <unistd.h>
 #include <context_provider.h>
 
-Dialog::Dialog(bool translucent, bool forceOnTop, bool opengl, QWidget * parent) :
+Dialog::Dialog(bool translucent, bool forceOnTop, QWidget * parent) :
     QDeclarativeView(parent),
-    m_forceOnTop(forceOnTop)
+    m_forceOnTop(forceOnTop),
+    m_translucent(translucent),
+    m_usingGl(false)
 {
     Application *app = static_cast<Application *>(qApp);
 
@@ -63,31 +66,11 @@ Dialog::Dialog(bool translucent, bool forceOnTop, bool opengl, QWidget * parent)
 
     setAttribute(Qt::WA_OpaquePaintEvent);
     setAttribute(Qt::WA_NoSystemBackground);
-    if (opengl)
-    {
-        QGLFormat format = QGLFormat::defaultFormat();
-        format.setSampleBuffers(false);
-        format.setSamples(0);
-        format.setAlpha(translucent);
-        setViewport(new QGLWidget(format));
-    }
-
-    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
-    viewport()->setAttribute(Qt::WA_NoSystemBackground);
-    if (translucent)
-    {
-        viewport()->setAttribute(Qt::WA_TranslucentBackground);
-    }
-    else
-    {
-        viewport()->setAutoFillBackground(false);
-    }
-
     setWindowFlags(Qt::FramelessWindowHint);
-    if (translucent)
+    if (m_translucent)
         setAttribute(Qt::WA_TranslucentBackground);
 
-    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    setGLRendering();
 }
 
 Dialog::~Dialog()
@@ -177,4 +160,54 @@ void Dialog::setActualOrientation(int orientation)
 void Dialog::closeEvent(QCloseEvent *)
 {
     emit requestClose();
+}
+
+
+void Dialog::setGLRendering()
+{
+    QGLFormat format = QGLFormat::defaultFormat();
+    format.setSampleBuffers(false);
+    if (m_translucent)
+    {
+        format.setAlpha(true);
+    }
+    setViewport(new QGLWidget(format));
+
+    // each time we create a new viewport widget, we must redo our optimisations
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+    viewport()->setAttribute(Qt::WA_NoSystemBackground);
+    if (m_translucent)
+    {
+        viewport()->setAttribute(Qt::WA_TranslucentBackground);
+    }
+}
+
+void Dialog::switchToSoftwareRendering()
+{
+    if (!m_usingGl)
+        return;
+    m_usingGl = false;
+
+    setViewport(0);
+
+    // each time we create a new viewport widget, we must redo our optimisations
+    setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+    viewport()->setAttribute(Qt::WA_NoSystemBackground);
+    if (m_translucent)
+    {
+        viewport()->setAttribute(Qt::WA_TranslucentBackground);
+    }
+}
+
+void Dialog::switchToGLRendering()
+{
+    if (m_usingGl)
+        return;
+
+    m_usingGl = true;
+
+    //go once around event loop to avoid crash in egl
+    QTimer::singleShot(0, this, SLOT(setGLRendering()));
 }

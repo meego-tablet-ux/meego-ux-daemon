@@ -21,7 +21,7 @@ class Dialog : public QDeclarativeView
     Q_PROPERTY(int actualOrientation READ actualOrientation WRITE setActualOrientation)
 
 public:
-    explicit Dialog(bool translucent, bool forceOnTop = false, bool opengl = false, QWidget * parent = 0);
+    explicit Dialog(bool translucent, bool forceOnTop = false, QWidget * parent = 0);
     ~Dialog();
 
     int winId() const {
@@ -44,6 +44,11 @@ public slots:
     void triggerSystemUIMenu();
     void goHome();
     void showTaskSwitcher();
+    void switchToGLRendering();
+    void switchToSoftwareRendering();
+
+private slots:
+    void setGLRendering();
 
 signals:
     void requestTaskSwitcher();
@@ -63,5 +68,7 @@ private:
 
     bool m_forceOnTop;
     int m_actualOrientation;
+    bool m_translucent;
+    bool m_usingGl;
 };
 #endif // DIALOG_H

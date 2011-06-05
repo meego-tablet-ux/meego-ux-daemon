@@ -182,10 +182,9 @@ void Application::grabHomeKey(const char* key)
     homeKeys.insert(grabKey(key));
 }
 
-Application::Application(int & argc, char ** argv, bool opengl) :
+Application::Application(int & argc, char ** argv) :
     QApplication(argc, argv),
     orientation(1),
-    useOpenGL(opengl),
     taskSwitcher(NULL),
     lockScreen(NULL),
     panelsScreen(NULL),
@@ -509,7 +508,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
     if (m_showPanelsAsHome)
     {
-        panelsScreen = new Dialog(false, false, useOpenGL);
+        panelsScreen = new Dialog(false, false);
         panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
         panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
@@ -518,7 +517,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
     }
     else
     {
-        gridScreen = new Dialog(false, false, useOpenGL);
+        gridScreen = new Dialog(false, false);
         gridScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
         gridScreen->show();
@@ -591,13 +590,14 @@ void Application::showTaskSwitcher()
 {
     if (taskSwitcher)
     {
+        taskSwitcher->switchToGLRendering();
         taskSwitcher->activateWindow();
         taskSwitcher->raise();
         taskSwitcher->show();
         return;
     }
 
-    taskSwitcher = new Dialog(true, false, useOpenGL);
+    taskSwitcher = new Dialog(true, false);
     taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
     taskSwitcher->setSkipAnimation();
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
@@ -615,7 +615,7 @@ void Application::showAlarmDialog(int alarmId, QString title, QString message, b
     }
     else
     {
-        alarmDialog = new Dialog(true, false, useOpenGL);
+        alarmDialog = new Dialog(true, false);
         alarmDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
         alarmDialog->setSkipAnimation();
         connect(alarmDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupAlarmDialog()));
@@ -636,7 +636,7 @@ void Application::showHardNotificationDialog(QString subject, QString body, QStr
     }
     else
     {
-        hardNotificationDialog = new Dialog(true, true, useOpenGL);
+        hardNotificationDialog = new Dialog(true, true);
         hardNotificationDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
         NotificationModel *model = new NotificationModel(hardNotificationDialog);
         hardNotificationDialog->rootContext()->setContextProperty("notificationModel", model);
@@ -665,7 +665,7 @@ void Application::showPanels()
         }
         else
         {
-            panelsScreen = new Dialog(false, false, useOpenGL);
+            panelsScreen = new Dialog(false, false);
             connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
             panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
             panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
@@ -690,7 +690,7 @@ void Application::showGrid()
         }
         else
         {
-            gridScreen = new Dialog(false, false, useOpenGL);
+            gridScreen = new Dialog(false, false);
             connect(gridScreen, SIGNAL(requestClose()), this, SLOT(cleanupGrid()));
             gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
             gridScreen->show();
@@ -729,6 +729,7 @@ void Application::minimizeWindow(int windowId)
 void Application::cleanupTaskSwitcher()
 {
     taskSwitcher->hide();
+    taskSwitcher->switchToSoftwareRendering();
 }
 
 void Application::cleanupLockscreen()
@@ -740,6 +741,7 @@ void Application::cleanupLockscreen()
 void Application::cleanupStatusIndicatorMenu()
 {
     statusIndicatorMenu->hide();
+    statusIndicatorMenu->switchToSoftwareRendering();
 }
 
 void Application::cleanupAlarmDialog()
@@ -794,7 +796,7 @@ void Application::lock()
     }
     else
     {
-        lockScreen = new Dialog(true, true, useOpenGL);
+        lockScreen = new Dialog(true, true);
         connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
 
         NotificationModel *model = new NotificationModel(lockScreen);
@@ -952,6 +954,22 @@ bool Application::x11EventFilter(XEvent *event)
                     setForegroundOrientationForWindow(w);
 
                     updateScreenSaver(w);
+
+                    if (panelsScreen)
+                    {
+                        if (panelsScreen->winId() == w)
+                            panelsScreen->switchToGLRendering();
+                        else
+                            panelsScreen->switchToSoftwareRendering();
+                    }
+
+                    if (gridScreen)
+                    {
+                        if (gridScreen->winId() == w)
+                            gridScreen->switchToGLRendering();
+                        else
+                            gridScreen->switchToSoftwareRendering();
+                    }
 
                     int altWinId = 0;
                     int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
@@ -1647,13 +1665,14 @@ void Application::openStatusIndicatorMenu()
 
     if (statusIndicatorMenu)
     {
+        statusIndicatorMenu->switchToGLRendering();
         statusIndicatorMenu->activateWindow();
         statusIndicatorMenu->raise();
         statusIndicatorMenu->show();
         return;
     }
 
-    statusIndicatorMenu = new Dialog(true, false, useOpenGL);
+    statusIndicatorMenu = new Dialog(true, false);
     statusIndicatorMenu->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
     connect(statusIndicatorMenu->engine(), SIGNAL(quit()), this, SLOT(cleanupStatusIndicatorMenu()));
     statusIndicatorMenu->rootContext()->setContextProperty("notificationModel", m_notificationModel);
