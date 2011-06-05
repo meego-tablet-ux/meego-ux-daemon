@@ -173,3 +173,8 @@ void Dialog::setActualOrientation(int orientation)
                     XA_CARDINAL, 32, PropModeReplace,
                     (unsigned char*)&m_actualOrientation, 1);
 }
+
+void Dialog::closeEvent(QCloseEvent *)
+{
+    emit requestClose();
+}

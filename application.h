@@ -167,6 +167,8 @@ signals:
     void applicationDirectoriesChanged();
 
 private slots:
+    void cleanupPanels();
+    void cleanupGrid();
     void cleanupTaskSwitcher();
     void cleanupLockscreen();
     void cleanupAlarmDialog();

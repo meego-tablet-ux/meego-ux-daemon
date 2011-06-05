@@ -51,9 +51,11 @@ signals:
     void winIdChanged();
     void activateContent();
     void orientationChanged();
+    void requestClose();
 
 protected:
     bool event(QEvent * event);
+    void closeEvent(QCloseEvent *);
 
 private:
     void excludeFromTaskBar();

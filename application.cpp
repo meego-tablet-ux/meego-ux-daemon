@@ -509,25 +509,20 @@ Application::Application(int & argc, char ** argv, bool opengl) :
 
     if (m_showPanelsAsHome)
     {
-        gridScreen = new Dialog(false, false, useOpenGL);
-        gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
-
         panelsScreen = new Dialog(false, false, useOpenGL);
         panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
         panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
         panelsScreen->show();
+        gridScreen = NULL;
     }
     else
     {
-        panelsScreen = new Dialog(false, false, useOpenGL);
-        panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
-        panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
-
         gridScreen = new Dialog(false, false, useOpenGL);
         gridScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
         gridScreen->show();
+        panelsScreen = NULL;
     }
 
     m_homeLongPressTimer = new QTimer(this);
@@ -662,24 +657,46 @@ void Application::showPanels()
     }
     else
     {
-        panelsScreen->show();
-        panelsScreen->activateWindow();
-        panelsScreen->raise();
+        if (panelsScreen)
+        {
+            panelsScreen->show();
+            panelsScreen->activateWindow();
+            panelsScreen->raise();
+        }
+        else
+        {
+            panelsScreen = new Dialog(false, false, useOpenGL);
+            connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
+            panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
+            panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
+            panelsScreen->show();
+        }
     }
 }
 
 void Application::showGrid()
 {
-    if (m_showPanelsAsHome)
-    {
-        gridScreen->show();
-        gridScreen->activateWindow();
-        gridScreen->raise();
-    }
-    else
+    if (!m_showPanelsAsHome)
     {
         goHome();
     }
+    else
+    {
+        if (gridScreen)
+        {
+            gridScreen->show();
+            gridScreen->activateWindow();
+            gridScreen->raise();
+        }
+        else
+        {
+            gridScreen = new Dialog(false, false, useOpenGL);
+            connect(gridScreen, SIGNAL(requestClose()), this, SLOT(cleanupGrid()));
+            gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
+            gridScreen->show();
+        }
+    }
+
 }
 
 void Application::showAppStore()
@@ -936,8 +953,16 @@ bool Application::x11EventFilter(XEvent *event)
 
                     updateScreenSaver(w);
 
+                    int altWinId = 0;
                     int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
-                    int altWinId = m_showPanelsAsHome ? gridScreen->winId() : panelsScreen->winId();
+                    if (m_showPanelsAsHome && gridScreen)
+                    {
+                        altWinId = gridScreen->winId();
+                    }
+                    else if (!m_showPanelsAsHome && panelsScreen)
+                    {
+                        altWinId = panelsScreen->winId();
+                    }
                     m_homeActive = m_foregroundWindow == homeWinId;
 
                     if (m_homeActive)
@@ -1884,4 +1909,16 @@ void Application::applicationDirectoriesUpdated()
     }
 
     emit applicationDirectoriesChanged();
+}
+
+void Application::cleanupPanels()
+{
+    panelsScreen->deleteLater();
+    panelsScreen = NULL;
+}
+
+void Application::cleanupGrid()
+{
+    gridScreen->deleteLater();
+    gridScreen = NULL;
 }
