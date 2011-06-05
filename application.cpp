@@ -215,7 +215,13 @@ Application::Application(int & argc, char ** argv, bool opengl) :
         m_orientationSensorAvailable = false;
     }
 
-    if (QSensor::sensorsForType("QAmbientLightReading").length() > 0)
+    connect(&orientationSensor, SIGNAL(readingChanged()), SLOT(updateOrientation()));
+    if (m_orientationSensorAvailable)
+    {
+        orientationSensor.start();
+    }
+
+    if (QSensor::sensorsForType("QAmbientLightSensor").length() > 0)
     {
         m_ambientLightSensorAvailable = true;
     }
@@ -224,11 +230,7 @@ Application::Application(int & argc, char ** argv, bool opengl) :
         m_ambientLightSensorAvailable = false;
     }
 
-    connect(&orientationSensor, SIGNAL(readingChanged()), SLOT(updateOrientation()));
-    if (m_orientationSensorAvailable)
-    {
-        orientationSensor.start();
-    }
+    connect(&ambientLightSensor, SIGNAL(readingChanged()), SLOT(updateAmbientLight()));
 
     int (*oldXErrorHandler)(Display*, XErrorEvent*);
 
@@ -1704,20 +1706,21 @@ void Application::updateAmbientLight()
     switch(reading->lightLevel())
     {
     case QAmbientLightReading::Dark:
-        setBacklight(20);
+        setBacklight(0);
         break;
     case QAmbientLightReading::Twilight:
-        setBacklight(40);
+        setBacklight(20);
         break;
     case QAmbientLightReading::Light:
-        setBacklight(60);
+        setBacklight(40);
         break;
     case QAmbientLightReading::Bright:
-        setBacklight(80);
+        setBacklight(60);
         break;
     case QAmbientLightReading::Sunny:
-    case QAmbientLightReading::Undefined:
         setBacklight(100);
+
+    case QAmbientLightReading::Undefined:
         break;
     }
 }
@@ -1760,7 +1763,7 @@ void Application::automaticBacklightControlChanged()
     m_automaticBacklight = m_automaticBacklightItem->value(true).toBool();
     if (m_ambientLightSensorAvailable)
     {
-        if (m_automaticBacklight)
+        if (m_automaticBacklight && m_screenOn)
         {
             ambientLightSensor.start();
         }
@@ -1832,8 +1835,8 @@ void Application::setScreenOn(bool value)
     {
         if (m_orientationSensorAvailable)
             orientationSensor.start();
-        if (m_ambientLightSensorAvailable)
-            ambientLightSensor.stop();
+        if (m_ambientLightSensorAvailable && m_automaticBacklight)
+            ambientLightSensor.start();
 
         // Re-enable updates
         if (lockScreen)
@@ -1850,7 +1853,7 @@ void Application::setScreenOn(bool value)
 
         if (m_orientationSensorAvailable)
             orientationSensor.stop();
-        if (m_ambientLightSensorAvailable)
+        if (m_ambientLightSensorAvailable && m_automaticBacklight)
             ambientLightSensor.stop();
 
         // The lookscreen window is still visible as far as Qt knows, so
