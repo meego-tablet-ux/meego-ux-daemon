@@ -303,6 +303,8 @@ private:
     bool m_ambientLightSensorAvailable;
 
     LockscreenAdaptor *m_lockScreenAdaptor;
+
+    bool m_enableRenderingSwap;
 };
 
 #endif // APPLICATION_H

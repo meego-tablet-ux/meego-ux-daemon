@@ -348,6 +348,12 @@ Application::Application(int & argc, char ** argv) :
         }
     }
 
+    // Enable dynamic switching between gl and software rendering on systems
+    // with graphics architectures that see a benifit in memory usage.
+    MGConfItem *enableSwapItem = new MGConfItem("/meego/ux/EnableDynamicRendering");
+    m_enableRenderingSwap = enableSwapItem->value().toBool();
+    delete enableSwapItem;
+
     m_automaticBacklightItem = new MGConfItem("/meego/ux/AutomaticBacklightControl", this);
     connect(m_automaticBacklightItem, SIGNAL(valueChanged()), this, SLOT(automaticBacklightControlChanged()));
 
@@ -590,7 +596,10 @@ void Application::showTaskSwitcher()
 {
     if (taskSwitcher)
     {
-        taskSwitcher->switchToGLRendering();
+        if (m_enableRenderingSwap)
+        {
+            taskSwitcher->switchToGLRendering();
+        }
         taskSwitcher->activateWindow();
         taskSwitcher->raise();
         taskSwitcher->show();
@@ -729,7 +738,10 @@ void Application::minimizeWindow(int windowId)
 void Application::cleanupTaskSwitcher()
 {
     taskSwitcher->hide();
-    taskSwitcher->switchToSoftwareRendering();
+    if (m_enableRenderingSwap)
+    {
+        taskSwitcher->switchToSoftwareRendering();
+    }
 }
 
 void Application::cleanupLockscreen()
@@ -741,7 +753,10 @@ void Application::cleanupLockscreen()
 void Application::cleanupStatusIndicatorMenu()
 {
     statusIndicatorMenu->hide();
-    statusIndicatorMenu->switchToSoftwareRendering();
+    if (m_enableRenderingSwap)
+    {
+        statusIndicatorMenu->switchToSoftwareRendering();
+    }
 }
 
 void Application::cleanupAlarmDialog()
@@ -955,22 +970,24 @@ bool Application::x11EventFilter(XEvent *event)
 
                     updateScreenSaver(w);
 
-                    if (panelsScreen)
+                    if (m_enableRenderingSwap)
                     {
-                        if (panelsScreen->winId() == w)
-                            panelsScreen->switchToGLRendering();
-                        else
-                            panelsScreen->switchToSoftwareRendering();
-                    }
+                        if (panelsScreen)
+                        {
+                            if (panelsScreen->winId() == (int)w)
+                                panelsScreen->switchToGLRendering();
+                            else
+                                panelsScreen->switchToSoftwareRendering();
+                        }
 
-                    if (gridScreen)
-                    {
-                        if (gridScreen->winId() == w)
-                            gridScreen->switchToGLRendering();
-                        else
-                            gridScreen->switchToSoftwareRendering();
+                        if (gridScreen)
+                        {
+                            if (gridScreen->winId() == (int)w)
+                                gridScreen->switchToGLRendering();
+                            else
+                                gridScreen->switchToSoftwareRendering();
+                        }
                     }
-
                     int altWinId = 0;
                     int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
                     if (m_showPanelsAsHome && gridScreen)
@@ -1665,7 +1682,10 @@ void Application::openStatusIndicatorMenu()
 
     if (statusIndicatorMenu)
     {
-        statusIndicatorMenu->switchToGLRendering();
+        if (m_enableRenderingSwap)
+        {
+            statusIndicatorMenu->switchToGLRendering();
+        }
         statusIndicatorMenu->activateWindow();
         statusIndicatorMenu->raise();
         statusIndicatorMenu->show();
