@@ -1508,14 +1508,17 @@ void Application::launchDesktopByName(QString name)
     Desktop *d = new Desktop(name, this);
     connect(d, SIGNAL(launched(int)), this, SLOT(desktopLaunched(int)));
     d->launch();
-    if (m_runningApps.length() < m_runningAppsLimit)
+    if (d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
     {
-        m_runningApps << d;
-        emit runningAppsChanged();
-    }
-    else
-    {
-        m_runningAppsOverflow << d;
+        if (m_runningApps.length() < m_runningAppsLimit)
+        {
+            m_runningApps << d;
+            emit runningAppsChanged();
+        }
+        else
+        {
+            m_runningAppsOverflow << d;
+        }
     }
 }
 
