@@ -1386,31 +1386,34 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
 
         if (!found && !info.iconName().isEmpty())
         {
-            QString path =  "/usr/share/meego-ux-appgrid/applications/" + info.iconName() + ".desktop";
-            if (QFile::exists(path))
+            foreach (QString dir, m_applicationDirectories)
             {
-                Desktop *d = new Desktop(path);
-                if (d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
+                QString path = dir + "/" + info.iconName() + ".desktop";
+                if (QFile::exists(path))
                 {
-                    delete d;
-                }
-                else
-                {
-                    d->setPid(info.pid());
-                    d->setWid(info.window());
-
-                    if (d->wid() == m_foregroundWindow)
+                    Desktop *d = new Desktop(path);
+                    if (d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
                     {
-                        setForegroundOrientationForWindow(info.window());
-                    }
-                    if (m_runningApps.length() < m_runningAppsLimit)
-                    {
-                        m_runningApps << d;
-                        emit runningAppsChanged();
+                        delete d;
                     }
                     else
                     {
-                        m_runningAppsOverflow << d;
+                        d->setPid(info.pid());
+                        d->setWid(info.window());
+
+                        if (d->wid() == m_foregroundWindow)
+                        {
+                            setForegroundOrientationForWindow(info.window());
+                        }
+                        if (m_runningApps.length() < m_runningAppsLimit)
+                        {
+                            m_runningApps << d;
+                            emit runningAppsChanged();
+                        }
+                        else
+                        {
+                            m_runningAppsOverflow << d;
+                        }
                     }
                 }
             }
