@@ -36,7 +36,7 @@ LockscreenAdaptor::~LockscreenAdaptor()
 void LockscreenAdaptor::lockscreen()
 {
     // handle method call com.lockstatus.query.lockscreen
-    QMetaObject::invokeMethod(parent(), "activateLockScreen");
+    QMetaObject::invokeMethod(parent(), "lock");
 }
 
 bool LockscreenAdaptor::lockscreen_status()

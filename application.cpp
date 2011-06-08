@@ -476,7 +476,7 @@ Application::Application(int & argc, char ** argv) :
 
     m_lockScreenAdaptor = new LockscreenAdaptor(this);
     QDBusConnection::sessionBus().registerService("com.lockstatus");
-    QDBusConnection::sessionBus().registerObject("/com.lockstatus/query", this);
+    QDBusConnection::sessionBus().registerObject("/query", this);
 
     MGConfItem *homeKeyName = new MGConfItem("/meego/ux/HomeKey", this);
     if (homeKeyName && homeKeyName->value() != QVariant::Invalid)
