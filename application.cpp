@@ -1390,21 +1390,28 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
             if (QFile::exists(path))
             {
                 Desktop *d = new Desktop(path);
-                d->setPid(info.pid());
-                d->setWid(info.window());
-
-                if (d->wid() == m_foregroundWindow)
+                if (d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
                 {
-                    setForegroundOrientationForWindow(info.window());
-                }
-                if (m_runningApps.length() < m_runningAppsLimit)
-                {
-                    m_runningApps << d;
-                    emit runningAppsChanged();
+                    delete d;
                 }
                 else
                 {
-                    m_runningAppsOverflow << d;
+                    d->setPid(info.pid());
+                    d->setWid(info.window());
+
+                    if (d->wid() == m_foregroundWindow)
+                    {
+                        setForegroundOrientationForWindow(info.window());
+                    }
+                    if (m_runningApps.length() < m_runningAppsLimit)
+                    {
+                        m_runningApps << d;
+                        emit runningAppsChanged();
+                    }
+                    else
+                    {
+                        m_runningAppsOverflow << d;
+                    }
                 }
             }
         }
