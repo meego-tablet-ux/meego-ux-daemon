@@ -29,10 +29,14 @@ PMonitor::PMonitor(void) : Dialog(false)
 PanelView::PanelView(void) : Dialog(false), 
 		QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
 {
+
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
+
+	int j, k, total=1, cur_width, cur_height=0;
+	QList<QObject*> tmp;
+	QDeclarativeItem *dec;
 	QObject *i;
-	int j;
 
 	r = new PMonitor();
 	/* TODO maybe some error handling in case i == NULL at any step here */
@@ -48,8 +52,8 @@ PanelView::PanelView(void) : Dialog(false),
 
 	setSceneRect(0, 0, width, height);
 
-	const int p_width = fwidth /  NUM_R;
-	const int p_height = height / NUM_C; 
+	const int p_width = fwidth /  NUM_C;
+	const int p_height = height / NUM_R; 
 	for(j = 0; j < NUM_P; j++) {
 		cache[j] = new QPixmap(p_width, p_height);
 		p[j] = new QPainter(cache[j]); 
@@ -67,6 +71,29 @@ PanelView::PanelView(void) : Dialog(false),
 	rootObject()->setProperty("contentHeight", height);
 	rootObject()->setProperty("width", width);
 	rootObject()->setProperty("height", height);
+
+	dec =  qobject_cast<QDeclarativeItem*>(rootObject());
+	tmp = dec->children();
+
+
+	for(j = 0; j < NUM_R; j++) {
+		cur_width = 0;
+		for(k = 0; k < NUM_C; k++) {
+			tmp.at(total)->setProperty("width", p_width);
+			tmp.at(total)->setProperty("height", p_height);
+			tmp.at(total)->setProperty("x", cur_width); 
+			tmp.at(total)->setProperty("y", cur_height); 
+	
+			QString meh = QString("image://gen/");
+			meh += QString::number(total-1);
+			tmp.at(total)->setProperty("source", meh);
+
+			cur_width += p_width;
+			total++;
+		}
+		cur_height += p_height;
+	}
+	
 	
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
@@ -100,20 +127,19 @@ void PanelView::paintEvent(QPaintEvent *e)
 {
 	QDeclarativeItem *dec;
 	QList<QObject*> tmp;
-	int i;
+	int i, j;
 	QString meh;
 
 	if(dirty) {
 		dec =  qobject_cast<QDeclarativeItem*>(rootObject());
 		tmp = dec->children();
-		for(i = 0; i < NUM_P; i++) {
+		for(i = 1; i <= NUM_P; i++) {
 			meh = tmp.at(i)->property("source").toString();
-			i = meh.right( meh.size() - 12).toInt(); 
+			j = meh.right( meh.size() - 12).toInt(); 
 			meh.truncate(12);
-			i += NUM_P;
-			meh += QString::number(i);
+			j += NUM_P;
+			meh += QString::number(j);
 			tmp.at(i)->setProperty("source", meh);
-
 		}
 		dirty = false;
 	}
@@ -170,7 +196,7 @@ QPixmap PanelView::requestPixmap(const QString &id, QSize *size,
 		const QSize &resize) 
 {
 	int i = id.toInt(); 
-	while(i > NUM_P-1) { i -= NUM_P; } 
+	while(i >= NUM_P) { i -= NUM_P; } 
 	return *cache[i];
 }
 
@@ -180,15 +206,16 @@ void PanelView::invalidate(void)
 
 	QPixmap *old, *tmp; 
 
-	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
-	const int p_width = fwidth /  NUM_R;
-	const int p_height = height / NUM_C; 
+	const int p_width = fwidth /  NUM_C;
+	const int p_height = height / NUM_R; 
 	const QRgb tran  = QColor(Qt::transparent).rgb();
+	QRgb bg_color; 
 
+	int total = 0;
 	for(i = 0; i < NUM_R; i++) {
 		for(j = 0; j < NUM_C; j++) {
-			old = cache[i+j];
+			old = cache[total];
 
 			QImage img(p_width, p_height,QImage::Format_ARGB32);
 
@@ -198,30 +225,29 @@ void PanelView::invalidate(void)
 					  p_width, p_height));
 			ip.end(); 
 
-			const QRgb bg_color = img.pixel(0,0);
-			for(k = 0; k < img.height(); k++) {
-				for(m = 0; m < img.width(); m++) {
-					if(img.pixel(m, k) == bg_color) {
-						img.setPixel(m,k,tran);
-					}
-				}
+			if(total == 0) {
+				bg_color = img.pixel(0,0);
 			}
-	
+
 			tmp = new QPixmap(p_width, p_height); 
 			tmp->convertFromImage(img,
 				Qt::ColorOnly | Qt::NoOpaqueDetection);
+		//	QBitmap mask = QBitmap::fromImage(
+		//			img.createHeuristicMask());
 			QBitmap mask = QBitmap::fromImage(
-					img.createHeuristicMask());
+					img.createMaskFromColor(bg_color));
 			tmp->setMask(mask);
 
-			p[i+j]->end();
-			cache[i+j] = tmp;
+			p[total]->end();
+
+			cache[total] = tmp;
 			delete old;
-			p[i+j]->begin(cache[i+j]);
+
+			p[total]->begin(cache[total]);
+			
+			total++;
 		}
 	}	
-
-
 	dirty = true;
 	viewport()->update();
 	return;

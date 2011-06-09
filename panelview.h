@@ -28,6 +28,10 @@
 
 #include"dialog.h"
 
+#define NUM_P 8
+#define NUM_C 4 
+#define NUM_R 2
+
 
 class PMonitor;
 class PanelView;
@@ -57,8 +61,6 @@ public:
 	
 	QPixmap requestPixmap(const QString&, QSize *, const QSize&);
 
-	//void drawForeground(QPainter *, const QRectF &);
-	
 public slots:
 	void invalidate(void);
 	void bg_changed(void);
@@ -66,15 +68,15 @@ private:
 	void create_bg(void);
 
 	bool dirty;
-	QPixmap *cache[8];
-	QPainter *p[8];
+	int fwidth;
+
+	QPixmap *cache[NUM_P];
+	QPainter *p[NUM_P];
 	PMonitor *r;
 
 	QDeclarativeView *bg_window;
 	QPixmap *background;
 };
-
-extern const QByteArray background_qml;
 
 #endif 
 
