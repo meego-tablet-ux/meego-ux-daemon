@@ -21,16 +21,14 @@ public:
                XWindowAttributes windowAttributes, Pixmap icon,
                QString &iconName,
                QString &notificationIconName,
-               int pid,
-               int orientation) :
+               int pid) :
     m_title(title),
     m_window(window),
     m_windowAttributes(windowAttributes),
     m_icon(icon),
     m_iconName(iconName),
     m_notificationIconName(notificationIconName),
-    m_pid(pid),
-    m_orientation(orientation) {}
+    m_pid(pid) {}
 
     ~WindowInfo() {}
 
@@ -62,10 +60,6 @@ public:
         return m_pid;
     }
 
-    int orientation() {
-        return m_orientation;
-    }
-
 private:
     QString m_title;
     Window m_window;
@@ -74,7 +68,6 @@ private:
     QString m_iconName;
     QString m_notificationIconName;
     int m_pid;
-    int m_orientation;
 };
 
 #endif /* WINDOWINFO_H_ */

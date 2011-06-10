@@ -67,7 +67,7 @@ public:
     ~Application();
 
     int getOrientation() {
-        return orientation;
+        return m_orientation;
     }
 
     // We have the multiple top level windows, each of which could
@@ -204,7 +204,7 @@ private:
     void setBacklight(int percentage);
     bool namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const;
 
-    int orientation;
+    int m_orientation;
     bool orientationLocked;
     bool useOpenGL;
     Dialog *taskSwitcher;

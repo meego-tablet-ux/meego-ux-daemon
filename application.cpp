@@ -184,7 +184,7 @@ void Application::grabHomeKey(const char* key)
 
 Application::Application(int & argc, char ** argv) :
     QApplication(argc, argv),
-    orientation(1),
+    m_orientation(1),
     taskSwitcher(NULL),
     lockScreen(NULL),
     panelsScreen(NULL),
@@ -1268,8 +1268,7 @@ void Application::updateWindowList()
                                                          pixmap,
                                                          name,
                                                          notify,
-                                                         pid,
-                                                         orientation));
+                                                         pid));
                         }
                         else
                         {
@@ -1804,29 +1803,35 @@ void Application::updateAmbientLight()
 
 void Application::updateOrientation()
 {
-    orientation = orientationSensor.reading()->orientation();
-
+    int qmlOrient = -1;
     M::OrientationAngle mtfOrient;
-    switch (orientation)
+    switch (orientationSensor.reading()->orientation())
     {
     case QOrientationReading::LeftUp:
         mtfOrient = M::Angle270;
-        orientation = 2;
+        qmlOrient = 2;
         break;
     case QOrientationReading::TopDown:
         mtfOrient = M::Angle180;
-        orientation = 3;
+        qmlOrient = 3;
         break;
     case QOrientationReading::RightUp:
         mtfOrient = M::Angle90;
-        orientation = 0;
+        qmlOrient = 0;
         break;
-    default: // assume QOrientationReading::TopUp
+    case QOrientationReading::TopUp:
         mtfOrient = M::Angle0;
-        orientation = 1;
+        qmlOrient = 1;
+        break;
+    default:
+        // ignore faceup and facedown
         break;
     }
 
+    if (qmlOrient == -1)
+        return;
+
+    m_orientation = qmlOrient;
     emit orientationChanged();
 
     // Need to tell the MInputContext plugin to rotate the VKB too
