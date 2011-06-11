@@ -1415,6 +1415,11 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
                             m_runningAppsOverflow << d;
                         }
                     }
+
+                    // A match for this window was found, so stop iterating
+                    // through the directories so that the first match will
+                    // shadow all additional directories
+                    break;
                 }
             }
         }
