@@ -1379,7 +1379,8 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
 
             if(!found && namesMatchFuzzy(*d, info))
             {
-                d->setWid( info.window() );
+                d->setPid(info.pid());
+                d->setWid(info.window());
                 found = true;
             }
         }
