@@ -44,7 +44,7 @@ LIBS += -lalarmd
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
 
-target.files += $$TARGET
+target.files += $$TARGET start-meego-ux
 target.path += $$INSTALL_ROOT/usr/libexec/
 
 share.files += *.qml
@@ -66,7 +66,8 @@ OTHER_FILES += \
     statusindicatormenu.qml \
     NotificationDelegate.qml \
     alarm.qml \
-    hardnotification.qml
+    hardnotification.qml \
+    start-meego-ux
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-daemon
