@@ -124,7 +124,7 @@ public slots:
     void showGrid();
     void showAppStore();
     void showAlarmDialog(int alarmId, QString title, QString message, bool snooze, QString soundUri);
-    void showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint notificationUserId, uint m_lastNotificationId);
+    void showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint notificationUserId, uint m_lastNotificationId, QString declineAction, QString imageURI);
     void goHome();
     void lock();
     void launchDesktopByName(QString name);
@@ -135,8 +135,10 @@ public slots:
     void activateScreenSaver();
 
     // MNotificationManager Interface
+    uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     uint addGroup(uint notificationUserId, const QString &eventType);
+    uint addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     uint addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     uint addNotification(uint notificationUserId, uint groupId, const QString &eventType);
     QList < MNotificationGroup >  notificationGroupListWithIdentifiers(uint notificationUserId);
@@ -145,8 +147,10 @@ public slots:
     uint notificationUserId();
     bool removeGroup(uint notificationUserId, uint groupId);
     bool removeNotification(uint notificationUserId, uint notificationId);
+    bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType);
+    bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
 
@@ -162,7 +166,7 @@ signals:
     void stopOrientationSensor();
     void startOrientationSensor();
     void alarm(int alarmId, QString title, QString message, bool snooze, QString soundUri);
-    void hardNotification(QString subject, QString body, QString remoteAction, uint userId, uint notificationId);
+    void hardNotification(QString subject, QString body, QString remoteAction, uint userId, uint notificationId, QString declineAction, QString imageURI);
     void screenOnChanged();
     void applicationDirectoriesChanged();
 

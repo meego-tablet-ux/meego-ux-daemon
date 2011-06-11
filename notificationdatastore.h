@@ -17,17 +17,18 @@ class NotificationDataStore : public QObject
     Q_OBJECT
 public:
     NotificationDataStore(QObject *parent = NULL);
-    uint storeNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    uint storeNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     uint storeNotification(uint notificationUserId, uint groupId, const QString &eventType);
     bool deleteNotification(uint notificationUserId, uint notificationId);
     void triggerNotification(uint notificationUserId, uint notificationId);
-    bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    void triggerDeclineNotification(uint notificationUserId, uint notificationId);
+    bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
     QList<MNotification> getNotificationListWithId(uint notificationUserId);
 
-    uint storeGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    uint storeGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     uint storeGroup(uint notificationUserId, const QString &eventType);
-    bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
+    bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType);
     bool deleteGroup(uint notificationUserId, uint groupId);
     QList < uint >  getNotificationIdList(uint notificationUserId);

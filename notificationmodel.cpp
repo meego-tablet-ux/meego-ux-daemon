@@ -26,6 +26,7 @@ NotificationModel::NotificationModel(QObject *parent) :
     roles.insert(NotificationItem::Body, "body");
     roles.insert(NotificationItem::Action, "action");
     roles.insert(NotificationItem::ImageURI, "imageURI");
+    roles.insert(NotificationItem::DeclineAction, "declineAction");
     roles.insert(NotificationItem::Identifier, "identifier");
     roles.insert(NotificationItem::Count, "count");
     roles.insert(NotificationItem::Timestamp, "time");
@@ -65,6 +66,8 @@ QVariant NotificationModel::data(const QModelIndex &index, int role) const
             return displayData[index.row()]->getBody();
         if (role == NotificationItem::Action)
             return displayData[index.row()]->getAction();
+        if (role == NotificationItem::DeclineAction)
+            return displayData[index.row()]->getDeclineAction();
         if (role == NotificationItem::ImageURI)
             return displayData[index.row()]->getImageURI();
         if (role == NotificationItem::Identifier)
@@ -95,88 +98,104 @@ void NotificationModel::trigger(uint userId, uint notificationId)
     m_data->deleteNotification(userId, notificationId);
 }
 
+void NotificationModel::triggerDeclineAction(uint userId, uint notificationId)
+{
+    m_data->triggerDeclineNotification(userId, notificationId);
+    m_data->deleteNotification(userId, notificationId);
+}
+
 void NotificationModel::deleteNotification(uint userId, uint notificationId)
 {
     m_data->deleteNotification(userId, notificationId);
 }
 
-void NotificationModel::refreshViewableList ()
+void NotificationModel::refreshViewableList()
 {
     QList<NotificationItem *> filteredList;
-    QList<NotificationItem *> tmpList;
-    if (!listFilters.isEmpty())
+    QList<NotificationItem *> mergeList;
+    QList<QString> mergeKeys;
+    QMultiMap<QString, NotificationItem *> itemsToMerge;
+    NotificationItem *currentNotificationItem;
+
+
+    for (int k=0; k < m_data->notificationCount(); k++)
     {
-        for (int i = 0; i < listFilters.size(); i++)
+        currentNotificationItem = m_data->notificationAt(k);
+
+        if (m_listFilters.isEmpty() || m_listFilters.contains(currentNotificationItem->getEventType()))
         {
+            if (m_notificationMergeNumbers.contains(currentNotificationItem->getEventType()))
+            {
+                if (m_notificationMergeNumbers[currentNotificationItem->getEventType()].roleToMerge == "summary")
+                    itemsToMerge.insert(currentNotificationItem->getEventType() + currentNotificationItem->getSummary(), currentNotificationItem);
 
-            tmpList = m_data->notificationsWithEventType(listFilters[i]);
+                else if (m_notificationMergeNumbers[currentNotificationItem->getEventType()].roleToMerge == "body")
+                    itemsToMerge.insert(currentNotificationItem->getEventType() + currentNotificationItem->getBody(), currentNotificationItem);
 
-            for (int j = 0; j < tmpList.size(); j++){
-                filteredList <<  tmpList[j];
+                else
+                    itemsToMerge.insert(currentNotificationItem->getEventType(),currentNotificationItem);
+            }
+
+            else if (m_notificationMergeNumbers.contains("all"))
+            {
+                itemsToMerge.insert(currentNotificationItem->getEventType(), currentNotificationItem);
+            }
+
+            else
+            {
+                filteredList << currentNotificationItem;
             }
         }
-
-        if(!displayData.isEmpty())
-        {
-            beginRemoveRows(QModelIndex(), 0, displayData.count()-1);
-            displayData.clear();
-            endRemoveRows();
-        }
-        
-        if(!filteredList.isEmpty())
-        {
-            beginInsertRows(QModelIndex(), 0, filteredList.count()-1);
-            displayData = filteredList;
-            endInsertRows();
-        }
     }
-    else
+
+    if (!itemsToMerge.empty())
     {
-        if(!displayData.isEmpty())
-        {
-            beginRemoveRows(QModelIndex(), 0, displayData.count()-1);
-            displayData.clear();
-            endRemoveRows();
-        }
+        mergeKeys = itemsToMerge.uniqueKeys();
 
-        for (int k=0; k < m_data->notificationCount(); k++)
+        for (int j = 0; j < mergeKeys.size(); j++)
         {
-            tmpList << m_data->notificationAt(k);
-        }
-
-        if (!tmpList.isEmpty())
-        {
-            beginInsertRows(QModelIndex(), 0, tmpList.count()-1);
-            displayData = tmpList;
-            endInsertRows();
+            filteredList << mergeListItems(itemsToMerge.values(mergeKeys[j]));
         }
     }
 
+    if(!displayData.isEmpty())
+    {
+        beginRemoveRows(QModelIndex(), 0, displayData.count()-1);
+        displayData.clear();
+        endRemoveRows();
+    }
+
+    if(!filteredList.isEmpty())
+    {
+        beginInsertRows(QModelIndex(), 0, filteredList.count()-1);
+        displayData = filteredList;
+        endInsertRows();
+    }
 }
 
 void NotificationModel::addFilter(QString filter)
 {
-    if (!listFilters.contains(filter))
+    if (!m_listFilters.contains(filter))
     {
-        listFilters.append(filter);
+        m_listFilters.append(filter);
     }
 }
 
 void NotificationModel::removeFilter(QString filter)
 {
-    listFilters.removeAll(filter);
+    m_listFilters.removeAll(filter);
 }
 
 void NotificationModel::clearFilters()
 {
-    listFilters.clear();
+    m_listFilters.clear();
     refreshViewableList();
     emit modelReset();  
 }
 
 void NotificationModel::applyFilters()
 {
-    listFilters.clear();
+    m_listFilters.clear();
     if (m_filtersItem->value() != QVariant::Invalid)
     {
         QStringList filterList = m_filtersItem->value().toStringList();
@@ -199,6 +218,42 @@ void NotificationModel::setFilterKey(const QString key)
     m_filtersItem = new MGConfItem(key, this);
     connect(m_filtersItem, SIGNAL(valueChanged()), this, SLOT(applyFilters()));
     applyFilters();
+}
+
+void NotificationModel::setNotificationMergeRule(int maxNumber, QString eventType, QString mergeRole)
+{
+    m_notificationMergeNumbers[eventType].numToMergeAt = maxNumber;
+    m_notificationMergeNumbers[eventType].roleToMerge = mergeRole;
+
+}
+
+QList<NotificationItem *> NotificationModel::mergeListItems(QList<NotificationItem *> listToMerge)
+{
+    QList<NotificationItem *> tmpList;
+
+    if(m_notificationMergeNumbers.contains(listToMerge[0]->getEventType())) 
+    {
+	if (listToMerge.size() > m_notificationMergeNumbers[listToMerge[0]->getEventType()].numToMergeAt)
+	{
+            listToMerge[0]->setCount(listToMerge.size());
+            tmpList << listToMerge[0];
+	}
+	else
+	{
+            tmpList<< listToMerge;
+	}        
+    }
+    else if (listToMerge.size() > m_notificationMergeNumbers["all"].numToMergeAt)
+    {
+        listToMerge[0]->setCount(listToMerge.size());
+        tmpList << listToMerge[0];
+    }
+
+    else
+    {
+        tmpList << listToMerge;
+    }
+    return tmpList;
 }
 
 QML_DECLARE_TYPE(NotificationModel);

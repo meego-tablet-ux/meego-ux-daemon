@@ -33,11 +33,20 @@ NotificationManagerAdaptor::~NotificationManagerAdaptor()
     // destructor
 }
 
+uint NotificationManagerAdaptor::addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
+{
+    // handle method call com.meego.core.MNotificationManager.addGroup
+    uint groupId;
+    QMetaObject::invokeMethod(parent(), "addGroup", Q_RETURN_ARG(uint, groupId), Q_ARG(uint, notificationUserId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    return groupId;
+}
+
 uint NotificationManagerAdaptor::addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
     // handle method call com.meego.core.MNotificationManager.addGroup
     uint groupId;
-    QMetaObject::invokeMethod(parent(), "addGroup", Q_RETURN_ARG(uint, groupId), Q_ARG(uint, notificationUserId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    QString declineAction;
+    QMetaObject::invokeMethod(parent(), "addGroup", Q_RETURN_ARG(uint, groupId), Q_ARG(uint, notificationUserId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
     return groupId;
 }
 
@@ -49,11 +58,20 @@ uint NotificationManagerAdaptor::addGroup(uint notificationUserId, const QString
     return groupId;
 }
 
+uint NotificationManagerAdaptor::addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
+{
+    // handle method call com.meego.core.MNotificationManager.addNotification
+    uint notificationId;
+    QMetaObject::invokeMethod(parent(), "addNotification", Q_RETURN_ARG(uint, notificationId), Q_ARG(uint, notificationUserId), Q_ARG(uint, groupId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    return notificationId;
+}
+
 uint NotificationManagerAdaptor::addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
     // handle method call com.meego.core.MNotificationManager.addNotification
     uint notificationId;
-    QMetaObject::invokeMethod(parent(), "addNotification", Q_RETURN_ARG(uint, notificationId), Q_ARG(uint, notificationUserId), Q_ARG(uint, groupId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    QString declineAction;
+    QMetaObject::invokeMethod(parent(), "addNotification", Q_RETURN_ARG(uint, notificationId), Q_ARG(uint, notificationUserId), Q_ARG(uint, groupId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
     return notificationId;
 }
 
@@ -113,11 +131,20 @@ bool NotificationManagerAdaptor::removeNotification(uint notificationUserId, uin
     return result;
 }
 
+bool NotificationManagerAdaptor::updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
+{
+    // handle method call com.meego.core.MNotificationManager.updateGroup
+    bool result;
+    QMetaObject::invokeMethod(parent(), "updateGroup", Q_RETURN_ARG(bool, result), Q_ARG(uint, notificationUserId), Q_ARG(uint, groupId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    return result;
+}
+
 bool NotificationManagerAdaptor::updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
     // handle method call com.meego.core.MNotificationManager.updateGroup
     bool result;
-    QMetaObject::invokeMethod(parent(), "updateGroup", Q_RETURN_ARG(bool, result), Q_ARG(uint, notificationUserId), Q_ARG(uint, groupId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    QString declineAction;
+    QMetaObject::invokeMethod(parent(), "updateGroup", Q_RETURN_ARG(bool, result), Q_ARG(uint, notificationUserId), Q_ARG(uint, groupId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
     return result;
 }
 
@@ -129,11 +156,20 @@ bool NotificationManagerAdaptor::updateGroup(uint notificationUserId, uint group
     return result;
 }
 
+bool NotificationManagerAdaptor::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
+{
+    // handle method call com.meego.core.MNotificationManager.updateNotification
+    bool result;
+    QMetaObject::invokeMethod(parent(), "updateNotification", Q_RETURN_ARG(bool, result), Q_ARG(uint, notificationUserId), Q_ARG(uint, notificationId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    return result;
+}
+
 bool NotificationManagerAdaptor::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
     // handle method call com.meego.core.MNotificationManager.updateNotification
     bool result;
-    QMetaObject::invokeMethod(parent(), "updateNotification", Q_RETURN_ARG(bool, result), Q_ARG(uint, notificationUserId), Q_ARG(uint, notificationId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(uint, count), Q_ARG(QString, identifier));
+    QString declineAction;
+    QMetaObject::invokeMethod(parent(), "updateNotification", Q_RETURN_ARG(bool, result), Q_ARG(uint, notificationUserId), Q_ARG(uint, notificationId), Q_ARG(QString, eventType), Q_ARG(QString, summary), Q_ARG(QString, body), Q_ARG(QString, action), Q_ARG(QString, imageURI), Q_ARG(QString, declineAction), Q_ARG(uint, count), Q_ARG(QString, identifier));
     return result;
 }
 

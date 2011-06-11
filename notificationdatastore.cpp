@@ -22,7 +22,7 @@ NotificationDataStore::NotificationDataStore(QObject *parent) :
 {
 }
 
-uint NotificationDataStore::storeNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+uint NotificationDataStore::storeNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction , uint count, const QString &identifier)
 {
 
     m_notifications << new NotificationItem(notificationUserId,
@@ -33,6 +33,7 @@ uint NotificationDataStore::storeNotification(uint notificationUserId, uint grou
                                             body,
                                             action,
                                             imageURI,
+                                            declineAction,
                                             count,
                                             identifier);
     emit dataChanged();
@@ -93,7 +94,25 @@ void NotificationDataStore::triggerNotification(uint notificationUserId, uint no
     }
 }
 
-bool NotificationDataStore::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+void NotificationDataStore::triggerDeclineNotification(uint notificationUserId, uint notificationId)
+{
+    for (int i = 0; i < m_notifications.length(); i++)
+    {
+        NotificationItem *item = m_notifications.at(i);
+        if (item->getUserId() == notificationUserId &&
+            item->getNotificationId() == notificationId)
+        {
+            if (!item->getDeclineAction().isEmpty())
+            {
+                MRemoteAction declineAction(item->getDeclineAction());
+                declineAction.trigger();
+            }
+            return;
+        }
+    }
+}
+
+bool NotificationDataStore::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
     foreach (NotificationItem *item, m_notifications)
     {
@@ -105,6 +124,7 @@ bool NotificationDataStore::updateNotification(uint notificationUserId, uint not
             item->setBody(body);
             item->setAction(action);
             item->setImageURI(imageURI);
+            item->setDeclineAction(declineAction);
             item->setCount(count);
             item->setIdentifier(identifier);
             emit dataChanged();
@@ -151,7 +171,7 @@ QList<MNotification> NotificationDataStore::getNotificationListWithId(uint notif
 }
 
 
-uint NotificationDataStore::storeGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+uint NotificationDataStore::storeGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
 
     m_groups << new NotificationItem(notificationUserId,
@@ -162,6 +182,7 @@ uint NotificationDataStore::storeGroup(uint notificationUserId, const QString &e
                                      body,
                                      action,
                                      imageURI,
+                                     declineAction,
                                      count,
                                      identifier);
     emit dataChanged();
@@ -179,7 +200,7 @@ uint NotificationDataStore::storeGroup(uint notificationUserId, const QString &e
     return m_nextGroupId;
 }
 
-bool NotificationDataStore::updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+bool NotificationDataStore::updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction , uint count, const QString &identifier)
 {
     foreach (NotificationItem *item, m_groups)
     {
@@ -191,6 +212,7 @@ bool NotificationDataStore::updateGroup(uint notificationUserId, uint groupId, c
             item->setBody(body);
             item->setAction(action);
             item->setImageURI(imageURI);
+            item->setDeclineAction(declineAction);
             item->setCount(count);
             item->setIdentifier(identifier);
             emit dataChanged();

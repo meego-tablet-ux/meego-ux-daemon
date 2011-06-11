@@ -15,6 +15,7 @@ class NotificationItem : public QObject
     Q_PROPERTY(QString body READ getBody WRITE setBody);
     Q_PROPERTY(QString action READ getAction WRITE setAction);
     Q_PROPERTY(QString imageURI READ getImageURI WRITE setImageURI);
+    Q_PROPERTY(QString declineAction READ getDeclineAction WRITE setDeclineAction);
     Q_PROPERTY(QString identifier READ getIdentifier WRITE setIdentifier);
     Q_PROPERTY(uint count READ getCount WRITE setCount);
     Q_PROPERTY(QString timestamp READ getTimestamp);
@@ -30,7 +31,7 @@ public:
         m_timestamp = QDateTime::currentDateTime().toString(Qt::ISODate);
     }
 
-    explicit NotificationItem(uint userId, uint notificationId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier, QObject *parent = NULL) :
+    explicit NotificationItem(uint userId, uint notificationId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier, QObject *parent = NULL) :
             QObject(parent),
             m_userId(userId),
             m_notificationId(notificationId),
@@ -40,6 +41,7 @@ public:
             m_body(body),
             m_action(action),
             m_imageURI(imageURI),
+            m_declineAction(declineAction),
             m_identifier(identifier),
             m_count(count)
     {
@@ -57,7 +59,8 @@ public:
         ImageURI = Qt::UserRole + 9,
         Identifier = Qt::UserRole + 10,
         Count = Qt::UserRole + 11,
-        Timestamp = Qt::UserRole + 12
+        Timestamp = Qt::UserRole + 12,
+        DeclineAction = Qt::UserRole +13,
      };
 
     uint getUserId() {
@@ -116,6 +119,13 @@ public:
         m_imageURI = imageURI;
     }
 
+    QString getDeclineAction() const {
+        return m_declineAction;
+    }
+    void setDeclineAction(const QString declineAction) {
+        m_declineAction = declineAction;
+    }
+
     QString getIdentifier() const {
         return m_identifier;
     }
@@ -143,6 +153,7 @@ private:
     QString m_body;
     QString m_action;
     QString m_imageURI;
+    QString m_declineAction;
     QString m_identifier;
     uint m_count;
     QString m_timestamp;

@@ -635,7 +635,7 @@ void Application::showAlarmDialog(int alarmId, QString title, QString message, b
     emit alarm(alarmId, title, message, snooze, soundUri);
 }
 
-void Application::showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint userId, uint notificationId)
+void Application::showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint userId, uint notificationId, QString declineAction, QString imageURI)
 {
     if (hardNotificationDialog)
     {
@@ -655,7 +655,7 @@ void Application::showHardNotificationDialog(QString subject, QString body, QStr
         hardNotificationDialog->show();
     }
 
-    emit hardNotification(subject, body, remoteAction, userId, notificationId);
+    emit hardNotification(subject, body, remoteAction, userId, notificationId, declineAction, imageURI);
 }
 
 void Application::showPanels()
@@ -815,6 +815,7 @@ void Application::lock()
         connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
 
         NotificationModel *model = new NotificationModel(lockScreen);
+        model->setNotificationMergeRule(1);
         model->setFilterKey("/meego/ux/settings/lockscreen/filters");
         lockScreen->rootContext()->setContextProperty("notificationModel", model);
 
@@ -1580,10 +1581,24 @@ uint Application::addGroup(uint notificationUserId,
                            const QString &body,
                            const QString &action,
                            const QString &imageURI,
+                           const QString &declineAction,
                            uint count,
                            const QString &identifier)
 {
-    return m_notificationDataStore->storeGroup(notificationUserId, eventType, summary, body, action, imageURI, count, identifier);
+    return m_notificationDataStore->storeGroup(notificationUserId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
+}
+
+uint Application::addGroup(uint notificationUserId,
+                           const QString &eventType,
+                           const QString &summary,
+                           const QString &body,
+                           const QString &action,
+                           const QString &imageURI,
+                           uint count,
+                           const QString &identifier)
+{
+    QString declineAction;
+    return m_notificationDataStore->storeGroup(notificationUserId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 uint Application::addGroup(uint notificationUserId, const QString &eventType)
@@ -1596,11 +1611,11 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
     return  m_notificationDataStore->storeNotification(notificationUserId, groupId, eventType);
 }
 
-uint Application::addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+uint Application::addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
 {
-    m_lastNotificationId = m_notificationDataStore->storeNotification(notificationUserId, groupId, eventType, summary, body, action, imageURI, count, identifier);
+    m_lastNotificationId = m_notificationDataStore->storeNotification(notificationUserId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 
-    if (eventType != MNotification::PhoneIncomingCall && eventType != MNotification::ImIncomingVideoChat)
+    if (identifier != MNotification::HardNotification)
     {
         void *map = context_provider_map_new();
         context_provider_map_set_string(map, "notificationType", eventType.toAscii());
@@ -1617,10 +1632,16 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
 
     else
     {
-        showHardNotificationDialog(summary, body, action, notificationUserId, m_lastNotificationId);
+        showHardNotificationDialog(summary, body, action, notificationUserId, m_lastNotificationId, declineAction, imageURI);
     }
 
     return m_lastNotificationId;
+}
+
+uint Application::addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
+{
+    QString declineAction;
+    return addNotification(notificationUserId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 QList < MNotificationGroup > Application::notificationGroupListWithIdentifiers(uint notificationUserId)
@@ -1672,9 +1693,15 @@ bool Application::updateGroup(uint notificationUserId, uint groupId, const QStri
     return m_notificationDataStore->updateGroup(notificationUserId, groupId, eventType);
 }
 
+bool Application::updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
+{
+    return m_notificationDataStore->updateGroup(notificationUserId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
+}
+
 bool Application::updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
-    return m_notificationDataStore->updateGroup(notificationUserId, groupId, eventType, summary, body, action, imageURI, count, identifier);
+    QString declineAction;
+    return m_notificationDataStore->updateGroup(notificationUserId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 bool Application::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType)
@@ -1682,9 +1709,15 @@ bool Application::updateNotification(uint notificationUserId, uint notificationI
     return m_notificationDataStore->updateNotification(notificationUserId, notificationId, eventType);
 }
 
+bool Application::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier)
+{
+    return m_notificationDataStore->updateNotification(notificationUserId, notificationId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
+}
+
 bool Application::updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier)
 {
-    return m_notificationDataStore->updateNotification(notificationUserId, notificationId, eventType, summary, body, action, imageURI, count, identifier);
+    QString declineAction;
+    return m_notificationDataStore->updateNotification(notificationUserId, notificationId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 }
 
 void Application::openStatusIndicatorMenu()

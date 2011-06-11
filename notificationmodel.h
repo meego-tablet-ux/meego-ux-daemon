@@ -16,6 +16,11 @@
 
 #define MAXCUSTOMNOTIFICATIONS 4
 
+struct MergeArgs{
+    int numToMergeAt;
+    QString roleToMerge;
+};
+
 class NotificationDataStore;
 
 class NotificationModel : public QAbstractListModel
@@ -36,12 +41,14 @@ public:
         return m_filterKey;
     }
     void setFilterKey(const QString key);
+    void setNotificationMergeRule(int maxNumber, QString eventType="all", QString mergeRole="all");
 
 signals:
     void modelReset();
 
 public slots:
     void trigger(uint userId, uint notificationId);
+    void triggerDeclineAction(uint userId, uint notificationId);
     void refreshViewableList();
     void addFilter(QString filter);
     void removeFilter(QString filter);
@@ -56,8 +63,11 @@ private:
     QString m_filterKey;
     MGConfItem *m_filtersItem;
     QList<NotificationItem *> displayData;
-    QList<QString> listFilters;
+    QList<QString> m_listFilters;
     NotificationDataStore *m_data;
+    QMap<QString, MergeArgs> m_notificationMergeNumbers;
+
+    QList<NotificationItem *> mergeListItems(QList<NotificationItem *> listToMerge);
 };
 
 #endif // NOTIFICATIONMODEL_H

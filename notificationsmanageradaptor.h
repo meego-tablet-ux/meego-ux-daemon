@@ -48,6 +48,18 @@ class NotificationManagerAdaptor: public QDBusAbstractAdaptor
 "      <arg direction=\"in\" type=\"s\" name=\"body\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"action\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"imageURI\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"declineAction\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"count\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"identifier\"/>\n"
+"      <arg direction=\"out\" type=\"u\" name=\"groupId\"/>\n"
+"    </method>\n"
+"    <method name=\"addGroup\">\n"
+"      <arg direction=\"in\" type=\"u\" name=\"notificationUserId\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"eventType\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"summary\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"body\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"action\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"imageURI\"/>\n"
 "      <arg direction=\"in\" type=\"u\" name=\"count\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"identifier\"/>\n"
 "      <arg direction=\"out\" type=\"u\" name=\"groupId\"/>\n"
@@ -56,6 +68,19 @@ class NotificationManagerAdaptor: public QDBusAbstractAdaptor
 "      <arg direction=\"in\" type=\"u\" name=\"notificationUserId\"/>\n"
 "      <arg direction=\"in\" type=\"u\" name=\"groupId\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"eventType\"/>\n"
+"      <arg direction=\"out\" type=\"b\" name=\"result\"/>\n"
+"    </method>\n"
+"    <method name=\"updateGroup\">\n"
+"      <arg direction=\"in\" type=\"u\" name=\"notificationUserId\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"groupId\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"eventType\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"summary\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"body\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"action\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"imageURI\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"declineAction\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"count\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"identifier\"/>\n"
 "      <arg direction=\"out\" type=\"b\" name=\"result\"/>\n"
 "    </method>\n"
 "    <method name=\"updateGroup\">\n"
@@ -89,6 +114,19 @@ class NotificationManagerAdaptor: public QDBusAbstractAdaptor
 "      <arg direction=\"in\" type=\"s\" name=\"body\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"action\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"imageURI\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"declineAction\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"count\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"identifier\"/>\n"
+"      <arg direction=\"out\" type=\"u\" name=\"notificationId\"/>\n"
+"    </method>\n"
+"    <method name=\"addNotification\">\n"
+"      <arg direction=\"in\" type=\"u\" name=\"notificationUserId\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"groupId\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"eventType\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"summary\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"body\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"action\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"imageURI\"/>\n"
 "      <arg direction=\"in\" type=\"u\" name=\"count\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"identifier\"/>\n"
 "      <arg direction=\"out\" type=\"u\" name=\"notificationId\"/>\n"
@@ -97,6 +135,19 @@ class NotificationManagerAdaptor: public QDBusAbstractAdaptor
 "      <arg direction=\"in\" type=\"u\" name=\"notificationUserId\"/>\n"
 "      <arg direction=\"in\" type=\"u\" name=\"notificationId\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"eventType\"/>\n"
+"      <arg direction=\"out\" type=\"b\" name=\"result\"/>\n"
+"    </method>\n"
+"    <method name=\"updateNotification\">\n"
+"      <arg direction=\"in\" type=\"u\" name=\"notificationUserId\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"notificationId\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"eventType\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"summary\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"body\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"action\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"imageURI\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"declineAction\"/>\n"
+"      <arg direction=\"in\" type=\"u\" name=\"count\"/>\n"
+"      <arg direction=\"in\" type=\"s\" name=\"identifier\"/>\n"
 "      <arg direction=\"out\" type=\"b\" name=\"result\"/>\n"
 "    </method>\n"
 "    <method name=\"updateNotification\">\n"
@@ -139,8 +190,10 @@ public:
 
 public: // PROPERTIES
 public Q_SLOTS: // METHODS
+    uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     uint addGroup(uint notificationUserId, const QString &eventType);
+    uint addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     uint addNotification(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     uint addNotification(uint notificationUserId, uint groupId, const QString &eventType);
     QList < MNotificationGroup >  notificationGroupListWithIdentifiers(uint notificationUserId);
@@ -149,8 +202,10 @@ public Q_SLOTS: // METHODS
     uint notificationUserId();
     bool removeGroup(uint notificationUserId, uint groupId);
     bool removeNotification(uint notificationUserId, uint notificationId);
+    bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateGroup(uint notificationUserId, uint groupId, const QString &eventType);
+    bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
 Q_SIGNALS: // SIGNALS

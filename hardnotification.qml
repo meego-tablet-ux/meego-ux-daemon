@@ -17,16 +17,18 @@ Window {
 
     overlayItem:  ModalDialog {
         id: dialog
-        title: qsTr("")
+        title: ""
         cancelButtonText: qsTr("Decline")
         acceptButtonText: qsTr("Accept")
+   
         showCancelButton: true
         showAcceptButton: true
 
         property string body: ""
-        property string remoteAction: ""
         property string uId: ""
         property string notificationId: ""
+        property string imageUri: ""
+	property string snoozeButtonTxt: qsTr("Snooze")
 
         Connections {
             target: qApp
@@ -34,19 +36,35 @@ Window {
 
                 dialog.title = subject;
                 dialog.body = body;
-                dialog.remoteAction = remoteAction;
                 dialog.uId = userId;
                 dialog.notificationId = notificationId;
+                dialog.imageUri = imageURI
                 dialog.show();
 
             }
         }
 
-        content: Text {
+        content:Row{
+            id: contentRow
+            width: dialog.width - 40
+            height: iconImage.height + bodyText.paintedHeight
+            spacing: 20
             anchors.centerIn: parent
-            width: parent.width - 20
-            wrapMode: Text.Wrap
-            text: dialog.body
+
+            Image {
+                id: iconImage
+                source: dialog.imageUri
+                height: 70
+                width: 70
+            }
+
+            Text {
+                id: bodyText
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width - iconImage.width - 20
+                wrapMode: Text.Wrap
+                text: dialog.body
+            }
         }
 
         onAccepted: {
@@ -54,9 +72,10 @@ Window {
             notificationModel.trigger(dialog.uId, dialog.notificationId);
             Qt.quit();
         }
+
         onRejected: {
 
-            notificationModel.deleteNotification(dialog.uId, dialog.notificationId);
+            notificationModel.triggerDeclineAction(dialog.uId, dialog.notificationId);
             Qt.quit();
         }
     }

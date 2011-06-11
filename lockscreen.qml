@@ -18,30 +18,72 @@ Window {
         id: backgroundModel
     }
 
+    function pickIcon (event, imgUri){
+
+        switch (event)
+        {
+        case "x-nokia.call" :
+                return "image://meegotheme/icons/oobe/phone-unavailable";
+            break;
+        case "im" :
+                return "image://meegotheme/icons/oobe/chat-unavailable";
+            break;
+        case "email.arrived" :
+                return "image://meegotheme/icons/oobe/mail-unavailable";
+            break;
+        case "transfer.complete":
+                return "image://meegotheme/icons/internal/notifications-download";
+            break;
+        case "device.added":
+                return "image://meegotheme/icons/internal/notifications-bluetooth-selected"
+            break;
+
+        default:
+                return "image://meegotheme/icons/toolbar/list-add"
+        }
+    }
+
     Component {
         id: lockscreenNotificationDelegate
+        Item {
+            Rectangle {
+                id: notificationBox                
+                height: childrenRect.height + 30
+                width: childrenRect.width + 30
+                color: "white"
+                radius: 20
+                smooth: true
 
-        Image{
-            id: notificationBox
-            source: "image://meegotheme/images/notificationBox_bg"
-            height: childrenRect.height + 30
-            width: childrenRect.width + 30
-
-            Image {
-                id: iconImage
-                anchors.centerIn: parent
-                height: 70
-                width: 70
-                source: imageURI != "" ? imageURI : "image://meegotheme/icons/launchers/meego-app-widgets" 
+                Image {
+                    id: iconImage
+                    anchors.centerIn: parent
+                    height: 70
+                    width: 70
+                    source: pickIcon(eventType,imageURI)
+                }
             }
 
-            Text{
-                id: multipleNum
-                width: 70
-                text: count > 1 ? "x " + count : ""
+            Rectangle{
+                id: multipleCircle
+                width: 40
+                height: 40
+                radius: 50
+                color: "white"
+                anchors.verticalCenter: notificationBox.top
+                anchors.horizontalCenter: notificationBox.right
+                smooth: true
+
+                Text{
+                    id: multipleNum
+                    anchors.centerIn: parent
+                    style: Text.Raised
+                    styleColor: "gray"
+                    text: count > 1 ? count : "1"
+                }
             }
         }
     }
+
     overlayItem: Item {
         id: container
         anchors.fill: parent
@@ -53,9 +95,7 @@ Window {
             y: 0
 
             property bool animateAway: false
-            Component.onCompleted: {
-                initializeModelFilters();
-            }
+
             Rectangle {
                 anchors.fill: parent
                 color: "black"
@@ -127,12 +167,14 @@ Window {
             }
             GridView {
                 id: notificationsList
-                anchors.top: dateTimeItem.bottom
+                interactive: false
+		anchors.bottom: lockbutton.top
                 anchors.horizontalCenter: parent.horizontalCenter
+		anchors.bottomMargin: 20
                 width: parent.width - 40
                 cellWidth: 140
                 cellHeight: 140
-                height: 400
+                height: childrenRect.height
                 model: notificationModel
                 delegate: lockscreenNotificationDelegate
             }
