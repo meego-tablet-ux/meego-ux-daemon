@@ -74,7 +74,7 @@ private:
 	QPainter *p[NUM_P];
 	PMonitor *r;
 
-	QDeclarativeView *bg_window;
+	PMonitor *bg_window;
 	QPixmap *background;
 };
 

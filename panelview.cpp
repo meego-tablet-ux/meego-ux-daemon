@@ -232,8 +232,6 @@ void PanelView::invalidate(void)
 			tmp = new QPixmap(p_width, p_height); 
 			tmp->convertFromImage(img,
 				Qt::ColorOnly | Qt::NoOpaqueDetection);
-		//	QBitmap mask = QBitmap::fromImage(
-		//			img.createHeuristicMask());
 			QBitmap mask = QBitmap::fromImage(
 					img.createMaskFromColor(bg_color));
 			tmp->setMask(mask);
@@ -259,7 +257,7 @@ void PanelView::create_bg(void)
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
 
-	bg_window = new QDeclarativeView();
+	bg_window = new PMonitor();
 	bg_window->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/background.qml"));
 	background = new QPixmap(width, height); 
 	
