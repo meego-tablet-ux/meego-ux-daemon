@@ -1578,7 +1578,8 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
 {
     m_lastNotificationId = m_notificationDataStore->storeNotification(notificationUserId, groupId, eventType, summary, body, action, imageURI, declineAction, count, identifier);
 
-    if (identifier != MNotification::HardNotification)
+    if (eventType != MNotification::HardNotification &&
+        eventType != MNotification::PhoneIncomingCall)
     {
         void *map = context_provider_map_new();
         context_provider_map_set_string(map, "notificationType", eventType.toAscii());
@@ -1592,10 +1593,22 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
 
         context_provider_set_boolean(CONTEXT_NOTIFICATIONS_UNREAD, true);
     }
-
     else
     {
-        // TODO: call meego-ux-alarms
+        // We provide this mapping of special MNotification types
+        // to an incoming call to catch any left over apps that might
+        // have learned how to do this from handset.  The telepathy
+        // backend will directly call into meego-ux-alarms.
+        QDBusInterface alarmd("org.meego.alarms",
+                              "/incomingCall",
+                              "org.meego.alarms");
+        alarmd.call("incomingCall",
+                    summary,
+                    body,
+                    action,
+                    declineAction,
+                    "" /* ringer file */,
+                    imageURI);
     }
 
     return m_lastNotificationId;
