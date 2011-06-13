@@ -512,7 +512,7 @@ Application::Application(int & argc, char ** argv) :
 
     if (m_showPanelsAsHome)
     {
-        panelsScreen = new Dialog(false, false);
+        panelsScreen = new Dialog(false, false, false);
         panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
         panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
@@ -521,7 +521,7 @@ Application::Application(int & argc, char ** argv) :
     }
     else
     {
-        gridScreen = new Dialog(false, false);
+        gridScreen = new Dialog(false, false, false);
         gridScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
         gridScreen->show();
@@ -605,9 +605,8 @@ void Application::showTaskSwitcher()
         return;
     }
 
-    taskSwitcher = new Dialog(true, false);
+    taskSwitcher = new Dialog(true, true, false);
     taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
-    taskSwitcher->setSkipAnimation();
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
     taskSwitcher->show();
@@ -629,7 +628,7 @@ void Application::showPanels()
         }
         else
         {
-            panelsScreen = new Dialog(false, false);
+            panelsScreen = new Dialog(false, false, false);
             connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
             panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
             panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
@@ -654,7 +653,7 @@ void Application::showGrid()
         }
         else
         {
-            gridScreen = new Dialog(false, false);
+            gridScreen = new Dialog(false, false, false);
             connect(gridScreen, SIGNAL(requestClose()), this, SLOT(cleanupGrid()));
             gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
             gridScreen->show();
@@ -747,7 +746,7 @@ void Application::lock()
     }
     else
     {
-        lockScreen = new Dialog(true, true);
+        lockScreen = new Dialog(true, true, true);
         connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
 
         NotificationModel *model = new NotificationModel(lockScreen);
@@ -755,7 +754,6 @@ void Application::lock()
         model->setFilterKey("/meego/ux/settings/lockscreen/filters");
         lockScreen->rootContext()->setContextProperty("notificationModel", model);
 
-        lockScreen->setSkipAnimation();
         lockScreen->setSource(QUrl::fromLocalFile(m_lockscreenPath));
         lockScreen->show();
     }
@@ -1713,11 +1711,10 @@ void Application::openStatusIndicatorMenu()
         return;
     }
 
-    statusIndicatorMenu = new Dialog(true, false);
+    statusIndicatorMenu = new Dialog(true, true, false);
     statusIndicatorMenu->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
     connect(statusIndicatorMenu->engine(), SIGNAL(quit()), this, SLOT(cleanupStatusIndicatorMenu()));
     statusIndicatorMenu->rootContext()->setContextProperty("notificationModel", m_notificationModel);
-    statusIndicatorMenu->setSkipAnimation();
 
     statusIndicatorMenu->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/statusindicatormenu.qml"));
     statusIndicatorMenu->show();

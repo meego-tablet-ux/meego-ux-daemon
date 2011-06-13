@@ -22,14 +22,12 @@ class Dialog : public QDeclarativeView
     Q_PROPERTY(bool inhibitScreenSaver READ dummyInhibitScreenSaver WRITE dummySetInhibitScreenSaver)
 
 public:
-    explicit Dialog(bool translucent, bool forceOnTop = false, QWidget * parent = 0);
+    explicit Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * parent = 0);
     ~Dialog();
 
     int winId() const {
         return internalWinId();
     }
-
-    void setSkipAnimation();
 
     int actualOrientation() {
         return m_actualOrientation;
@@ -75,6 +73,7 @@ private:
     void changeNetWmState(bool set, Atom one, Atom two = 0);
 
     bool m_forceOnTop;
+    bool m_skipAnimation;
     int m_actualOrientation;
     bool m_translucent;
     bool m_usingGl;

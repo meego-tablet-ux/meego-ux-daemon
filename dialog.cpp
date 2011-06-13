@@ -27,9 +27,10 @@
 #include <unistd.h>
 #include <context_provider.h>
 
-Dialog::Dialog(bool translucent, bool forceOnTop, QWidget * parent) :
+Dialog::Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * parent) :
     QDeclarativeView(parent),
     m_forceOnTop(forceOnTop),
+    m_skipAnimation(skipAnimation),
     m_translucent(translucent),
     m_usingGl(false)
 {
@@ -95,22 +96,24 @@ void Dialog::showTaskSwitcher()
 
 bool Dialog::event (QEvent * event)
 {
-    if (event->type() == QEvent::Show && m_forceOnTop)
+    if (event->type() == QEvent::Show)
     {
-        Atom stackingAtom = XInternAtom(QX11Info::display(), "_MEEGO_STACKING_LAYER", False);
-        long layer = 2;
-        XChangeProperty(QX11Info::display(), internalWinId(), stackingAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&layer, 1);
+        if (m_forceOnTop)
+        {
+            Atom stackingAtom = XInternAtom(QX11Info::display(), "_MEEGO_STACKING_LAYER", False);
+            long layer = 2;
+            XChangeProperty(QX11Info::display(), internalWinId(), stackingAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&layer, 1);
 
-        excludeFromTaskBar();
+            excludeFromTaskBar();
+        }
+        if (m_skipAnimation)
+        {
+            Atom miniAtom = XInternAtom(QX11Info::display(), "_MEEGOTOUCH_SKIP_ANIMATIONS", False);
+            long min = 1;
+            XChangeProperty(QX11Info::display(), internalWinId(), miniAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&min, 1);
+        }
     }
     return QDeclarativeView::event(event);
-}
-
-void Dialog::setSkipAnimation()
-{
-    Atom miniAtom = XInternAtom(QX11Info::display(), "_MEEGOTOUCH_SKIP_ANIMATIONS", False);
-    long min = 1;
-    XChangeProperty(QX11Info::display(), internalWinId(), miniAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&min, 1);
 }
 
 void Dialog::excludeFromTaskBar()
