@@ -66,12 +66,12 @@ private:
 	void create_bg(void);
 
 	bool dirty;
-	QPixmap *cache;
-	QPixmap *background;
-	QPainter *p;
+	QPixmap *cache[8];
+	QPainter *p[8];
 	PMonitor *r;
 
 	QDeclarativeView *bg_window;
+	QPixmap *background;
 };
 
 extern const QByteArray background_qml;

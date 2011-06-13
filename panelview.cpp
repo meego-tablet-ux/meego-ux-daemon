@@ -31,8 +31,8 @@ PanelView::PanelView(void) : Dialog(false),
 {
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
-	int fwidth;
 	QObject *i;
+	int j;
 
 	r = new PMonitor();
 	/* TODO maybe some error handling in case i == NULL at any step here */
@@ -48,19 +48,21 @@ PanelView::PanelView(void) : Dialog(false),
 
 	setSceneRect(0, 0, width, height);
 
-	cache = new QPixmap(fwidth, height);
-
-	p = new QPainter(cache);
-	p->setRenderHint(QPainter::Antialiasing, false);
-	p->setRenderHint(QPainter::TextAntialiasing, false);
-	p->setRenderHint(QPainter::SmoothPixmapTransform, false);
-	p->setRenderHint(QPainter::HighQualityAntialiasing, false);
+	const int p_width = fwidth /  NUM_R;
+	const int p_height = height / NUM_C; 
+	for(j = 0; j < NUM_P; j++) {
+		cache[j] = new QPixmap(p_width, p_height);
+		p[j] = new QPainter(cache[j]); 
+		p[j]->setRenderHint(QPainter::Antialiasing, false);
+		p[j]->setRenderHint(QPainter::TextAntialiasing, false);
+		p[j]->setRenderHint(QPainter::SmoothPixmapTransform, false);
+		p[j]->setRenderHint(QPainter::HighQualityAntialiasing, false);
+	}
 	
-	r->viewport()->render(p);
+	invalidate();
 	engine()->addImageProvider(QLatin1String("gen"), this);
 
 	setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/real.qml"));
-	
 	rootObject()->setProperty("contentWidth", fwidth);
 	rootObject()->setProperty("contentHeight", height);
 	rootObject()->setProperty("width", width);
@@ -74,57 +76,47 @@ PanelView::PanelView(void) : Dialog(false),
 	
 	setCacheMode(QGraphicsView::CacheBackground);
 	scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
-	
-//	viewport()->setAutoFillBackground(false);
-/*
-	viewport()->setAttribute(Qt::WA_TranslucentBackground, false);
-*/
-
 	viewport()->setAttribute(Qt::WA_PaintUnclipped);
-	dirty = false;
-	create_bg();
 
+	create_bg();
 }
 
 PanelView::~PanelView(void)
 {
+	int i; 
+
+	for(i = 0; i < NUM_P; i++) {
+		delete p[i];
+		delete cache[i];
+	}
+
 	delete r;
-	delete p;
-	delete cache;
 	delete background;
 	delete bg_window;
+
 }
 
 void PanelView::paintEvent(QPaintEvent *e)
 {
-	QDeclarativeItem *i;
-	const int width = qApp->desktop()->rect().width();
-	const int height = qApp->desktop()->rect().height();
-
-	i =  qobject_cast<QDeclarativeItem*>(rootObject());
+	QDeclarativeItem *dec;
+	QList<QObject*> tmp;
+	int i;
+	QString meh;
 
 	if(dirty) {
-		/* TODO Revamp This */
-		QList<QObject*> tmp;
-		tmp = i->children();
-		QString meh = tmp.at(1)->property("source").toString();
-		meh += '0';
-		qDebug() << meh;
-		tmp.at(1)->setProperty("source", meh);
+		dec =  qobject_cast<QDeclarativeItem*>(rootObject());
+		tmp = dec->children();
+		for(i = 0; i < NUM_P; i++) {
+			meh = tmp.at(i)->property("source").toString();
+			i = meh.right( meh.size() - 12).toInt(); 
+			meh.truncate(12);
+			i += NUM_P;
+			meh += QString::number(i);
+			tmp.at(i)->setProperty("source", meh);
 
+		}
 		dirty = false;
-	
 	}
-
-
-/*
-	QPainter wp(viewport());
-	drawBackground(&wp, QRect(0,0,width, height));
-	scene()->render(&wp,
-			QRectF(0, 0, width, height),
-			QRectF(0, 0, width, height), 
-			Qt::KeepAspectRatioByExpanding);
-*/
 
 	QDeclarativeView::paintEvent(e);
 	return;
@@ -177,64 +169,64 @@ void PanelView::tabletEvent(QTabletEvent *e)
 QPixmap PanelView::requestPixmap(const QString &id, QSize *size, 
 		const QSize &resize) 
 {
-	return *cache;
+	int i = id.toInt(); 
+	while(i > NUM_P-1) { i -= NUM_P; } 
+	return *cache[i];
 }
 
 void PanelView::invalidate(void)
 {
-	int i, j;
+	int i,j,k,m;
+
+	QPixmap *old, *tmp; 
+
+	const int width = qApp->desktop()->rect().width();
+	const int height = qApp->desktop()->rect().height();
+	const int p_width = fwidth /  NUM_R;
+	const int p_height = height / NUM_C; 
 	const QRgb tran  = QColor(Qt::transparent).rgb();
-	QPixmap *old = cache;
+
+	for(i = 0; i < NUM_R; i++) {
+		for(j = 0; j < NUM_C; j++) {
+			old = cache[i+j];
+
+			QImage img(p_width, p_height,QImage::Format_ARGB32);
+
+			QPainter ip(&img);
+			r->viewport()->render(&ip, QPoint(),
+				 QRegion( p_width * j, p_height * i, 
+					  p_width, p_height));
+			ip.end(); 
+
+			const QRgb bg_color = img.pixel(0,0);
+			for(k = 0; k < img.height(); k++) {
+				for(m = 0; m < img.width(); m++) {
+					if(img.pixel(m, k) == bg_color) {
+						img.setPixel(m,k,tran);
+					}
+				}
+			}
+	
+			tmp = new QPixmap(p_width, p_height); 
+			tmp->convertFromImage(img,
+				Qt::ColorOnly | Qt::NoOpaqueDetection);
+			QBitmap mask = QBitmap::fromImage(
+					img.createHeuristicMask());
+			tmp->setMask(mask);
+
+			p[i+j]->end();
+			cache[i+j] = tmp;
+			delete old;
+			p[i+j]->begin(cache[i+j]);
+		}
+	}	
 
 
 	dirty = true;
-
-	QImage img(cache->width(), cache->height(), 
-		QImage::Format_ARGB32); 
-	QPainter ip(&img);
-	r->viewport()->render(&ip);
-	ip.end();
-
-	const QRgb white = img.pixel(0,0);
-	for(i = 0; i < img.height(); i++) {
-		for(j = 0; j < img.width(); j++) {
-			if(img.pixel(j, i) == white) {
-				img.setPixel(j,i, tran);
-			}
-		}
-	}
-
-
-	QPixmap *tmp = new QPixmap(cache->width(), cache->height());
-	tmp->convertFromImage(img, Qt::ColorOnly | Qt::NoOpaqueDetection);
-	QBitmap mask = QBitmap::fromImage(img.createHeuristicMask());
-	tmp->setMask(mask);
-
-	p->end();
-	cache = tmp;
-	delete old;
-	p->begin(cache);
-
-	
-#if 0
-	if(!p->isActive()) { p->begin(cache); } 
-	/*TODO investigate whether it's faster to render on paint device
- 	 * or directly to QPixmap...if it makes a difference at all..
- 	 */
-	r->viewport()->render(p);
-	p->end(); 
-#endif 
-	//scene()->invalidate(QRectF(0,0,0,0), QGraphicsScene::BackgroundLayer)
 	viewport()->update();
 	return;
 }
 
-/*
-void PanelView::drawForeground(QPainter *p, const QRectF &rect)
-{
-	
-}
-*/
 
 void PanelView::create_bg(void)
 {
