@@ -19,6 +19,7 @@ class Dialog : public QDeclarativeView
     Q_OBJECT
     Q_PROPERTY(int winId READ winId NOTIFY winIdChanged)
     Q_PROPERTY(int actualOrientation READ actualOrientation WRITE setActualOrientation)
+    Q_PROPERTY(bool inhibitScreenSaver READ dummyInhibitScreenSaver WRITE dummySetInhibitScreenSaver)
 
 public:
     explicit Dialog(bool translucent, bool forceOnTop = false, QWidget * parent = 0);
@@ -39,6 +40,13 @@ public:
         emit activateContent();
         QWidget::activateWindow();
     }
+
+    // Just make the components library happy... the reality is we
+    // always make each of these windows inhibit the screensaver
+    int dummyInhibitScreenSaver() {
+        return true;
+    }
+    void dummySetInhibitScreenSaver(bool) {}
 
 public slots:
     void triggerSystemUIMenu();
