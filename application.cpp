@@ -189,8 +189,6 @@ Application::Application(int & argc, char ** argv) :
     lockScreen(NULL),
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
-    alarmDialog(NULL),
-    hardNotificationDialog(NULL),
     m_runningAppsLimit(16),
     m_homeActive(false),
     m_homePressTime(0),
@@ -551,15 +549,6 @@ Application::Application(int & argc, char ** argv) :
     context_provider_install_key(CONTEXT_NOTIFICATIONS_LAST, true, NULL, NULL);
     context_provider_install_key(CONTEXT_NOTIFICATIONS_UNREAD, false, NULL, NULL);
 
-    m_alarmService = AlarmInterface::instance(this);
-
-    QDBusConnection::sessionBus().
-            connect(MEEGO_ALARM_DBUS_SERVICE,
-                    "/com/meego/Alarm",
-                    "com.meego.Alarm",
-                    "Alarm", this,
-                    SLOT(alarmHandler(QDBusMessage)));
-
     struct cgroup_group_spec spec = {
         "unlimited", { "freezer"}
     };
@@ -622,50 +611,6 @@ void Application::showTaskSwitcher()
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
     taskSwitcher->show();
-}
-
-void Application::showAlarmDialog(int alarmId, QString title, QString message, bool snooze, QString soundUri)
-{
-    if (alarmDialog)
-    {
-        alarmDialog->activateWindow();
-        alarmDialog->raise();
-        alarmDialog->show();
-    }
-    else
-    {
-        alarmDialog = new Dialog(true, false);
-        alarmDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
-        alarmDialog->setSkipAnimation();
-        connect(alarmDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupAlarmDialog()));
-        alarmDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/alarm.qml"));
-        alarmDialog->show();
-    }
-
-    emit alarm(alarmId, title, message, snooze, soundUri);
-}
-
-void Application::showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint userId, uint notificationId, QString declineAction, QString imageURI)
-{
-    if (hardNotificationDialog)
-    {
-        hardNotificationDialog->activateWindow();
-        hardNotificationDialog->raise();
-        hardNotificationDialog->show();
-    }
-    else
-    {
-        hardNotificationDialog = new Dialog(true, true);
-        hardNotificationDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
-        NotificationModel *model = new NotificationModel(hardNotificationDialog);
-        hardNotificationDialog->rootContext()->setContextProperty("notificationModel", model);
-        hardNotificationDialog->setSkipAnimation();
-        connect(hardNotificationDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupHardNotificationDialog()));
-        hardNotificationDialog->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/hardnotification.qml"));
-        hardNotificationDialog->show();
-    }
-
-    emit hardNotification(subject, body, remoteAction, userId, notificationId, declineAction, imageURI);
 }
 
 void Application::showPanels()
@@ -769,18 +714,6 @@ void Application::cleanupStatusIndicatorMenu()
     }
 }
 
-void Application::cleanupAlarmDialog()
-{
-    alarmDialog->deleteLater();
-    alarmDialog = NULL;
-}
-
-void Application::cleanupHardNotificationDialog()
-{
-    hardNotificationDialog->deleteLater();
-    hardNotificationDialog = NULL;
-}
-
 void Application::goHome()
 {
     if (taskSwitcher)
@@ -791,17 +724,10 @@ void Application::goHome()
     {
         cleanupStatusIndicatorMenu();
     }
-    if (alarmDialog)
-    {
-        cleanupAlarmDialog();
-    }
 
-    if (!hardNotificationDialog || !hardNotificationDialog->isVisible())
+    foreach (Window win, openWindows)
     {
-        foreach (Window win, openWindows)
-        {
-            minimizeWindow(win);
-        }
+        minimizeWindow(win);
     }
 
     m_lockScreenAdaptor->home();
@@ -988,8 +914,7 @@ bool Application::x11EventFilter(XEvent *event)
         {
             Window w = *(Window *)data;
             if ((!taskSwitcher || !taskSwitcher->isVisible()) &&
-                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()) &&
-                (!alarmDialog || !alarmDialog->isVisible()))
+                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()))
             {
                 if (m_foregroundWindow != (int)w)
                 {
@@ -1670,7 +1595,7 @@ uint Application::addNotification(uint notificationUserId, uint groupId, const Q
 
     else
     {
-        showHardNotificationDialog(summary, body, action, notificationUserId, m_lastNotificationId, declineAction, imageURI);
+        // TODO: call meego-ux-alarms
     }
 
     return m_lastNotificationId;
@@ -1958,22 +1883,6 @@ void Application::setBacklight(int percentage)
                                  PropModeReplace,
                                  (unsigned char *) &value, 1);
     }
-}
-
-void Application::alarmHandler(const QDBusMessage &msg)
-{
-    int id = msg.arguments()[0].toInt();
-    bool snooze = msg.arguments()[1].toBool();
-    QString title = msg.arguments()[2].toString();
-    QString message = msg.arguments()[3].toString();
-    QString soundUri = msg.arguments()[4].toString();
-
-    showAlarmDialog(id, title, message, snooze, soundUri);
-}
-
-void Application::stopSnooze(int id)
-{
-    m_alarmService->stopSnooze(id);
 }
 
 void Application::setScreenOn(bool value)

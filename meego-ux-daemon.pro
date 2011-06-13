@@ -65,8 +65,6 @@ OTHER_FILES += \
     com.meego.meego-ux-daemon.context \
     statusindicatormenu.qml \
     NotificationDelegate.qml \
-    alarm.qml \
-    hardnotification.qml \
     start-meego-ux
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}

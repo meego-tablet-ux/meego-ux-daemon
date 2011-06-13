@@ -16,9 +16,6 @@
 #include <QTranslator>
 #include <MNotification>
 #include <mnotificationgroup.h>
-#include <alarm-interface.h>
-#include <alarm-types.h>
-#include <alarm-dbus-names.h>
 
 #include <QAmbientLightReading>
 #include <QAmbientLightSensor>
@@ -123,8 +120,6 @@ public slots:
     void showPanels();
     void showGrid();
     void showAppStore();
-    void showAlarmDialog(int alarmId, QString title, QString message, bool snooze, QString soundUri);
-    void showHardNotificationDialog(QString subject, QString body, QString remoteAction, uint notificationUserId, uint m_lastNotificationId, QString declineAction, QString imageURI);
     void goHome();
     void lock();
     void launchDesktopByName(QString name);
@@ -154,9 +149,6 @@ public slots:
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, uint count, const QString &identifier);
     bool updateNotification(uint notificationUserId, uint notificationId, const QString &eventType);
 
-    // Alarms
-    void stopSnooze(int id);
-
 signals:
     void orientationChanged();
     void runningAppsChanged();
@@ -165,8 +157,6 @@ signals:
     void foregroundOrientationChanged();
     void stopOrientationSensor();
     void startOrientationSensor();
-    void alarm(int alarmId, QString title, QString message, bool snooze, QString soundUri);
-    void hardNotification(QString subject, QString body, QString remoteAction, uint userId, uint notificationId, QString declineAction, QString imageURI);
     void screenOnChanged();
     void applicationDirectoriesChanged();
 
@@ -175,8 +165,6 @@ private slots:
     void cleanupGrid();
     void cleanupTaskSwitcher();
     void cleanupLockscreen();
-    void cleanupAlarmDialog();
-    void cleanupHardNotificationDialog();
     void updateApps(const QList<WindowInfo> &windowList);
     void toggleSwitcher();
     void cleanupStatusIndicatorMenu();
@@ -185,7 +173,6 @@ private slots:
     void updateBacklight();
     void updateOrientation();
     void updateAmbientLight();
-    void alarmHandler(const QDBusMessage &msg);
     void applicationDirectoriesUpdated();
     void showPowerDialog();
 
@@ -217,8 +204,6 @@ private:
     Dialog *gridScreen;
     Dialog *panelsScreen;
     Dialog *statusIndicatorMenu;
-    Dialog *alarmDialog;
-    Dialog *hardNotificationDialog;
     Atom windowTypeAtom;
     Atom windowTypeNormalAtom;
     Atom windowTypeDesktopAtom;
@@ -301,8 +286,6 @@ private:
     QOrientationSensor orientationSensor;
 
     VolumeControl volumeControl;
-
-    AlarmInterface *m_alarmService;
 
     bool m_screenOn;
 
