@@ -534,6 +534,16 @@ Application::Application(int & argc, char ** argv) :
     m_homeLongPressTimer->setInterval(500);
     connect(m_homeLongPressTimer, SIGNAL(timeout()), this, SLOT(toggleSwitcher()));
 
+    m_powerLongPressTimer = new QTimer(this);
+    m_powerLongPressTimer->setInterval(500);
+    connect(m_powerLongPressTimer, SIGNAL(timeout()), this, SLOT(showPowerDialog()));
+
+    // We use this to create a window of time where we ignore power
+    // button events right after the screensaver off is triggered
+    m_powerIgnoreTimer = new QTimer(this);
+    m_powerIgnoreTimer->setInterval(250);
+    connect(m_powerIgnoreTimer, SIGNAL(timeout()), m_powerIgnoreTimer, SLOT(stop()));
+
     // Lock the screen
     lock();
 
@@ -844,15 +854,6 @@ bool Application::x11EventFilter(XEvent *event)
                     goHome();
             }
         }
-    }
-    else if (event->type == KeyPress)
-    {
-        XKeyEvent * keyEvent = (XKeyEvent *)event;
-        if (homeKeys.contains(keyEvent->keycode))
-        {
-            m_homeLongPressTimer->start();
-            m_homePressTime = keyEvent->time;
-        }
         else if (keyEvent->keycode == menu)
         {
             toggleSwitcher();
@@ -899,7 +900,37 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (keyEvent->keycode == powerKey)
         {
-            XActivateScreenSaver(QX11Info::display());
+            if (m_powerLongPressTimer->isActive())
+            {
+                m_powerLongPressTimer->stop();
+
+                lock();
+
+                // activate the screen saver a very short period later
+                // allow the lockscreen to setup first
+                QTimer::singleShot(1, this, SLOT(activateScreenSaver()));
+            }
+        }
+    }
+    else if (event->type == KeyPress)
+    {
+        XKeyEvent * keyEvent = (XKeyEvent *)event;
+        if (homeKeys.contains(keyEvent->keycode))
+        {
+            m_homeLongPressTimer->start();
+            m_homePressTime = keyEvent->time;
+        }
+        else if (keyEvent->keycode == powerKey)
+        {
+            // Filter out duplicate events and also block any
+            // events just after the screen turned on so we can
+            // allow the act of pressing the power button to turn on
+            // the screen without triggering another screen off event
+            if (!m_powerLongPressTimer->isActive() &&
+                    !m_powerIgnoreTimer->isActive())
+            {
+                m_powerLongPressTimer->start();
+            }
         }
     }
 
@@ -1044,6 +1075,7 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (sevent->state == ScreenSaverOff)
         {
+            m_powerIgnoreTimer->start();
             setScreenOn(true);
             send_ux_msg(UX_CMD_SCREEN_OFF, 0);
             context_provider_set_string("Session.State", "blanked");
@@ -2017,4 +2049,8 @@ void Application::cleanupGrid()
 {
     gridScreen->deleteLater();
     gridScreen = NULL;
+}
+
+void Application::showPowerDialog()
+{
 }

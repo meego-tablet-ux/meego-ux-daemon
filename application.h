@@ -187,6 +187,7 @@ private slots:
     void updateAmbientLight();
     void alarmHandler(const QDBusMessage &msg);
     void applicationDirectoriesUpdated();
+    void showPowerDialog();
 
 protected:
     /*! \reimp
@@ -260,6 +261,8 @@ private:
     QList<Desktop *> m_runningAppsOverflow;
 
     QTimer *m_homeLongPressTimer;
+    QTimer *m_powerLongPressTimer;
+    QTimer *m_powerIgnoreTimer;
 
     bool m_homeActive;
     Time m_homePressTime;
