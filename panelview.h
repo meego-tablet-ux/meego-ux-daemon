@@ -6,6 +6,7 @@
 #include<QUrl>
 
 #include<QPixmap>
+#include<QBitmap>
 #include<QPainter>
 #include<QGraphicsView>
 #include<QGraphicsScene>
@@ -41,7 +42,6 @@ public:
 
 class PanelView : public Dialog,
 		  public QDeclarativeImageProvider {
-
 	Q_OBJECT
 public:
 	PanelView(void);
@@ -56,15 +56,25 @@ public:
 	void tabletEvent(QTabletEvent *);
 	
 	QPixmap requestPixmap(const QString&, QSize *, const QSize&);
+
+	//void drawForeground(QPainter *, const QRectF &);
 	
 public slots:
 	void invalidate(void);
+	void bg_changed(void);
 private:
+	void create_bg(void);
+
 	bool dirty;
 	QPixmap *cache;
+	QPixmap *background;
 	QPainter *p;
 	PMonitor *r;
+
+	QDeclarativeView *bg_window;
 };
+
+extern const QByteArray background_qml;
 
 #endif 
 

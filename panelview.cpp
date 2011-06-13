@@ -1,5 +1,6 @@
 #include"panelview.h"
 
+
 PMonitor::PMonitor(void) : Dialog(false)
 {
 	const int width = qApp->desktop()->rect().width();
@@ -7,6 +8,7 @@ PMonitor::PMonitor(void) : Dialog(false)
 
 	setSceneRect(0, 0, width, height);
 	setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
+
 	setAttribute(Qt::WA_PaintUnclipped);
 	setAttribute(Qt::WA_NoSystemBackground);
 	setAttribute(Qt::WA_NoBackground);
@@ -16,7 +18,6 @@ PMonitor::PMonitor(void) : Dialog(false)
 		QGraphicsView::DontAdjustForAntialiasing);
 
 	viewport()->setAttribute(Qt::WA_TranslucentBackground, false);
-
 	scene()->setItemIndexMethod(QGraphicsScene::NoIndex);	
 
 	rootContext()->setContextProperty("screenWidth", width);
@@ -34,13 +35,11 @@ PanelView::PanelView(void) : Dialog(false),
 	QObject *i;
 
 	r = new PMonitor();
-
 	/* TODO maybe some error handling in case i == NULL at any step here */
 	i = r->rootObject()->findChild<QDeclarativeItem *>("deviceScreen");
 	i = i->findChild<QDeclarativeItem *>("PC");
 	i = i->findChild<QDeclarativeItem *>("PFLICK");
 	fwidth = i->property("contentWidth").toInt();
-	
 	r->rootObject()->setProperty("width", fwidth);
 	r->rootObject()->setProperty("height", height);
 
@@ -60,8 +59,7 @@ PanelView::PanelView(void) : Dialog(false),
 	r->viewport()->render(p);
 	engine()->addImageProvider(QLatin1String("gen"), this);
 
-	/* FIXME hardcoded path to dummy QML */
-	setSource(QUrl::fromLocalFile("/home/meego/panelview/real.qml"));
+	setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/real.qml"));
 	
 	rootObject()->setProperty("contentWidth", fwidth);
 	rootObject()->setProperty("contentHeight", height);
@@ -69,17 +67,23 @@ PanelView::PanelView(void) : Dialog(false),
 	rootObject()->setProperty("height", height);
 	
 	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+
 	setOptimizationFlags(
 		QGraphicsView::DontSavePainterState | 
 		QGraphicsView::DontAdjustForAntialiasing);
 	
+	setCacheMode(QGraphicsView::CacheBackground);
 	scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
 	
-	viewport()->setAutoFillBackground(false);
-	viewport()->setAttribute(Qt::WA_PaintUnclipped);
+//	viewport()->setAutoFillBackground(false);
+/*
 	viewport()->setAttribute(Qt::WA_TranslucentBackground, false);
+*/
 
+	viewport()->setAttribute(Qt::WA_PaintUnclipped);
 	dirty = false;
+	create_bg();
+
 }
 
 PanelView::~PanelView(void)
@@ -87,14 +91,21 @@ PanelView::~PanelView(void)
 	delete r;
 	delete p;
 	delete cache;
+	delete background;
+	delete bg_window;
 }
 
 void PanelView::paintEvent(QPaintEvent *e)
 {
+	QDeclarativeItem *i;
+	const int width = qApp->desktop()->rect().width();
+	const int height = qApp->desktop()->rect().height();
+
+	i =  qobject_cast<QDeclarativeItem*>(rootObject());
+
 	if(dirty) {
-		/*TODO Revamp This */
+		/* TODO Revamp This */
 		QList<QObject*> tmp;
-		QDeclarativeItem *i =  qobject_cast<QDeclarativeItem*>(rootObject());
 		tmp = i->children();
 		QString meh = tmp.at(1)->property("source").toString();
 		meh += '0';
@@ -104,6 +115,17 @@ void PanelView::paintEvent(QPaintEvent *e)
 		dirty = false;
 	
 	}
+
+
+/*
+	QPainter wp(viewport());
+	drawBackground(&wp, QRect(0,0,width, height));
+	scene()->render(&wp,
+			QRectF(0, 0, width, height),
+			QRectF(0, 0, width, height), 
+			Qt::KeepAspectRatioByExpanding);
+*/
+
 	QDeclarativeView::paintEvent(e);
 	return;
 }
@@ -160,11 +182,82 @@ QPixmap PanelView::requestPixmap(const QString &id, QSize *size,
 
 void PanelView::invalidate(void)
 {
+	int i, j;
+	const QRgb tran  = QColor(Qt::transparent).rgb();
+	QPixmap *old = cache;
+
+
 	dirty = true;
+
+	QImage img(cache->width(), cache->height(), 
+		QImage::Format_ARGB32); 
+	QPainter ip(&img);
+	r->viewport()->render(&ip);
+	ip.end();
+
+	const QRgb white = img.pixel(0,0);
+	for(i = 0; i < img.height(); i++) {
+		for(j = 0; j < img.width(); j++) {
+			if(img.pixel(j, i) == white) {
+				img.setPixel(j,i, tran);
+			}
+		}
+	}
+
+
+	QPixmap *tmp = new QPixmap(cache->width(), cache->height());
+	tmp->convertFromImage(img, Qt::ColorOnly | Qt::NoOpaqueDetection);
+	QBitmap mask = QBitmap::fromImage(img.createHeuristicMask());
+	tmp->setMask(mask);
+
+	p->end();
+	cache = tmp;
+	delete old;
+	p->begin(cache);
+
+	
+#if 0
+	if(!p->isActive()) { p->begin(cache); } 
+	/*TODO investigate whether it's faster to render on paint device
+ 	 * or directly to QPixmap...if it makes a difference at all..
+ 	 */
 	r->viewport()->render(p);
+	p->end(); 
+#endif 
+	//scene()->invalidate(QRectF(0,0,0,0), QGraphicsScene::BackgroundLayer)
 	viewport()->update();
 	return;
 }
 
+/*
+void PanelView::drawForeground(QPainter *p, const QRectF &rect)
+{
+	
+}
+*/
+
+void PanelView::create_bg(void)
+{
+	const int width = qApp->desktop()->rect().width();
+	const int height = qApp->desktop()->rect().height();
+
+	bg_window = new QDeclarativeView();
+	bg_window->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/background.qml"));
+	background = new QPixmap(width, height); 
+	
+	QObject::connect(bg_window->scene(), SIGNAL(changed(const QList<QRectF>&)), 
+			this, SLOT(bg_changed(void)));
+}
+
+void PanelView::bg_changed(void)
+{
+	QPainter bg_painter(background);
+	bg_window->viewport()->render(&bg_painter); 
+	QBrush br(*background);	
+	br.setStyle(Qt::TexturePattern);
+	setBackgroundBrush(br); 
+
+	scene()->invalidate(QRectF(0,0,0,0), QGraphicsScene::BackgroundLayer); 
+}
 
 
