@@ -271,6 +271,7 @@ void PanelView::bg_changed(void)
 {
 	QPainter bg_painter(background);
 	bg_window->viewport()->render(&bg_painter); 
+	bg_painter.end();
 	QBrush br(*background);	
 	br.setStyle(Qt::TexturePattern);
 	setBackgroundBrush(br); 
