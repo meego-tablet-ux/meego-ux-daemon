@@ -39,10 +39,12 @@ PanelView::PanelView(void) : Dialog(false),
 	QObject *i;
 
 	r = new PMonitor();
-	/* TODO maybe some error handling in case i == NULL at any step here */
-	i = r->rootObject()->findChild<QDeclarativeItem *>("deviceScreen");
-	i = i->findChild<QDeclarativeItem *>("PC");
-	i = i->findChild<QDeclarativeItem *>("PFLICK");
+	if((i = r->rootObject()->findChild<QDeclarativeItem *>("deviceScreen")) == NULL | 
+	   (i = i->findChild<QDeclarativeItem *>("PC")) == NULL | 
+	   (i = i->findChild<QDeclarativeItem *>("PFLICK")) == NULL) {
+		qFatal("Upgrade your version of MeeGo-UX-Panels");
+		exit(-1);
+	}
 	fwidth = i->property("contentWidth").toInt();
 	r->rootObject()->setProperty("width", fwidth);
 	r->rootObject()->setProperty("height", height);
