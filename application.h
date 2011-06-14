@@ -11,6 +11,7 @@
 
 #include <QApplication>
 #include <QDBusConnection>
+#include <QDBusServiceWatcher>
 #include <QDeclarativeEngine>
 #include <QDeclarativeListProperty>
 #include <QTranslator>
@@ -175,6 +176,8 @@ private slots:
     void updateAmbientLight();
     void applicationDirectoriesUpdated();
     void showPowerDialog();
+    void musicRegistered();
+    void musicUnregistered();
 
 protected:
     /*! \reimp
@@ -275,6 +278,7 @@ private:
     MGConfItem *m_applicationDirectoriesItem;
     QStringList m_applicationDirectories;
 
+    QDBusServiceWatcher *m_serviceWatcher;
     QDBusInterface *m_player;
 
     MGConfItem *m_automaticBacklightItem;

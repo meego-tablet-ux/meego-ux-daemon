@@ -9,7 +9,9 @@
 #include <QDBusArgument>
 #include <QDBusInterface>
 #include <QDBusConnection>
+#include <QDBusConnectionInterface>
 #include <QDBusPendingCall>
+#include <QDBusReply>
 #include <QDeclarativeEngine>
 #include <QDeclarativeContext>
 #include <QLibraryInfo>
@@ -47,6 +49,8 @@
 #include "atoms.h"
 
 #define APPS_SOCK_PATH "/var/run/trm-app.sock"
+#define MUSICSERVICE "com.meego.app.music"
+#define MUSICINTERFACE "/com/meego/app/music"
 
 #define CONTEXT_NOTIFICATIONS_LAST "Notifications.Last"
 #define CONTEXT_NOTIFICATIONS_UNREAD "Notifications.Unread"
@@ -509,9 +513,22 @@ Application::Application(int & argc, char ** argv) :
 
     powerKey = grabKey("XF86PowerOff");
 
-    m_player = new QDBusInterface("com.meego.app.music",
-                                  "/com/meego/app/music",
-                                  "com.meego.app.music");
+    m_player = NULL;
+    m_serviceWatcher = new QDBusServiceWatcher(MUSICSERVICE,
+                                               QDBusConnection::sessionBus(),
+                                               QDBusServiceWatcher::WatchForRegistration |
+                                               QDBusServiceWatcher::WatchForUnregistration,
+                                               this);
+    connect(m_serviceWatcher, SIGNAL(serviceRegistered(const QString &)),
+            this, SLOT(musicRegistered()));
+    connect(m_serviceWatcher, SIGNAL(serviceUnregistered(const QString &)),
+            this, SLOT(musicUnregistered()));
+
+    QDBusReply<bool> registered= QDBusConnection::sessionBus().interface()->isServiceRegistered(MUSICSERVICE);
+    if (registered.isValid()&&registered.value())
+    {
+        musicRegistered();
+    }
 
     if (m_showPanelsAsHome)
     {
@@ -571,7 +588,26 @@ Application::~Application()
     while (!displayList.isEmpty())
         delete displayList.takeLast();
 
-    delete m_player;
+    if(m_player)
+        delete m_player;
+}
+
+void Application::musicRegistered()
+{
+    m_player = new QDBusInterface(MUSICSERVICE,
+                                  MUSICINTERFACE,
+                                  MUSICSERVICE);
+    if (!m_player->isValid()) {
+        musicUnregistered();
+    }
+}
+
+void Application::musicUnregistered()
+{
+    if (m_player) {
+        m_player->deleteLater();
+    }
+    m_player = NULL;
 }
 
 void Application::setRunningAppsLimit(int limit)
@@ -786,24 +822,29 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (keyEvent->keycode == mediaPlayKey)
         {
-            m_player->asyncCall("play");
+            if(m_player)
+                m_player->asyncCall("play");
         }
         else if (keyEvent->keycode == mediaPauseKey)
         {
-            m_player->asyncCall("pause");
+            if(m_player)
+                m_player->asyncCall("pause");
         }
         else if (keyEvent->keycode == mediaStopKey)
         {
             // The service does not really have a stop method, so just pause
-            m_player->asyncCall("pause");
+            if(m_player)
+                m_player->asyncCall("pause");
         }
         else if (keyEvent->keycode == mediaPreviousKey)
         {
-            m_player->asyncCall("prev");
+            if(m_player)
+                m_player->asyncCall("prev");
         }
         else if (keyEvent->keycode == mediaNextKey)
         {
-            m_player->asyncCall("next");
+            if(m_player)
+                m_player->asyncCall("next");
         }
         else if (keyEvent->keycode == volumeUpKey)
         {
