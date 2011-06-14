@@ -68,8 +68,8 @@ OTHER_FILES += \
     com.meego.meego-ux-daemon.context \
     statusindicatormenu.qml \
     NotificationDelegate.qml \
-    start-meego-ux \
-    real.qml
+    real.qml \
+    start-meego-ux
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-daemon
