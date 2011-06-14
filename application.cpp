@@ -44,6 +44,7 @@
 #include <X11/extensions/scrnsaver.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/dpms.h>
+#include "atoms.h"
 
 #define APPS_SOCK_PATH "/var/run/trm-app.sock"
 
@@ -203,6 +204,8 @@ Application::Application(int & argc, char ** argv) :
 
     setQuitOnLastWindowClosed(false);
 
+    initAtoms();
+
     if (QSensor::sensorsForType("QOrientationSensor").length() > 0)
     {
         m_orientationSensorAvailable = true;
@@ -234,18 +237,18 @@ Application::Application(int & argc, char ** argv) :
     Display *dpy = QX11Info::display();
     int screen = QX11Info::appScreen();
     XID root = QX11Info::appRootWindow(screen);
-    windowTypeAtom = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE", false);
-    windowTypeNormalAtom = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_NORMAL", false);
-    windowTypeDesktopAtom = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DESKTOP", false);
-    windowTypeNotificationAtom = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_NOTIFICATION", false);
-    windowTypeDockAtom = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DOCK", false);
-    clientListAtom = XInternAtom(dpy, "_NET_CLIENT_LIST", false);
-    closeWindowAtom = XInternAtom(dpy, "_NET_CLOSE_WINDOW", false);
-    skipTaskbarAtom = XInternAtom(dpy, "_NET_WM_STATE_SKIP_TASKBAR", false);
-    windowStateAtom = XInternAtom(dpy, "_NET_WM_STATE", false);
-    activeWindowAtom = XInternAtom(dpy, "_NET_ACTIVE_WINDOW", false);
-    foregroundOrientationAtom = XInternAtom(dpy, "_MEEGO_ORIENTATION", false);
-    inhibitScreenSaverAtom = XInternAtom(dpy, "_MEEGO_INHIBIT_SCREENSAVER", false);
+    windowTypeAtom = getAtom(ATOM_NET_WM_WINDOW_TYPE);
+    windowTypeNormalAtom = getAtom(ATOM_NET_WM_WINDOW_TYPE_NORMAL);
+    windowTypeDesktopAtom = getAtom(ATOM_NET_WM_WINDOW_TYPE_DESKTOP);
+    windowTypeNotificationAtom = getAtom(ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION);
+    windowTypeDockAtom = getAtom(ATOM_NET_WM_WINDOW_TYPE_DOCK);
+    clientListAtom = getAtom(ATOM_NET_CLIENT_LIST);
+    closeWindowAtom = getAtom(ATOM_NET_CLOSE_WINDOW);
+    skipTaskbarAtom = getAtom(ATOM_NET_WM_STATE_SKIP_TASKBAR);
+    windowStateAtom = getAtom(ATOM_NET_WM_STATE);
+    activeWindowAtom = getAtom(ATOM_NET_ACTIVE_WINDOW);
+    foregroundOrientationAtom = getAtom(ATOM_MEEGO_ORIENTATION);
+    inhibitScreenSaverAtom = getAtom(ATOM_MEEGO_INHIBIT_SCREENSAVER);
 
     m_screenSaverTimeoutItem = new MGConfItem("/meego/ux/ScreenSaverTimeout", this);
     if (!m_screenSaverTimeoutItem || m_screenSaverTimeoutItem->value() == QVariant::Invalid)
@@ -302,7 +305,7 @@ Application::Application(int & argc, char ** argv) :
 
             // Attempt to support both the "Backlight" and
             // "BACKLIGHT" convention
-            Atom atom = XInternAtom(dpy, "Backlight", True);
+            Atom atom = getAtom(ATOM_Backlight);
             if ((XRRGetOutputProperty (dpy, output, atom,
                                       0, 4, False, False, None,
                                       &actual_type, &actual_format,
@@ -318,7 +321,7 @@ Application::Application(int & argc, char ** argv) :
                     prop = NULL;
                 }
 
-                atom = XInternAtom(dpy, "BACKLIGHT", True);
+                atom = getAtom(ATOM_BACKLIGHT);
                 if ((XRRGetOutputProperty (dpy, output, atom,
                                           0, 4, False, False, None,
                                           &actual_type, &actual_format,
@@ -673,8 +676,7 @@ void Application::minimizeWindow(int windowId)
     memset(&e, 0, sizeof(e));
 
     e.xclient.type = ClientMessage;
-    e.xclient.message_type = XInternAtom(QX11Info::display(), "WM_CHANGE_STATE",
-                                         False);
+    e.xclient.message_type = getAtom(ATOM_WM_CHANGE_STATE);
     e.xclient.display = QX11Info::display();
     e.xclient.window = windowId;
     e.xclient.format = 32;
@@ -1053,8 +1055,8 @@ void Application::updateWindowList()
                 unsigned char *notifyIconName = NULL;
                 unsigned long pid = 0;
 
-                Atom iconAtom = XInternAtom(dpy, "_NET_WM_ICON_NAME", False);
-                Atom stringAtom = XInternAtom(dpy, "UTF8_STRING", False);
+                Atom iconAtom = getAtom(ATOM_NET_WM_ICON_NAME);
+                Atom stringAtom = getAtom(ATOM_UTF8_STRING);
                 result = XGetWindowProperty(dpy,
                                             wins[i],
                                             iconAtom,
@@ -1091,7 +1093,7 @@ void Application::updateWindowList()
                                (char**)&meegoIconName);
                 }
 
-                Atom notifyAtom = XInternAtom(dpy, "_MEEGO_TABLET_NOTIFY", False);
+                Atom notifyAtom = getAtom(ATOM_MEEGO_TABLET_NOTIFY);
                 result = XGetWindowProperty(dpy,
                                             wins[i],
                                             notifyAtom,
@@ -1113,7 +1115,7 @@ void Application::updateWindowList()
                 }
 
                 // _NET_WM_PID
-                Atom pidAtom = XInternAtom(dpy, "_NET_WM_PID", True);
+                Atom pidAtom = getAtom(ATOM_NET_WM_PID);
                 unsigned char *propPid = 0;
                 result = XGetWindowProperty(dpy,
                                             wins[i],
@@ -1202,7 +1204,7 @@ void Application::updateWindowList()
                             QString name((char *)meegoIconName);
                             QString notify((char *)notifyIconName);
 
-                            Atom iconGeometryAtom = XInternAtom(QX11Info::display(), "_NET_WM_ICON_GEOMETRY", False);
+                            Atom iconGeometryAtom = getAtom(ATOM_NET_WM_ICON_GEOMETRY);
 
                             unsigned int geom[4];
                             geom[0] = 0; // x
@@ -1391,7 +1393,7 @@ QVector<Atom> Application::getNetWmState(Display *display, Window window)
     ulong propertyLength;
     ulong bytesLeft;
     uchar *propertyData = 0;
-    Atom netWmState = XInternAtom(display, "_NET_WM_STATE", false);
+    Atom netWmState = getAtom(ATOM_NET_WM_STATE);
 
     // Step 1: Get the size of the list
     bool result = XGetWindowProperty(display, window, netWmState, 0, 0,
@@ -1525,7 +1527,7 @@ void Application::raiseWindow(int windowId)
 
     ev.xclient.type         = ClientMessage;
     ev.xclient.window       = windowId;
-    ev.xclient.message_type = XInternAtom(QX11Info::display(), "_NET_ACTIVE_WINDOW", false);
+    ev.xclient.message_type = getAtom(ATOM_NET_ACTIVE_WINDOW);
     ev.xclient.format       = 32;
     ev.xclient.data.l[0]    = 1;
     ev.xclient.data.l[1]    = CurrentTime;

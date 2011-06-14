@@ -27,6 +27,8 @@
 #include <unistd.h>
 #include <context_provider.h>
 
+#include "atoms.h"
+
 Dialog::Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * parent) :
     QDeclarativeView(parent),
     m_forceOnTop(forceOnTop),
@@ -100,7 +102,7 @@ bool Dialog::event (QEvent * event)
     {
         if (m_forceOnTop)
         {
-            Atom stackingAtom = XInternAtom(QX11Info::display(), "_MEEGO_STACKING_LAYER", False);
+            Atom stackingAtom = getAtom(ATOM_MEEGO_STACKING_LAYER);
             long layer = 2;
             XChangeProperty(QX11Info::display(), internalWinId(), stackingAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&layer, 1);
 
@@ -108,7 +110,7 @@ bool Dialog::event (QEvent * event)
         }
         if (m_skipAnimation)
         {
-            Atom miniAtom = XInternAtom(QX11Info::display(), "_MEEGOTOUCH_SKIP_ANIMATIONS", False);
+            Atom miniAtom = getAtom(ATOM_MEEGOTOUCH_SKIP_ANIMATIONS);
             long min = 1;
             XChangeProperty(QX11Info::display(), internalWinId(), miniAtom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&min, 1);
         }
@@ -119,12 +121,12 @@ bool Dialog::event (QEvent * event)
 void Dialog::excludeFromTaskBar()
 {
     // Tell the window to not to be shown in the switcher
-    Atom skipTaskbarAtom = XInternAtom(QX11Info::display(), "_NET_WM_STATE_SKIP_TASKBAR", False);
+    Atom skipTaskbarAtom = getAtom(ATOM_NET_WM_STATE_SKIP_TASKBAR);
     changeNetWmState(true, skipTaskbarAtom);
 
     // Also set the _NET_WM_STATE window property to ensure Home doesn't try to
     // manage this window in case the window manager fails to set the property in time
-    Atom netWmStateAtom = XInternAtom(QX11Info::display(), "_NET_WM_STATE", False);
+    Atom netWmStateAtom = getAtom(ATOM_NET_WM_STATE);
     QVector<Atom> atoms;
     atoms.append(skipTaskbarAtom);
     XChangeProperty(QX11Info::display(), internalWinId(), netWmStateAtom, XA_ATOM, 32, PropModeReplace, (unsigned char *)atoms.data(), atoms.count());
@@ -135,7 +137,7 @@ void Dialog::changeNetWmState(bool set, Atom one, Atom two)
     XEvent e;
     e.xclient.type = ClientMessage;
     Display *display = QX11Info::display();
-    Atom netWmStateAtom = XInternAtom(display, "_NET_WM_STATE", FALSE);
+    Atom netWmStateAtom = getAtom(ATOM_NET_WM_STATE);
     e.xclient.message_type = netWmStateAtom;
     e.xclient.display = display;
     e.xclient.window = internalWinId();
@@ -153,7 +155,7 @@ void Dialog::setActualOrientation(int orientation)
 {
     m_actualOrientation = orientation;
 
-    Atom orientationAtom = XInternAtom(QX11Info::display(), "_MEEGO_ORIENTATION", false);
+    Atom orientationAtom = getAtom(ATOM_MEEGO_ORIENTATION);
 
     XChangeProperty(QX11Info::display(), internalWinId(), orientationAtom,
                     XA_CARDINAL, 32, PropModeReplace,

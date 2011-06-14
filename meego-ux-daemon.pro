@@ -25,7 +25,8 @@ SOURCES += main.cpp \
     statusindicatormenuadaptor.cpp \
     notificationmodel.cpp \
     volumecontrol.cpp \
-    lockscreenadaptor.cpp
+    lockscreenadaptor.cpp \
+    atoms.cpp
 HEADERS += \
     application.h \
     dialog.h \
@@ -38,7 +39,8 @@ HEADERS += \
     notificationitem.h \
     notificationmodel.h \
     volumecontrol.h \
-    lockscreenadaptor.h
+    lockscreenadaptor.h \
+    atoms.h
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
