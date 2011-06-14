@@ -589,7 +589,9 @@ Application::~Application()
         delete displayList.takeLast();
 
     if(m_player)
+    {
         delete m_player;
+    }
 }
 
 void Application::musicRegistered()
@@ -597,14 +599,16 @@ void Application::musicRegistered()
     m_player = new QDBusInterface(MUSICSERVICE,
                                   MUSICINTERFACE,
                                   MUSICSERVICE);
-    if (!m_player->isValid()) {
+    if (!m_player->isValid())
+    {
         musicUnregistered();
     }
 }
 
 void Application::musicUnregistered()
 {
-    if (m_player) {
+    if (m_player)
+    {
         m_player->deleteLater();
     }
     m_player = NULL;
@@ -823,28 +827,38 @@ bool Application::x11EventFilter(XEvent *event)
         else if (keyEvent->keycode == mediaPlayKey)
         {
             if(m_player)
+            {
                 m_player->asyncCall("play");
+            }
         }
         else if (keyEvent->keycode == mediaPauseKey)
         {
             if(m_player)
+            {
                 m_player->asyncCall("pause");
+            }
         }
         else if (keyEvent->keycode == mediaStopKey)
         {
             // The service does not really have a stop method, so just pause
             if(m_player)
+            {
                 m_player->asyncCall("pause");
+            }
         }
         else if (keyEvent->keycode == mediaPreviousKey)
         {
             if(m_player)
+            {
                 m_player->asyncCall("prev");
+            }
         }
         else if (keyEvent->keycode == mediaNextKey)
         {
             if(m_player)
+            {
                 m_player->asyncCall("next");
+            }
         }
         else if (keyEvent->keycode == volumeUpKey)
         {
