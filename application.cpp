@@ -501,7 +501,7 @@ Application::Application(int & argc, char ** argv) :
     // controls to the standard media keys, we can control media playback
     // regardless of which application is in the foreground
     mediaPlayKey     = grabKey("XF86AudioPlay");
-    mediaPauseKey     = grabKey("XF86AudioPause");
+    mediaPauseKey    = grabKey("XF86AudioPause");
     mediaStopKey     = grabKey("XF86AudioStop");
     mediaPreviousKey = grabKey("XF86AudioPrev");
     mediaNextKey     = grabKey("XF86AudioNext");
@@ -742,8 +742,12 @@ void Application::cleanupTaskSwitcher()
 
 void Application::cleanupLockscreen()
 {
-    lockScreen->deleteLater();
-    lockScreen = NULL;
+    lockScreen->hide();
+    if (m_enableRenderingSwap)
+    {
+        lockScreen->switchToSoftwareRendering();
+    }
+
 }
 
 void Application::cleanupStatusIndicatorMenu()
@@ -783,12 +787,16 @@ void Application::lock()
 {
     if (lockScreen)
     {
+        lockScreen->setSource(QUrl::fromLocalFile(m_lockscreenPath));
         lockScreen->activateWindow();
         lockScreen->raise();
+        lockScreen->show();
+        return;
     }
     else
     {
         lockScreen = new Dialog(true, true, true);
+        lockScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
         connect(lockScreen->engine(), SIGNAL(quit()), this, SLOT(cleanupLockscreen()));
 
         NotificationModel *model = new NotificationModel(lockScreen);
@@ -969,7 +977,8 @@ bool Application::x11EventFilter(XEvent *event)
         {
             Window w = *(Window *)data;
             if ((!taskSwitcher || !taskSwitcher->isVisible()) &&
-                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()))
+                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()) &&
+                (!lockScreen || !lockScreen->isVisible()))
             {
                 if (m_foregroundWindow != (int)w)
                 {
