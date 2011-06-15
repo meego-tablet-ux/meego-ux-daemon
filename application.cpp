@@ -562,8 +562,11 @@ Application::Application(int & argc, char ** argv) :
     m_powerIgnoreTimer->setInterval(250);
     connect(m_powerIgnoreTimer, SIGNAL(timeout()), m_powerIgnoreTimer, SLOT(stop()));
 
-    // Lock the screen
-    lock();
+    if (m_screenSaverTimeout > 0)
+    {
+        // Lock the screen
+        lock();
+    }
 
     context_provider_init (DBUS_BUS_SESSION, "com.meego.meego-ux-daemon");
     context_provider_install_key(CONTEXT_NOTIFICATIONS_LAST, true, NULL, NULL);
