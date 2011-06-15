@@ -1031,7 +1031,8 @@ bool Application::x11EventFilter(XEvent *event)
                     else
                         send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
 
-                    if (altWinId && m_foregroundWindow != altWinId)
+                    if (altWinId && m_foregroundWindow != altWinId &&
+                       (!lockScreen || !lockScreen->isVisible()))
                         minimizeWindow(altWinId);
                 }
             }
