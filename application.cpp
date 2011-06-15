@@ -774,8 +774,6 @@ void Application::goHome()
     {
         minimizeWindow(win);
     }
-
-    m_lockScreenAdaptor->home();
 }
 
 void Application::activateScreenSaver()
@@ -820,6 +818,7 @@ bool Application::x11EventFilter(XEvent *event)
         {
             if (m_homeLongPressTimer->isActive())
             {
+                m_lockScreenAdaptor->home();
                 m_homeLongPressTimer->stop();
 
                 if (m_homeActive || (taskSwitcher && taskSwitcher->isVisible()))
