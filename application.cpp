@@ -649,7 +649,7 @@ void Application::showTaskSwitcher()
     }
 
     taskSwitcher = new Dialog(true, true, false);
-    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
+    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
     taskSwitcher->show();
