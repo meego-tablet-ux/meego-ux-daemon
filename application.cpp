@@ -897,7 +897,7 @@ bool Application::x11EventFilter(XEvent *event)
 
                 // activate the screen saver a very short period later
                 // allow the lockscreen to setup first
-                QTimer::singleShot(1, this, SLOT(activateScreenSaver()));
+                QTimer::singleShot(250, this, SLOT(activateScreenSaver()));
             }
         }
     }
@@ -977,16 +977,19 @@ bool Application::x11EventFilter(XEvent *event)
         {
             Window w = *(Window *)data;
             if ((!taskSwitcher || !taskSwitcher->isVisible()) &&
-                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()) &&
-                (!lockScreen || !lockScreen->isVisible()))
+                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()))
             {
                 if (m_foregroundWindow != (int)w)
                 {
                     m_foregroundWindow = (int)w;
                     emit foregroundWindowChanged();
 
-                    XSelectInput(QX11Info::display(), w,
-                                 PropertyChangeMask|KeyPressMask|KeyReleaseMask);
+                    if (!lockScreen || !lockScreen->isVisible())
+                    {
+                        XSelectInput(QX11Info::display(), w,
+                                     PropertyChangeMask|KeyPressMask|KeyReleaseMask);
+                    }
+
                     setForegroundOrientationForWindow(w);
 
                     updateScreenSaver(w);
@@ -1021,12 +1024,14 @@ bool Application::x11EventFilter(XEvent *event)
                     }
                     m_homeActive = m_foregroundWindow == homeWinId;
 
-                    if (m_homeActive)
-                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
-                    else
+                    if ((!panelsScreen || !panelsScreen->isVisible()) &&
+                        (!gridScreen || !gridScreen->isVisible()) &&
+                        (!lockScreen || !lockScreen->isVisible()))
                         updateWindowList();
+                    else
+                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
 
-                    if (m_foregroundWindow != altWinId)
+                    if (altWinId && m_foregroundWindow != altWinId)
                         minimizeWindow(altWinId);
                 }
             }
