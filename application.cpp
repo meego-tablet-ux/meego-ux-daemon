@@ -1862,16 +1862,16 @@ void Application::updateAmbientLight()
     switch(reading->lightLevel())
     {
     case QAmbientLightReading::Dark:
-        setBacklight(0);
-        break;
-    case QAmbientLightReading::Twilight:
         setBacklight(20);
         break;
-    case QAmbientLightReading::Light:
+    case QAmbientLightReading::Twilight:
         setBacklight(40);
         break;
-    case QAmbientLightReading::Bright:
+    case QAmbientLightReading::Light:
         setBacklight(60);
+        break;
+    case QAmbientLightReading::Bright:
+        setBacklight(80);
         break;
     case QAmbientLightReading::Sunny:
         setBacklight(100);
