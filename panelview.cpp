@@ -24,7 +24,7 @@
 
 #include<QApplication>
 
-PMonitor::PMonitor(void) : Dialog(false)
+PMonitor::PMonitor(void) : Dialog(false, false, false)
 {
     const int width = qApp->desktop()->rect().width();
     const int height = qApp->desktop()->rect().height();

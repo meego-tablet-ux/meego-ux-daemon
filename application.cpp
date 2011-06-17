@@ -677,7 +677,7 @@ void Application::showPanels()
         }
         else
         {
-            panelsScreen = new PanelsView();
+            panelsScreen = new PanelView();
             connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
             panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
             panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
