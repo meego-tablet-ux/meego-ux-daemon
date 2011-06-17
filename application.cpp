@@ -195,6 +195,7 @@ Application::Application(int & argc, char ** argv) :
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
     m_runningAppsLimit(16),
+    m_backlightSmartAjustTimer(NULL),
     m_homeActive(false),
     m_homePressTime(0),
     m_haveAppStore(QFile::exists("/usr/share/applications/com.intel.appup-tablet.desktop")),
@@ -202,6 +203,8 @@ Application::Application(int & argc, char ** argv) :
     m_notificationDataStore(NotificationDataStore::instance()),
     m_notificationModel(new NotificationModel),
     m_lastNotificationId(0),
+    m_currentBacklightValue(80),
+    m_requestedBacklightValue(80),
     m_screenOn(true)
 {
     setApplicationName("meego-ux-daemon");
@@ -1862,20 +1865,20 @@ void Application::updateAmbientLight()
     switch(reading->lightLevel())
     {
     case QAmbientLightReading::Dark:
-        setBacklight(20);
+        smartSetBacklight(20);
         break;
     case QAmbientLightReading::Twilight:
-        setBacklight(40);
+        smartSetBacklight(40);
         break;
     case QAmbientLightReading::Light:
-        setBacklight(60);
+        smartSetBacklight(60);
         break;
     case QAmbientLightReading::Bright:
-        setBacklight(80);
+        smartSetBacklight(80);
         break;
     case QAmbientLightReading::Sunny:
-        setBacklight(100);
-
+        smartSetBacklight(100);
+        break;
     case QAmbientLightReading::Undefined:
         break;
     }
@@ -1958,15 +1961,59 @@ void Application::updateBacklight()
 
 void Application::setBacklight(int percentage)
 {
+    m_currentBacklightValue = percentage;
     foreach (DisplayInfo *info, displayList)
     {
-        long value = info->valueForPercentage(percentage);
+        long value = info->valueForPercentage(m_currentBacklightValue);
         XRRChangeOutputProperty (QX11Info::display(), info->output(),
                                  info->backlightAtom(),
                                  XA_INTEGER, 32,
                                  PropModeReplace,
                                  (unsigned char *) &value, 1);
     }
+}
+
+void Application::smartSetBacklight(int percentage)
+{
+    // Any request to raise the backlight are immediately addressed,
+    // but request to lower the backlight require a time period of
+    // no other lowering request so that we don't incorrectly adjust
+    // the brightness because the users hand cast a shadow on the sensor
+    // or the user just walk across a dark section of a room.
+    m_requestedBacklightValue = percentage;
+    if (m_requestedBacklightValue == m_currentBacklightValue)
+    {
+        if (m_backlightSmartAjustTimer && m_backlightSmartAjustTimer->isActive())
+        {
+            // the shadow as passed so kill the timer
+            m_backlightSmartAjustTimer->stop();
+        }
+    }
+    else if (m_requestedBacklightValue > m_currentBacklightValue)
+    {
+        if (m_backlightSmartAjustTimer && m_backlightSmartAjustTimer->isActive())
+        {
+            // all increase request trump outstanding lower request
+            m_backlightSmartAjustTimer->stop();
+        }
+        setBacklight(m_requestedBacklightValue);
+    }
+    else
+    {
+        if (!m_backlightSmartAjustTimer)
+        {
+            m_backlightSmartAjustTimer = new QTimer(this);
+            m_backlightSmartAjustTimer->setInterval(1000 * 60);
+            connect(m_backlightSmartAjustTimer, SIGNAL(timeout()), this, SLOT(doSetBacklight()));
+        }
+
+        m_backlightSmartAjustTimer->start();
+    }
+}
+
+void Application::doSetBacklight()
+{
+    setBacklight(m_requestedBacklightValue);
 }
 
 void Application::setScreenOn(bool value)
@@ -2008,6 +2055,13 @@ void Application::setScreenOn(bool value)
         if (lockScreen)
         {
             lockScreen->setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
+        }
+
+        // Outstanding request to dim the display are dropped since we want
+        // the display to be bright the next time we turn the screen back on
+        if (m_backlightSmartAjustTimer && m_backlightSmartAjustTimer->isActive())
+        {
+            m_backlightSmartAjustTimer->stop();
         }
     }
 }

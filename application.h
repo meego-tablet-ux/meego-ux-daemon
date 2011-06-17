@@ -178,6 +178,7 @@ private slots:
     void showPowerDialog();
     void musicRegistered();
     void musicUnregistered();
+    void doSetBacklight();
 
 protected:
     /*! \reimp
@@ -197,6 +198,7 @@ private:
     void setForegroundOrientationForWindow(uint wid);
     void updateScreenSaver(Window window);
     void setBacklight(int percentage);
+    void smartSetBacklight(int percentage);
     bool namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const;
 
     int m_orientation;
@@ -251,6 +253,7 @@ private:
     QTimer *m_homeLongPressTimer;
     QTimer *m_powerLongPressTimer;
     QTimer *m_powerIgnoreTimer;
+    QTimer *m_backlightSmartAjustTimer;
 
     bool m_homeActive;
     Time m_homePressTime;
@@ -281,6 +284,8 @@ private:
     QDBusServiceWatcher *m_serviceWatcher;
     QDBusInterface *m_player;
 
+    int m_currentBacklightValue;
+    int m_requestedBacklightValue;
     MGConfItem *m_automaticBacklightItem;
     bool m_automaticBacklight;
     MGConfItem *m_manualBacklightItem;
