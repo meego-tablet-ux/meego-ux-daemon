@@ -188,9 +188,10 @@ void Application::grabHomeKey(const char* key)
     homeKeys.insert(grabKey(key));
 }
 
-Application::Application(int & argc, char ** argv) :
+Application::Application(int & argc, char ** argv, bool enablePanelView) :
     QApplication(argc, argv),
     m_orientation(1),
+    m_enablePanelView(enablePanelView),
     taskSwitcher(NULL),
     lockScreen(NULL),
     panelsScreen(NULL),
@@ -536,7 +537,15 @@ Application::Application(int & argc, char ** argv) :
 
     if (m_showPanelsAsHome)
     {
-        panelsScreen = new PanelView();
+        if(m_enablePanelView)
+        {
+            panelsScreen = new PanelView();
+        }
+        else
+        {
+            panelsScreen = new Dialog(false,false,false);
+            panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
+        }
         panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
         panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
         panelsScreen->show();
@@ -677,10 +686,17 @@ void Application::showPanels()
         }
         else
         {
-            panelsScreen = new PanelView();
+            if(m_enablePanelView)
+            {
+                panelsScreen = new PanelView();
+            }
+            else
+            {
+                panelsScreen = new Dialog(false,false, false);
+                panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
+            }
             connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
             panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
-            panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
             panelsScreen->show();
         }
     }

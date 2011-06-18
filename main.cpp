@@ -13,6 +13,16 @@
 
 int main(int argc, char *argv[])
 {
+    bool acceleratedPanels = false;
+    for(int i = 1; i < argc; i++)
+    {
+        QString s(argv[i]);
+        if(s == "--enable-accelerated-panels")
+        {
+            acceleratedPanels = true;
+        }
+    }
+
     // Fix for BMC #17521
     XInitThreads();
 
@@ -21,7 +31,7 @@ int main(int argc, char *argv[])
     // explicitly using a QGLWidget viewport in those cases.
     QApplication::setGraphicsSystem("raster");
 
-    Application app(argc, argv);
+    Application app(argc, argv, acceleratedPanels);
 
     foreach (QString path, QCoreApplication::libraryPaths())
     {

@@ -62,7 +62,7 @@ class Application : public QApplication
     Q_PROPERTY(QStringList applicationDirectories READ applicationDirectories NOTIFY applicationDirectoriesChanged);
 
 public:
-    explicit Application(int & argc, char ** argv);
+    explicit Application(int & argc, char ** argv, bool enablePanelView);
     ~Application();
 
     int getOrientation() {
@@ -205,10 +205,11 @@ private:
     int m_orientation;
     bool orientationLocked;
     bool useOpenGL;
+    bool m_enablePanelView;
     Dialog *taskSwitcher;
     Dialog *lockScreen;
     Dialog *gridScreen;
-    PanelView *panelsScreen;
+    Dialog *panelsScreen;
     Dialog *statusIndicatorMenu;
     Atom windowTypeAtom;
     Atom windowTypeNormalAtom;
