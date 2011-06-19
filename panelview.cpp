@@ -40,8 +40,9 @@ PanelView::PanelView(void) : Dialog(false),
 
 	r = new PMonitor();
 	if((i = r->rootObject()->findChild<QDeclarativeItem *>("deviceScreen")) == NULL | 
+	   (i = i->findChild<QDeclarativeItem *>("appPage")) == NULL | 
 	   (i = i->findChild<QDeclarativeItem *>("PC")) == NULL | 
-	   (i = i->findChild<QDeclarativeItem *>("PFLICK")) == NULL) {
+	   (i = i->findChild<QDeclarativeItem *>("PLV")) == NULL) {
 		qFatal("Upgrade your version of MeeGo-UX-Panels");
 		exit(-1);
 	}
