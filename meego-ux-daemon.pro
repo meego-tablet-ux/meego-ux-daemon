@@ -59,7 +59,10 @@ desktop.path += $$INSTALL_ROOT/etc/xdg/autostart
 context.files += *.context
 context.path += $$INSTALL_ROOT/usr/share/contextkit/providers
 
-INSTALLS += target share desktop context
+dbusconfig.files += meego-ux-daemon.conf
+dbusconfig.path += $$INSTALL_ROOT/etc/dbus-1/system.d
+
+INSTALLS += target share desktop context dbusconfig
 
 OTHER_FILES += \
     taskswitcher.qml \

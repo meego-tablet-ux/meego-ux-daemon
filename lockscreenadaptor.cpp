@@ -51,3 +51,8 @@ void LockscreenAdaptor::home()
 {
     emit home_activated();
 }
+
+void LockscreenAdaptor::sendScreenOn(bool status)
+{
+    emit screenOn(status);
+}

@@ -35,6 +35,7 @@ class LockscreenAdaptor: public QDBusAbstractAdaptor
 "    </method>\n"
 "    <method name=\"lockscreen\"/>\n"
 "    <signal name=\"home_activated\"/>\n"
+"    <signal name=\"screenOn\"/>\n"
 "  </interface>\n"
         "")
 public:
@@ -46,8 +47,11 @@ public Q_SLOTS: // METHODS
     void lockscreen();
     bool lockscreen_status();
     void home();
+    void sendScreenOn(bool status);
+
 Q_SIGNALS: // SIGNALS
     void home_activated();
+    void screenOn(bool status);
 };
 
 #endif

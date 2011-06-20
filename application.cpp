@@ -488,6 +488,9 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     QDBusConnection::sessionBus().registerService("com.lockstatus");
     QDBusConnection::sessionBus().registerObject("/query", this);
 
+    QDBusConnection::systemBus().registerService("com.lockstatus");
+    QDBusConnection::systemBus().registerObject("/query", this);
+
     MGConfItem *homeKeyName = new MGConfItem("/meego/ux/HomeKey", this);
     if (homeKeyName && homeKeyName->value() != QVariant::Invalid)
     {
@@ -2053,6 +2056,8 @@ void Application::setScreenOn(bool value)
 
     m_screenOn = value;
     emit screenOnChanged();
+
+    m_lockScreenAdaptor->sendScreenOn(m_screenOn);
 
     if (m_screenOn)
     {

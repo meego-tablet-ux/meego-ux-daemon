@@ -6,5 +6,8 @@
     </method>
     <method name="lockscreen">
     </method>
+    <signal name="screenOn">
+        <arg name="status" type="b" direction="out"/>
+    </signal>
   </interface>
 </node>
