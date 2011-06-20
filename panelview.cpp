@@ -44,7 +44,6 @@ PanelView::PanelView(void) : Dialog(false),
 	   (i = i->findChild<QDeclarativeItem *>("PC")) == NULL | 
 	   (i = i->findChild<QDeclarativeItem *>("PLV")) == NULL) {
 		qFatal("Upgrade your version of MeeGo-UX-Panels");
-		exit(-1);
 	}
 	fwidth = i->property("contentWidth").toInt();
 	r->rootObject()->setProperty("width", fwidth);
