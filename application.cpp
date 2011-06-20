@@ -828,7 +828,6 @@ void Application::lock()
 
         NotificationModel *model = new NotificationModel(lockScreen);
         model->setNotificationMergeRule(1);
-        model->setFilterKey("/meego/ux/settings/lockscreen/filters");
         lockScreen->rootContext()->setContextProperty("notificationModel", model);
 
         lockScreen->setSource(QUrl::fromLocalFile(m_lockscreenPath));
