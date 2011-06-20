@@ -84,7 +84,7 @@ Window {
 
 
             BorderImage {
-                source: "image://theme/notificationBox_bg"
+                source: "image://themedimage/images/notificationBox_bg"
                 anchors.fill: parent
                 border.left: 5
                 border.top: 5
