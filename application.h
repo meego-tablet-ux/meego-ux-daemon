@@ -180,6 +180,7 @@ private slots:
     void musicRegistered();
     void musicUnregistered();
     void doSetBacklight();
+    void volumeLongPressTimeout();
 
 protected:
     /*! \reimp
@@ -252,6 +253,7 @@ private:
     QList<Desktop *> m_runningApps;
     QList<Desktop *> m_runningAppsOverflow;
 
+    QTimer *m_volumeLongPressTimer;
     QTimer *m_homeLongPressTimer;
     QTimer *m_powerLongPressTimer;
     QTimer *m_powerIgnoreTimer;

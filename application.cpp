@@ -560,6 +560,10 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
         panelsScreen = NULL;
     }
 
+    m_volumeLongPressTimer = new QTimer(this);
+    m_volumeLongPressTimer->setInterval(3000);
+    connect(m_volumeLongPressTimer, SIGNAL(timeout()), SLOT(volumeLongPressTimeout()));
+
     m_homeLongPressTimer = new QTimer(this);
     m_homeLongPressTimer->setInterval(500);
     connect(m_homeLongPressTimer, SIGNAL(timeout()), this, SLOT(toggleSwitcher()));
@@ -898,10 +902,15 @@ bool Application::x11EventFilter(XEvent *event)
         }
         else if (keyEvent->keycode == volumeDownKey)
         {
-            // Raise the volume in 16 levels
-            int v = qMax(volumeControl.volume() - qFloor(100.0/16.0), 0);
-            //qDebug() << "Decreasing volume from " << volumeControl.volume() << " to " << v;
-            volumeControl.setVolume(v);
+            if (m_volumeLongPressTimer->isActive())
+            {
+                m_volumeLongPressTimer->stop();
+
+                // Raise the volume in 16 levels
+                int v = qMax(volumeControl.volume() - qFloor(100.0/16.0), 0);
+                //qDebug() << "Decreasing volume from " << volumeControl.volume() << " to " << v;
+                volumeControl.setVolume(v);
+            }
         }
         else if (keyEvent->keycode == volumeMuteKey)
         {
@@ -941,6 +950,10 @@ bool Application::x11EventFilter(XEvent *event)
             {
                 m_powerLongPressTimer->start();
             }
+        }
+        else if (keyEvent->keycode == volumeDownKey)
+        {
+            m_volumeLongPressTimer->start();
         }
     }
 
@@ -1852,6 +1865,7 @@ void Application::setForegroundOrientationForWindow(uint wid)
 void Application::updateScreenSaver(Window window)
 {
     Display *dpy = QX11Info::display();
+
     if (inhibitList.contains(window))
     {
         XSetScreenSaver(dpy, -1, 0, DefaultBlanking, DontAllowExposures);
@@ -2116,4 +2130,12 @@ void Application::cleanupGrid()
 
 void Application::showPowerDialog()
 {
+}
+
+void Application::volumeLongPressTimeout()
+{
+    // If the user does a press-n-hold on the volume down
+    // button then we interpet that is a panic request to
+    // make the device quiet.
+    volumeControl.setVolume(0);
 }
