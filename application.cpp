@@ -1082,16 +1082,20 @@ bool Application::x11EventFilter(XEvent *event)
     else if (event->type == PropertyNotify &&
              event->xproperty.atom == inhibitScreenSaverAtom)
     {
+        XPropertyEvent *e = (XPropertyEvent *) event;
         Window w = event->xproperty.window;
-        if (inhibitList.contains(w))
-        {
-            inhibitList.removeAll(w);
-        }
-        else
+
+        if (e->state == PropertyNewValue && !inhibitList.contains(w))
         {
             inhibitList << w;
         }
-        updateScreenSaver(w);
+        else if (e->state == PropertyDelete && inhibitList.contains(w))
+        {
+            inhibitList.removeAll(w);
+        }
+
+        if (m_foregroundWindow == (int)w)
+            updateScreenSaver(w);
     }
 
     if (event->type == m_ss_event)
@@ -1425,6 +1429,9 @@ void Application::updateApps(const QList<WindowInfo> &windowList)
 
         if (!found)
         {
+            // take this opportunity to clear out any stale
+            // inhibitScreenSaver entries
+            inhibitList.removeAll(d->wid());
             d->setWid(-1);
         }
     }
@@ -1870,7 +1877,7 @@ void Application::updateScreenSaver(Window window)
 
     if (inhibitList.contains(window))
     {
-        XSetScreenSaver(dpy, -1, 0, DefaultBlanking, DontAllowExposures);
+        XSetScreenSaver(dpy, 0, 0, DefaultBlanking, DontAllowExposures);
     }
     else
     {
