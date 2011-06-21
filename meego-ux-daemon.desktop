@@ -4,3 +4,4 @@ Type=Application
 Name=meego-ux-daemon
 Exec=/usr/libexec/start-meego-ux
 X-Meego-Watchdog=Restart
+X-Meego-Priority=High
