@@ -200,7 +200,7 @@ void PanelView::invalidate(void)
 		for(j = 0; j < NUM_C; j++) {
 			old = cache[total];
 
-			QImage img(p_width, p_height,QImage::Format_ARGB32);
+			QImage img(p_width, p_height,QImage::Format_ARGB32_Premultiplied);
 
 			p.begin(&img);
 			r->viewport()->render(&p, QPoint(),
