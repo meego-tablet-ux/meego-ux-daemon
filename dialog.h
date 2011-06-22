@@ -52,6 +52,7 @@ public slots:
     void showTaskSwitcher();
     void switchToGLRendering();
     void switchToSoftwareRendering();
+    void setSystemDialog();
 
 private slots:
     void setGLRendering();

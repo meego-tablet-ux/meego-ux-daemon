@@ -671,7 +671,8 @@ void Application::showTaskSwitcher()
     }
 
     taskSwitcher = new Dialog(true, true, false);
-    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
+    taskSwitcher->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
+    taskSwitcher->setSystemDialog();
     connect(taskSwitcher->engine(), SIGNAL(quit()), this, SLOT(cleanupTaskSwitcher()));
     taskSwitcher->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/taskswitcher.qml"));
     taskSwitcher->show();
@@ -1827,7 +1828,8 @@ void Application::openStatusIndicatorMenu()
     }
 
     statusIndicatorMenu = new Dialog(true, true, false);
-    statusIndicatorMenu->setAttribute(Qt::WA_X11NetWmWindowTypeDock);
+    statusIndicatorMenu->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
+    statusIndicatorMenu->setSystemDialog();
     connect(statusIndicatorMenu->engine(), SIGNAL(quit()), this, SLOT(cleanupStatusIndicatorMenu()));
     statusIndicatorMenu->rootContext()->setContextProperty("notificationModel", m_notificationModel);
 

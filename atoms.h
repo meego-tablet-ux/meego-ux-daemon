@@ -35,6 +35,7 @@ typedef enum _AtomType {
     ATOM_BACKLIGHT,
     ATOM_UTF8_STRING,
     ATOM_WM_CHANGE_STATE,
+    ATOM_MEEGO_SYSTEM_DIALOG,
     ATOM_COUNT
 } AtomType;
 

@@ -216,3 +216,10 @@ void Dialog::switchToGLRendering()
     //go once around event loop to avoid crash in egl
     QTimer::singleShot(0, this, SLOT(setGLRendering()));
 }
+
+void Dialog::setSystemDialog()
+{
+    Atom atom = getAtom(ATOM_MEEGO_SYSTEM_DIALOG);
+    long value = 1;
+    XChangeProperty(QX11Info::display(), internalWinId(), atom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&value, 1);
+}

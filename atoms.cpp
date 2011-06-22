@@ -38,7 +38,8 @@ static const char *appAtomNames[ATOM_COUNT] = {
     "Backlight",
     "BACKLIGHT",
     "UTF8_STRING",
-    "WM_CHANGE_STATE"
+    "WM_CHANGE_STATE",
+    "_MEEGO_SYSTEM_DIALOG"
 };
 
 void initAtoms ()
