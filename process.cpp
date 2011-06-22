@@ -68,6 +68,7 @@ void Process::setupChildProcess()
     }
 }
 
+static int deleteAttempt = 0;
 void Process::tryAndDelete()
 {
     if (state() == QProcess::NotRunning)
@@ -76,6 +77,16 @@ void Process::tryAndDelete()
     }
     else
     {
-        QTimer::singleShot(5000, this, SLOT(tryAndDelete()));
+        if (deleteAttempt++ == 0)
+        {
+            QTimer::singleShot(5000, this, SLOT(tryAndDelete()));
+        }
+        else
+        {
+            // If the app has not exited by now then its time to
+            // take off the gloves...
+            ::kill(pid(), SIGKILL);
+            QTimer::singleShot(5000, this, SLOT(tryAndDelete()));
+        }
     }
 }
