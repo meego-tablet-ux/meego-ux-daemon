@@ -86,7 +86,7 @@ PanelView::PanelView(void) : Dialog(false),
 			tmp.at(total)->setProperty("x", cur_width); 
 			tmp.at(total)->setProperty("y", cur_height); 
 	
-			QString meh = QString("image://gen/");
+			QString meh = QString(ISRC);
 			meh += QString::number(total-1);
 			tmp.at(total)->setProperty("source", meh);
 
@@ -123,31 +123,6 @@ PanelView::~PanelView(void)
 	delete background;
 	delete bg_window;
 
-}
-
-void PanelView::paintEvent(QPaintEvent *e)
-{
-	QDeclarativeItem *dec;
-	QList<QObject*> tmp;
-	int i, j;
-	QString meh;
-
-	if(dirty) {
-		dec =  qobject_cast<QDeclarativeItem*>(rootObject());
-		tmp = dec->children();
-		for(i = 1; i <= NUM_P; i++) {
-			meh = tmp.at(i)->property("source").toString();
-			j = meh.right( meh.size() - 12).toInt(); 
-			meh.truncate(12);
-			j += NUM_P;
-			meh += QString::number(j);
-			tmp.at(i)->setProperty("source", meh);
-		}
-		dirty = false;
-	}
-
-	QDeclarativeView::paintEvent(e);
-	return;
 }
 
 void PanelView::keyPressEvent(QKeyEvent *e)
@@ -210,11 +185,20 @@ void PanelView::invalidate(void)
 
 	QPixmap *old, *tmp; 
 
+	QDeclarativeItem *dec;
+	QList<QObject *> kids;
+	QString src;
+	
 	const int height = qApp->desktop()->rect().height();
 	const int p_width = fwidth /  NUM_C;
 	const int p_height = height / NUM_R; 
 	const QRgb tran  = QColor(Qt::transparent).rgb();
 	QRgb bg_color; 
+
+	dec = qobject_cast<QDeclarativeItem *>(rootObject());
+	if(dec != NULL) {
+		kids = dec->children();
+	}
 
 	int total = 0;
 	for(i = 0; i < NUM_R; i++) {
@@ -246,11 +230,19 @@ void PanelView::invalidate(void)
 			delete old;
 
 			p[total]->begin(cache[total]);
+
+			if(dec != NULL) { 
+				src = kids.at(total+1)->property("source").toString();
+				k = src.right( src.size() - ISRC_LEN).toInt();
+				src.truncate(ISRC_LEN);
+				k += NUM_P;
+				src += QString::number(k);
+				kids.at(total+1)->setProperty("source", src);
+			}
 			
 			total++;
 		}
 	}	
-	dirty = true;
 	viewport()->update();
 	return;
 }

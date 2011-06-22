@@ -32,6 +32,9 @@
 #define NUM_C 4 
 #define NUM_R 2
 
+#define ISRC "image://gen/"
+#define ISRC_LEN strlen(ISRC)
+
 
 class PMonitor;
 class PanelView;
@@ -51,7 +54,6 @@ public:
 	PanelView(void);
 	~PanelView(void);
 
-	void paintEvent(QPaintEvent *);
 	void keyPressEvent(QKeyEvent *);
 	void keyReleaseEvent(QKeyEvent *);
 	void mouseDoubleClickEvent(QMouseEvent *);
@@ -67,7 +69,6 @@ public slots:
 private:
 	void create_bg(void);
 
-	bool dirty;
 	int fwidth;
 
 	QPixmap *cache[NUM_P];
