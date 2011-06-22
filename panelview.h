@@ -72,7 +72,6 @@ private:
 	int fwidth;
 
 	QPixmap *cache[NUM_P];
-	QPainter *p[NUM_P];
 	PMonitor *r;
 
 	PMonitor *bg_window;

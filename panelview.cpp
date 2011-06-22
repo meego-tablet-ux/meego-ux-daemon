@@ -58,11 +58,6 @@ PanelView::PanelView(void) : Dialog(false),
 	const int p_height = height / NUM_R; 
 	for(j = 0; j < NUM_P; j++) {
 		cache[j] = new QPixmap(p_width, p_height);
-		p[j] = new QPainter(cache[j]); 
-		p[j]->setRenderHint(QPainter::Antialiasing, false);
-		p[j]->setRenderHint(QPainter::TextAntialiasing, false);
-		p[j]->setRenderHint(QPainter::SmoothPixmapTransform, false);
-		p[j]->setRenderHint(QPainter::HighQualityAntialiasing, false);
 	}
 	
 	invalidate();
@@ -115,7 +110,6 @@ PanelView::~PanelView(void)
 	int i; 
 
 	for(i = 0; i < NUM_P; i++) {
-		delete p[i];
 		delete cache[i];
 	}
 
@@ -184,6 +178,7 @@ void PanelView::invalidate(void)
 	int i,j,k,m;
 
 	QPixmap *old, *tmp; 
+	QPainter p;
 
 	QDeclarativeItem *dec;
 	QList<QObject *> kids;
@@ -207,11 +202,11 @@ void PanelView::invalidate(void)
 
 			QImage img(p_width, p_height,QImage::Format_ARGB32);
 
-			QPainter ip(&img);
-			r->viewport()->render(&ip, QPoint(),
+			p.begin(&img);
+			r->viewport()->render(&p, QPoint(),
 				 QRegion( p_width * j, p_height * i, 
 					  p_width, p_height));
-			ip.end(); 
+			p.end();
 
 			if(total == 0) {
 				bg_color = img.pixel(0,0);
@@ -224,12 +219,8 @@ void PanelView::invalidate(void)
 					img.createMaskFromColor(bg_color));
 			tmp->setMask(mask);
 
-			p[total]->end();
-
 			cache[total] = tmp;
 			delete old;
-
-			p[total]->begin(cache[total]);
 
 			if(dec != NULL) { 
 				src = kids.at(total+1)->property("source").toString();
