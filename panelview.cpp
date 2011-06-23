@@ -234,7 +234,6 @@ void PanelView::invalidate(void)
 			total++;
 		}
 	}	
-	viewport()->update();
 	return;
 }
 
