@@ -202,6 +202,7 @@ private:
     void setBacklight(int percentage);
     void smartSetBacklight(int percentage);
     bool namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const;
+    bool isSystemModelDialog(unsigned target);
 
     int m_orientation;
     bool orientationLocked;

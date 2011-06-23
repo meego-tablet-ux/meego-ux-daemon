@@ -1013,67 +1013,64 @@ bool Application::x11EventFilter(XEvent *event)
         if (result == Success && data != None)
         {
             Window w = *(Window *)data;
-            if ((!taskSwitcher || !taskSwitcher->isVisible()) &&
-                (!statusIndicatorMenu || !statusIndicatorMenu->isVisible()))
+            XFree(data);
+
+            if (m_foregroundWindow != (int)w && !isSystemModelDialog(w))
             {
-                if (m_foregroundWindow != (int)w)
+                m_foregroundWindow = (int)w;
+                emit foregroundWindowChanged();
+
+                if (!lockScreen || !lockScreen->isVisible())
                 {
-                    m_foregroundWindow = (int)w;
-                    emit foregroundWindowChanged();
+                    XSelectInput(QX11Info::display(), w,
+                                 PropertyChangeMask|KeyPressMask|KeyReleaseMask);
+                }
 
-                    if (!lockScreen || !lockScreen->isVisible())
+                setForegroundOrientationForWindow(w);
+
+                updateScreenSaver(w);
+
+                if (m_enableRenderingSwap)
+                {
+                    if (panelsScreen)
                     {
-                        XSelectInput(QX11Info::display(), w,
-                                     PropertyChangeMask|KeyPressMask|KeyReleaseMask);
+                        if (panelsScreen->winId() == (int)w)
+                            panelsScreen->switchToGLRendering();
+                        else
+                            panelsScreen->switchToSoftwareRendering();
                     }
 
-                    setForegroundOrientationForWindow(w);
-
-                    updateScreenSaver(w);
-
-                    if (m_enableRenderingSwap)
+                    if (gridScreen)
                     {
-                        if (panelsScreen)
-                        {
-                            if (panelsScreen->winId() == (int)w)
-                                panelsScreen->switchToGLRendering();
-                            else
-                                panelsScreen->switchToSoftwareRendering();
-                        }
+                        if (gridScreen->winId() == (int)w)
+                            gridScreen->switchToGLRendering();
+                        else
+                            gridScreen->switchToSoftwareRendering();
+                    }
+                }
+                int altWinId = 0;
+                int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
+                if (m_showPanelsAsHome && gridScreen)
+                {
+                    altWinId = gridScreen->winId();
+                }
+                else if (!m_showPanelsAsHome && panelsScreen)
+                {
+                    altWinId = panelsScreen->winId();
+                }
+                m_homeActive = m_foregroundWindow == homeWinId;
 
-                        if (gridScreen)
-                        {
-                            if (gridScreen->winId() == (int)w)
-                                gridScreen->switchToGLRendering();
-                            else
-                                gridScreen->switchToSoftwareRendering();
-                        }
-                    }
-                    int altWinId = 0;
-                    int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
-                    if (m_showPanelsAsHome && gridScreen)
-                    {
-                        altWinId = gridScreen->winId();
-                    }
-                    else if (!m_showPanelsAsHome && panelsScreen)
-                    {
-                        altWinId = panelsScreen->winId();
-                    }
-                    m_homeActive = m_foregroundWindow == homeWinId;
-
-                    if ((!panelsScreen || !panelsScreen->isVisible()) &&
+                if ((!panelsScreen || !panelsScreen->isVisible()) &&
                         (!gridScreen || !gridScreen->isVisible()) &&
                         (!lockScreen || !lockScreen->isVisible()))
-                        updateWindowList();
-                    else
-                        send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+                    updateWindowList();
+                else
+                    send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
 
-                    if (altWinId && m_foregroundWindow != altWinId &&
-                       (!lockScreen || !lockScreen->isVisible()))
-                        minimizeWindow(altWinId);
-                }
+                if (altWinId && m_foregroundWindow != altWinId &&
+                        (!lockScreen || !lockScreen->isVisible()))
+                    minimizeWindow(altWinId);
             }
-            XFree(data);
         }
         else
         {
@@ -2151,4 +2148,31 @@ void Application::volumeLongPressTimeout()
     // button then we interpet that is a panic request to
     // make the device quiet.
     volumeControl.setVolume(0);
+}
+
+bool Application::isSystemModelDialog(unsigned target)
+{
+    Atom actualType;
+    int actualFormat;
+    unsigned long numWindowItems, bytesLeft;
+    unsigned char *data = NULL;
+
+    int result = XGetWindowProperty(QX11Info::display(),
+                                    target,
+                                    getAtom(ATOM_MEEGO_SYSTEM_DIALOG),
+                                    0, 0x7fffffff,
+                                    false, XA_WINDOW,
+                                    &actualType,
+                                    &actualFormat,
+                                    &numWindowItems,
+                                    &bytesLeft,
+                                    &data);
+
+    if (result == Success && data != None)
+    {
+        XFree(data);
+        return true;
+    }
+
+    return false;
 }
