@@ -1104,7 +1104,6 @@ bool Application::x11EventFilter(XEvent *event)
             setScreenOn(false);
             send_ux_msg(UX_CMD_SCREEN_ON, 0);
             context_provider_set_string("Session.State", "normal");
-            return true;
         }
         else if (sevent->state == ScreenSaverOff)
         {
@@ -1113,6 +1112,7 @@ bool Application::x11EventFilter(XEvent *event)
             send_ux_msg(UX_CMD_SCREEN_OFF, 0);
             context_provider_set_string("Session.State", "blanked");
         }
+        return true;
     }
     return QApplication::x11EventFilter(event);
 }
