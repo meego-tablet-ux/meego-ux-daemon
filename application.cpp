@@ -809,6 +809,13 @@ void Application::goHome()
 void Application::activateScreenSaver()
 {
     XActivateScreenSaver(QX11Info::display());
+
+    // For some reason we do not always get screen saver off
+    // events till the screen is turned back on, when we get
+    // and off and then an on event immediately after.
+    //
+    // I have only seen this when responding to the power key
+    setScreenOn(false);
 }
 
 void Application::lock()
@@ -1099,19 +1106,7 @@ bool Application::x11EventFilter(XEvent *event)
     if (event->type == m_ss_event)
     {
         XScreenSaverNotifyEvent *sevent = (XScreenSaverNotifyEvent *) event;
-        if (sevent->state == ScreenSaverOn)
-        {
-            setScreenOn(false);
-            send_ux_msg(UX_CMD_SCREEN_ON, 0);
-            context_provider_set_string("Session.State", "normal");
-        }
-        else if (sevent->state == ScreenSaverOff)
-        {
-            m_powerIgnoreTimer->start();
-            setScreenOn(true);
-            send_ux_msg(UX_CMD_SCREEN_OFF, 0);
-            context_provider_set_string("Session.State", "blanked");
-        }
+        setScreenOn(sevent->state == ScreenSaverOff);
         return true;
     }
     return QApplication::x11EventFilter(event);
@@ -2076,9 +2071,14 @@ void Application::setScreenOn(bool value)
         {
             lockScreen->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
         }
+
+        send_ux_msg(UX_CMD_SCREEN_ON, 0);
+        context_provider_set_string("Session.State", "normal");
     }
     else
     {
+        m_powerIgnoreTimer->start();
+
         // Open the lockscreen so that it's ready when the screen comes back on,
         // and to ensure all apps take measures to save power because they are
         // no longer in the foreground
@@ -2103,6 +2103,9 @@ void Application::setScreenOn(bool value)
         {
             m_backlightSmartAjustTimer->stop();
         }
+
+        send_ux_msg(UX_CMD_SCREEN_OFF, 0);
+        context_provider_set_string("Session.State", "blanked");
     }
 }
 
