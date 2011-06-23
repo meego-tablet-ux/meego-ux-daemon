@@ -9,7 +9,6 @@ PMonitor::PMonitor(void) : Dialog(false)
 	setSceneRect(0, 0, width, height);
 	setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
 
-	setAttribute(Qt::WA_PaintUnclipped);
 	setAttribute(Qt::WA_NoSystemBackground);
 	setAttribute(Qt::WA_NoBackground);
 	setCacheMode(QGraphicsView::CacheNone);
@@ -100,8 +99,9 @@ PanelView::PanelView(void) : Dialog(false),
 	
 	setCacheMode(QGraphicsView::CacheBackground);
 	scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
-	viewport()->setAttribute(Qt::WA_PaintUnclipped);
+	viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
 
+	
 	create_bg();
 }
 
