@@ -2143,6 +2143,14 @@ void Application::cleanupGrid()
 
 void Application::showPowerDialog()
 {
+    QDBusInterface iface("org.meego.shutdownverification",
+                         "/org/meego/shutdownverification",
+                         "org.meego.shutdownverification",
+                         QDBusConnection::sessionBus());
+    if(iface.isValid())
+    {
+        iface.asyncCall(QLatin1String("show"));
+    }
 }
 
 void Application::volumeLongPressTimeout()
