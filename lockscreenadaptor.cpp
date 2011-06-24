@@ -33,6 +33,12 @@ LockscreenAdaptor::~LockscreenAdaptor()
     // destructor
 }
 
+void LockscreenAdaptor::launchDesktopByName(const QString &name, const QString &cmd, const QString &cdata)
+{
+    // handle method call com.lockstatus.query.launchDesktopByName
+    QMetaObject::invokeMethod(parent(), "launchDesktopByName", Q_ARG(QString, name), Q_ARG(QString, cmd), Q_ARG(QString, cdata));
+}
+
 void LockscreenAdaptor::lockscreen()
 {
     // handle method call com.lockstatus.query.lockscreen
