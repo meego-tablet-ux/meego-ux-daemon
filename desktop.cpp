@@ -37,16 +37,23 @@ Desktop::~Desktop()
     m_process->tryAndDelete();
 }
 
-void Desktop::launch()
+void Desktop::launch(QString cmd, QString cdata)
 {
-    QString cmd = exec();
+    QString fullCommand = exec();
+    qDebug() << "fullCommand: " << fullCommand;
 
     // http://standards.freedesktop.org/desktop-entry-spec/latest/ar01s06.html
-    cmd.replace(QRegExp("%k"), filename());
-    cmd.replace(QRegExp("%i"), QString("--icon ") + icon());
-    cmd.replace(QRegExp("%c"), title());
-    cmd.replace(QRegExp("%[fFuU]"), filename());
-    m_process->start(cmd);
+    fullCommand.replace(QRegExp("%k"), filename());
+    fullCommand.replace(QRegExp("%i"), QString("--icon ") + icon());
+    fullCommand.replace(QRegExp("%c"), title());
+    fullCommand.replace(QRegExp("%[fFuU]"), filename());
+
+    if (!cmd.isEmpty() && !cdata.isEmpty())
+    {
+        fullCommand += " --cmd " + cmd + " --cdata " + cdata;
+    }
+
+    m_process->start(fullCommand);
 }
 
 void Desktop::started()

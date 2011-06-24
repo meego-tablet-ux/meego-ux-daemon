@@ -1565,7 +1565,7 @@ void Application::toggleSwitcher()
         showTaskSwitcher();
 }
 
-void Application::launchDesktopByName(QString name)
+void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
 {
     // verify that we don't have this already in our list
     foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
@@ -1574,29 +1574,62 @@ void Application::launchDesktopByName(QString name)
         {
             if (d->wid() > 0)
             {
-                raiseWindow(d->wid());
+                if (cmd.isEmpty() || cdata.isEmpty())
+                {
+                    raiseWindow(d->wid());
+                }
+                else
+                {
+                    /////////////////////////////////////////////////
+                    // Attempt to find the meego-qml-launcher dbus
+                    // interface for sending additional commands to a
+                    // live app, and if that fails then just exec the
+                    // app with the extra args and let the singleton
+                    // mechanism take care of the RPC
+
+                    QString appName = name.mid(name.lastIndexOf('/') + 1);
+                    appName.chop(8);
+
+                    QString service = "com.meego.launcher." + appName;
+                    QString object = "/com/meego/launcher";
+                    QString interface = "com.meego.launcher";
+                    QDBusInterface iface(service, object, interface);
+                    if (iface.isValid())
+                    {
+                        QStringList args = d->exec().split(" ");
+                        args << "--cmd" << cmd << "--cdata" << cdata;
+                        iface.asyncCall(QLatin1String("raise"), args);
+                    }
+                    else
+                    {
+                        QProcess::startDetached(d->exec() + " --cmd " + cmd + " --cdata " + cdata);
+                    }
+                }
             }
             else
             {
-                d->launch();
+                d->launch(cmd, cdata);
             }
             return;
         }
     }
 
     Desktop *d = new Desktop(name, this);
-    connect(d, SIGNAL(launched(int)), this, SLOT(desktopLaunched(int)));
-    d->launch();
-    if (!d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
+    if (d->isValid())
     {
-        if (m_runningApps.length() < m_runningAppsLimit)
+        connect(d, SIGNAL(launched(int)), this, SLOT(desktopLaunched(int)));
+        d->launch(cmd, cdata);
+        if (!d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
         {
-            m_runningApps << d;
-            emit runningAppsChanged();
-        }
-        else
-        {
-            m_runningAppsOverflow << d;
+            if (m_runningApps.length() < m_runningAppsLimit)
+            {
+                m_runningApps << d;
+                emit runningAppsChanged();
+            }
+            else
+            {
+                m_runningAppsOverflow << d;
+            }
         }
     }
 }

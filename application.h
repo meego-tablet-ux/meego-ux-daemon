@@ -124,7 +124,7 @@ public slots:
     void showAppStore();
     void goHome();
     void lock();
-    void launchDesktopByName(QString name);
+    void launchDesktopByName(QString name, QString cmd = QString(), QString cdata = QString());
     void closeDesktopByName(QString name);
     void openStatusIndicatorMenu();
     void clearAllNotifications();

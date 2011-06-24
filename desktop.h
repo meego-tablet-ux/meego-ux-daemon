@@ -130,7 +130,7 @@ public slots:
         return m_entry->contains(val);
     }
 
-    void launch();
+    void launch(QString cmd, QString cdata);
 
     void finished(int exitCode, QProcess::ExitStatus exitStatus);
     void started();
