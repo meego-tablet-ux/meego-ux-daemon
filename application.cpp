@@ -852,7 +852,8 @@ bool Application::x11EventFilter(XEvent *event)
         XKeyEvent * keyEvent = (XKeyEvent *)event;
         if (homeKeys.contains(keyEvent->keycode))
         {
-            if (m_homeLongPressTimer->isActive())
+            if (m_homeLongPressTimer->isActive() ||
+               (lockScreen && lockScreen->isVisible()))
             {
                 m_lockScreenAdaptor->home();
                 m_homeLongPressTimer->stop();
@@ -1559,6 +1560,11 @@ void Application::loadTranslators()
 void Application::toggleSwitcher()
 {
     m_homeLongPressTimer->stop();
+
+    // If the lockscreen is active then just ignore the request
+    if (lockScreen && lockScreen->isVisible())
+        return;
+
     if (taskSwitcher && taskSwitcher->isVisible())
         cleanupTaskSwitcher();
     else
@@ -2220,3 +2226,4 @@ bool Application::isSystemModelDialog(unsigned target)
 
     return false;
 }
+
