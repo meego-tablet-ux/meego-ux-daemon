@@ -852,8 +852,7 @@ bool Application::x11EventFilter(XEvent *event)
         XKeyEvent * keyEvent = (XKeyEvent *)event;
         if (homeKeys.contains(keyEvent->keycode))
         {
-            if (m_homeLongPressTimer->isActive() ||
-               (lockScreen && lockScreen->isVisible()))
+	    if (m_homeLongPressTimer->isActive() && (!lockScreen || !lockScreen->isVisible()))
             {
                 m_lockScreenAdaptor->home();
                 m_homeLongPressTimer->stop();
