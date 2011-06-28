@@ -572,13 +572,13 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     connect(m_homeLongPressTimer, SIGNAL(timeout()), this, SLOT(toggleSwitcher()));
 
     m_powerLongPressTimer = new QTimer(this);
-    m_powerLongPressTimer->setInterval(500);
+    m_powerLongPressTimer->setInterval(3000);
     connect(m_powerLongPressTimer, SIGNAL(timeout()), this, SLOT(showPowerDialog()));
 
     // We use this to create a window of time where we ignore power
     // button events right after the screensaver off is triggered
     m_powerIgnoreTimer = new QTimer(this);
-    m_powerIgnoreTimer->setInterval(250);
+    m_powerIgnoreTimer->setInterval(500);
     connect(m_powerIgnoreTimer, SIGNAL(timeout()), m_powerIgnoreTimer, SLOT(stop()));
 
     if (m_screenSaverTimeout > 0)
@@ -2099,6 +2099,8 @@ void Application::setScreenOn(bool value)
 
     if (m_screenOn)
     {
+        m_powerIgnoreTimer->start();
+
         if (m_orientationSensorAvailable)
             orientationSensor.start();
         if (m_ambientLightSensorAvailable && m_automaticBacklight)
@@ -2115,8 +2117,6 @@ void Application::setScreenOn(bool value)
     }
     else
     {
-        m_powerIgnoreTimer->start();
-
         // Open the lockscreen so that it's ready when the screen comes back on,
         // and to ensure all apps take measures to save power because they are
         // no longer in the foreground
