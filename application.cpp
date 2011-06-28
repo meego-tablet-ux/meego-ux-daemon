@@ -777,7 +777,7 @@ void Application::cleanupLockscreen()
     {
         lockScreen->switchToSoftwareRendering();
     }
-
+    m_lockScreenAdaptor->sendLockScreenOn(false);
 }
 
 void Application::cleanupStatusIndicatorMenu()
@@ -826,7 +826,6 @@ void Application::lock()
         lockScreen->activateWindow();
         lockScreen->raise();
         lockScreen->show();
-        return;
     }
     else
     {
@@ -842,6 +841,7 @@ void Application::lock()
         lockScreen->show();
     }
 
+    m_lockScreenAdaptor->sendLockScreenOn(true);
     send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
 }
 

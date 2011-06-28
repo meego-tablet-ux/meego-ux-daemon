@@ -62,3 +62,8 @@ void LockscreenAdaptor::sendScreenOn(bool status)
 {
     emit screenOn(status);
 }
+
+void LockscreenAdaptor::sendLockScreenOn(bool status)
+{
+    emit lockScreenOn(status);
+}

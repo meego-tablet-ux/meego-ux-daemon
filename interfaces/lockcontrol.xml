@@ -14,5 +14,8 @@
     <signal name="screenOn">
         <arg name="status" type="b" direction="out"/>
     </signal>
+    <signal name="lockScreenOn">
+        <arg name="status" type="b" direction="out"/>
+    </signal>
   </interface>
 </node>
