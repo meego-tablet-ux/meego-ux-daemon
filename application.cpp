@@ -2226,3 +2226,7 @@ bool Application::isSystemModelDialog(unsigned target)
     return false;
 }
 
+bool Application::lockScreenOn()
+{
+    return lockScreen && lockScreen->isVisible();
+}

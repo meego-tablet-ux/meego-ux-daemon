@@ -117,6 +117,8 @@ public:
     }
     void setScreenOn(bool value);
 
+    bool lockScreenOn();
+
 public slots:
     void showTaskSwitcher();
     void showPanels();

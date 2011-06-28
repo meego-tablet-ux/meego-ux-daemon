@@ -49,8 +49,8 @@ bool LockscreenAdaptor::lockscreen_status()
 {
     // handle method call com.lockstatus.query.lockscreen_status
     bool status;
-    QMetaObject::invokeMethod(parent(), "screenOn", Q_RETURN_ARG(bool, status));
-    return !status;
+    QMetaObject::invokeMethod(parent(), "lockScreenOn", Q_RETURN_ARG(bool, status));
+    return status;
 }
 
 void LockscreenAdaptor::home()
