@@ -58,7 +58,10 @@ PanelView::PanelView(void) : Dialog(false),
 		cache[j] = new QPixmap(p_width, p_height);
 	}
 	
-	invalidate();
+	qobject_cast<QGLWidget *>(viewport())->makeCurrent();
+	fbo = new QGLFramebufferObject(p_width, p_height,
+			 QGLFramebufferObject::CombinedDepthStencil);
+
 	engine()->addImageProvider(QLatin1String("gen"), this);
 
 	setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/real.qml"));
@@ -116,6 +119,7 @@ PanelView::~PanelView(void)
 	delete background;
 	delete bg_window;
 
+	delete fbo;
 }
 
 void PanelView::keyPressEvent(QKeyEvent *e)
@@ -248,11 +252,18 @@ inline void PanelView::draw_single(int i)
 		c -= NUM_C;
 	}
 
-			p.begin(&img);
-			r->viewport()->render(&p, QPoint(),
-				 QRegion( p_width * j, p_height * i, 
-					  p_width, p_height));
-			p.end();
+	qobject_cast<QGLWidget *>(viewport())->makeCurrent();
+	p.begin(fbo);	
+		glClear(GL_COLOR_BUFFER_BIT);
+		r->viewport()->render(&p, QPoint(), QRegion(
+			p_width * c, p_height *_r, 
+			p_width, p_height));
+	p.end();
+
+	old = cache[i];
+	cache[i] = new QImage(fbo->toImage());
+	delete old;
+	
 
 	src = kids.at(i+1)->property("source").toString();
 	k = src.right(src.size() - ISRC_LEN).toInt();

@@ -13,6 +13,9 @@
 #include<QWidget>
 #include<QDesktopWidget>
 
+
+#include<QGLFramebufferObject>
+
 #include<QPaintEvent>
 #include<QKeyEvent>
 #include<QMouseEvent>
@@ -74,9 +77,10 @@ private:
 
 	QPixmap *cache[NUM_P];
 	PMonitor *r;
+	QGLFramebufferObject *fbo;
 
 	PMonitor *bg_window;
-	QPixmap *background;
+
 };
 
 #endif 
