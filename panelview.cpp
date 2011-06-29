@@ -10,7 +10,6 @@ PMonitor::PMonitor(void) : Dialog(false)
 	setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
 
 	setAttribute(Qt::WA_NoSystemBackground);
-	setAttribute(Qt::WA_NoBackground);
 	setCacheMode(QGraphicsView::CacheNone);
 	setOptimizationFlags(
 		QGraphicsView::DontSavePainterState | 
