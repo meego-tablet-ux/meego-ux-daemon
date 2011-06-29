@@ -48,7 +48,7 @@ PanelView::PanelView(void) : Dialog(false),
 	r->rootObject()->setProperty("height", height);
 
 	QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)), 
-			this, SLOT(invalidate(void)));
+			this, SLOT(invalidate(const QList<QRectF>&)));
 
 	setSceneRect(0, 0, width, height);
 
@@ -172,34 +172,81 @@ QPixmap PanelView::requestPixmap(const QString &id, QSize *size,
 	return *cache[i];
 }
 
-void PanelView::invalidate(void)
+
+static QRectF consolidate_width(const QList<QRectF> &region)
 {
-	int i,j,k,m;
+	qreal l,r, t, b;
+	int i;
 
-	QPixmap *old, *tmp; 
-	QPainter p;
-
-	QDeclarativeItem *dec;
-	QList<QObject *> kids;
-	QString src;
+	l = region.at(0).x();
+	r = region.at(0).x() + region.at(0).width();
+	t = region.at(0).y();
+	b = region.at(0).y() + region.at(0).height();
 	
+	for(i = 1; i < region.count(); i++) {
+		const double _l = region.at(i).x();
+		const double _r = region.at(i).x() + region.at(i).width();
+		const double _t = region.at(i).y();
+		const double _b = region.at(i).y() + region.at(i).height();
+		if(_l < l) {
+			l = _l;
+		}
+		if(_r> r) {
+			r = _r;
+		}
+		if(_t < t) {
+			t = _t;
+		}
+		if(_b > b) {
+			b = _b;
+		}
+	}
+	return QRectF(l, t, r -l, b - t); 
+}
+
+void PanelView::invalidate(const QList<QRectF> &region)
+{
+	int i, j, c_width, c_height, total=0;
+
 	const int height = qApp->desktop()->rect().height();
 	const int p_width = fwidth /  NUM_C;
 	const int p_height = height / NUM_R; 
-	const QRgb tran  = QColor(Qt::transparent).rgb();
-	QRgb bg_color; 
 
-	dec = qobject_cast<QDeclarativeItem *>(rootObject());
-	if(dec != NULL) {
-		kids = dec->children();
+	if(region.count() >= 1) {
+		QRectF n = consolidate_width(region);
+		for(i = 0, c_height =0; i < NUM_R; i++, c_height += p_height) {
+			for(j =0, c_width=0; j < NUM_C; j++, c_width += p_width) {
+				QRectF d(c_width, c_height , p_width, p_height);
+				if(d.intersects(n)) {	
+					draw_single(total); 
+				}
+				total++;
+			}
+		}
 	}
+	return;
+}
 
-	int total = 0;
-	for(i = 0; i < NUM_R; i++) {
-		for(j = 0; j < NUM_C; j++) {
-			old = cache[total];
+inline void PanelView::draw_single(int i)
+{
+	const int height = qApp->desktop()->rect().height();
+	const int p_width = fwidth /  NUM_C;
+	const int p_height = height / NUM_R; 
 
-			QImage img(p_width, p_height,QImage::Format_ARGB32_Premultiplied);
+	static const QDeclarativeItem *dec = qobject_cast<QDeclarativeItem *>
+		(rootObject());
+	static const QList<QObject *> kids = dec->children();
+
+	int c, _r=0,k;
+	QImage *old;
+	QString src;
+	QPainter p;
+
+	c = i;
+	while(c >= NUM_C) {
+		_r++;
+		c -= NUM_C;
+	}
 
 			p.begin(&img);
 			r->viewport()->render(&p, QPoint(),
@@ -207,33 +254,14 @@ void PanelView::invalidate(void)
 					  p_width, p_height));
 			p.end();
 
-			if(total == 0) {
-				bg_color = img.pixel(0,0);
-			}
+	src = kids.at(i+1)->property("source").toString();
+	k = src.right(src.size() - ISRC_LEN).toInt();
+	src.truncate(ISRC_LEN);
+	k += NUM_P;
+	src += QString::number(k);
+	kids.at(i+1)->setProperty("source", src);
 
-			tmp = new QPixmap(p_width, p_height); 
-			tmp->convertFromImage(img,
-				Qt::ColorOnly | Qt::NoOpaqueDetection);
-			QBitmap mask = QBitmap::fromImage(
-					img.createMaskFromColor(bg_color));
-			tmp->setMask(mask);
-
-			cache[total] = tmp;
-			delete old;
-
-			if(dec != NULL) { 
-				src = kids.at(total+1)->property("source").toString();
-				k = src.right( src.size() - ISRC_LEN).toInt();
-				src.truncate(ISRC_LEN);
-				k += NUM_P;
-				src += QString::number(k);
-				kids.at(total+1)->setProperty("source", src);
-			}
-			
-			total++;
-		}
-	}	
-	return;
+	return;		
 }
 
 

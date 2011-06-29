@@ -64,10 +64,11 @@ public:
 	QPixmap requestPixmap(const QString&, QSize *, const QSize&);
 
 public slots:
-	void invalidate(void);
+	void invalidate(const QList<QRectF> &);
 	void bg_changed(void);
 private:
 	void create_bg(void);
+	inline void draw_single(int); 
 
 	int fwidth;
 
