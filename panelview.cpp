@@ -24,10 +24,9 @@ PMonitor::PMonitor(void) : Dialog(false)
 	setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
 }
 
-PanelView::PanelView(void) : Dialog(false), 
-		QDeclarativeImageProvider(QDeclarativeImageProvider::Pixmap)
+PanelView::PanelView(void) : Dialog(false, false, true), 
+		QDeclarativeImageProvider(QDeclarativeImageProvider::Image)
 {
-
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
 
@@ -55,7 +54,8 @@ PanelView::PanelView(void) : Dialog(false),
 	const int p_width = fwidth /  NUM_C;
 	const int p_height = height / NUM_R; 
 	for(j = 0; j < NUM_P; j++) {
-		cache[j] = new QPixmap(p_width, p_height);
+		cache[j] = new QImage(p_width, p_height,
+			 QImage::Format_ARGB32_Premultiplied);
 	}
 	
 	qobject_cast<QGLWidget *>(viewport())->makeCurrent();
@@ -168,7 +168,7 @@ void PanelView::tabletEvent(QTabletEvent *e)
 	return;
 }
 
-QPixmap PanelView::requestPixmap(const QString &id, QSize *size, 
+QImage PanelView::requestImage(const QString &id, QSize *size, 
 		const QSize &resize) 
 {
 	int i = id.toInt(); 
@@ -275,15 +275,16 @@ inline void PanelView::draw_single(int i)
 	return;		
 }
 
-
 void PanelView::create_bg(void)
 {
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
 
 	bg_window = new PMonitor();
-	bg_window->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/background.qml"));
-	background = new QPixmap(width, height); 
+	bg_window->setSource(QUrl::fromLocalFile(
+		"/usr/share/meego-ux-daemon/background.qml"));
+	background = new QImage(width, height,
+		 QImage::Format_ARGB32_Premultiplied); 
 	
 	QObject::connect(bg_window->scene(), SIGNAL(changed(const QList<QRectF>&)), 
 			this, SLOT(bg_changed(void)));
@@ -292,8 +293,9 @@ void PanelView::create_bg(void)
 void PanelView::bg_changed(void)
 {
 	QPainter bg_painter(background);
-	bg_window->viewport()->render(&bg_painter); 
+		bg_window->viewport()->render(&bg_painter); 
 	bg_painter.end();
+
 	QBrush br(*background);	
 	br.setStyle(Qt::TexturePattern);
 	setBackgroundBrush(br); 

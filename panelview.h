@@ -64,7 +64,7 @@ public:
 	void mouseReleaseEvent(QMouseEvent *);
 	void tabletEvent(QTabletEvent *);
 	
-	QPixmap requestPixmap(const QString&, QSize *, const QSize&);
+	QImage  requestImage(const QString &, QSize *, const QSize &);
 
 public slots:
 	void invalidate(const QList<QRectF> &);
@@ -75,8 +75,9 @@ private:
 
 	int fwidth;
 
-	QPixmap *cache[NUM_P];
+	QImage *cache[NUM_P];
 	PMonitor *r;
+	QImage *background;
 	QGLFramebufferObject *fbo;
 
 	PMonitor *bg_window;
