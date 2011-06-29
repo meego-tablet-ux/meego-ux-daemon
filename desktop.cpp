@@ -48,9 +48,11 @@ void Desktop::launch(QString cmd, QString cdata)
     fullCommand.replace(QRegExp("%c"), title());
     fullCommand.replace(QRegExp("%[fFuU]"), filename());
 
-    if (!cmd.isEmpty() && !cdata.isEmpty())
+    if (!cmd.isEmpty())
     {
-        fullCommand += " --cmd " + cmd + " --cdata " + cdata;
+        fullCommand += " --cmd " + cmd;
+        if (!cdata.isEmpty())
+            fullCommand += " --cdata " + cdata;
     }
 
     m_process->start(fullCommand);

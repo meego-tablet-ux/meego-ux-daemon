@@ -89,7 +89,6 @@ static void send_ux_msg(ux_info_cmd cmd, unsigned int data)
 
     msg->cmd = cmd;
     msg->data = data;
-
     int sockfd;
     struct sockaddr_un servaddr;
 
@@ -1593,7 +1592,7 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
         {
             if (d->wid() > 0)
             {
-                if (cmd.isEmpty() || cdata.isEmpty())
+                if (cmd.isEmpty())
                 {
                     raiseWindow(d->wid());
                 }
@@ -1616,18 +1615,38 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
                     if (iface.isValid())
                     {
                         QStringList args = d->exec().split(" ");
-                        args << "--cmd" << cmd << "--cdata" << cdata;
+                        args << "--cmd" << cmd;
+                        if (!cdata.isEmpty()) 
+                            args << "--cdata" << cdata;
                         iface.asyncCall(QLatin1String("raise"), args);
                     }
                     else
                     {
-                        QProcess::startDetached(d->exec() + " --cmd " + cmd + " --cdata " + cdata);
+		        if (cdata.isEmpty())
+			{
+                            QProcess::startDetached(d->exec() + " --cmd " + cmd);
+                        }
+                        else
+			{
+                            QProcess::startDetached(d->exec() + " --cmd " + cmd + " --cdata " + cdata);
+                        }
                     }
                 }
             }
             else
             {
-                d->launch(cmd, cdata);
+                if (cmd.isEmpty())
+                {
+                    // If we get here then the user thinks the app is
+                    // running when its really not, so ask the app to
+                    // restore to start and store to it's previously
+                    // running state
+                    d->launch("restore");
+                }
+                else
+                {
+                    d->launch(cmd, cdata);
+                }
             }
             return;
         }
