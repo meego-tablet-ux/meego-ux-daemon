@@ -259,6 +259,12 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     foregroundOrientationAtom = getAtom(ATOM_MEEGO_ORIENTATION);
     inhibitScreenSaverAtom = getAtom(ATOM_MEEGO_INHIBIT_SCREENSAVER);
 
+    // We need to explicitly turn off the DPMS timeouts since just configuring
+    // XScreenSaver does not seem to do this.  Without this we will see a 10min timeout
+    // kick in regardless of if the screen saver was disabled, inhibited, or configured
+    // for a timeout of longer then 10 minutes
+    DPMSSetTimeouts(QX11Info::display(), 0, 0, 0);
+
     m_screenSaverTimeoutItem = new MGConfItem("/meego/ux/ScreenSaverTimeout", this);
     if (!m_screenSaverTimeoutItem || m_screenSaverTimeoutItem->value() == QVariant::Invalid)
     {
