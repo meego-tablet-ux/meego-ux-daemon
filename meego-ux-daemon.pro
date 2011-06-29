@@ -1,4 +1,4 @@
-VERSION = 0.2.25
+VERSION = 0.2.26
 
 QT += declarative opengl network dbus
 CONFIG += mobility link_pkgconfig
