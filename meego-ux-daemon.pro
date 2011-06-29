@@ -12,7 +12,8 @@ PKGCONFIG += \
     libcgroup \
     xext \
     libpulse \
-    libpulse-mainloop-glib
+    libpulse-mainloop-glib \
+    meegolocale
 TARGET = meego-ux-daemon
 TEMPLATE = app
 SOURCES += main.cpp \

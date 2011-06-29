@@ -17,6 +17,7 @@
 #include <QTranslator>
 #include <MNotification>
 #include <mnotificationgroup.h>
+#include <meegolocale.h>
 
 #include <QAmbientLightReading>
 #include <QAmbientLightSensor>
@@ -132,6 +133,7 @@ public slots:
     void clearAllNotifications();
     void desktopLaunched(int pid);
     void activateScreenSaver();
+    void loadTranslators();
 
     // MNotificationManager Interface
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
@@ -196,7 +198,6 @@ private:
     void updateWindowList();
     static QVector<Atom> getNetWmState(Display *display, Window window);
     void minimizeWindow(int windowId);
-    void loadTranslators();
     void grabHomeKey(const char* key);
     void raiseWindow(int windowId);
     void setForegroundOrientationForWindow(uint wid);
@@ -205,6 +206,8 @@ private:
     void smartSetBacklight(int percentage);
     bool namesMatchFuzzy(const Desktop& d, const WindowInfo& w) const;
     bool isSystemModelDialog(unsigned target);
+
+    meego::Locale* locale;
 
     int m_orientation;
     bool orientationLocked;

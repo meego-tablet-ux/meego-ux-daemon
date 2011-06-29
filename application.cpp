@@ -190,6 +190,7 @@ void Application::grabHomeKey(const char* key)
 
 Application::Application(int & argc, char ** argv, bool enablePanelView) :
     QApplication(argc, argv),
+    locale(new meego::Locale(this)),
     m_orientation(1),
     m_enablePanelView(enablePanelView),
     taskSwitcher(NULL),
@@ -470,6 +471,7 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     QDBusConnection::sessionBus().unregisterService("com.nokia.meego-ux-daemon");
 
     loadTranslators();
+    connect(locale, SIGNAL(localeChanged()), this, SLOT(loadTranslators()));
 
     installTranslator(&qtTranslator);
     installTranslator(&commonTranslator);
@@ -1548,18 +1550,24 @@ QVector<Atom> Application::getNetWmState(Display *display, Window window)
 
 void Application::loadTranslators()
 {
-    qtTranslator.load("qt_" + QLocale::system().name() + ".qm",
+    qtTranslator.load("qt_" + locale->locale() + ".qm",
                       QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    commonTranslator.load("meegolabs-ux-components_" + QLocale::system().name() + ".qm",
+    commonTranslator.load("meegolabs-ux-components_" + locale->locale() + ".qm",
                           QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    homescreenTranslator.load("meego-ux-appgrid_" + QLocale::system().name() + ".qm",
+    homescreenTranslator.load("meego-ux-appgrid_" + locale->locale() + ".qm",
                               QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    panelsTranslator.load("meego-ux-panels_" + QLocale::system().name() + ".qm",
+    panelsTranslator.load("meego-ux-panels_" + locale->locale() + ".qm",
                           QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    daemonTranslator.load("meego-ux-daemon_" + QLocale::system().name() + ".qm",
+    daemonTranslator.load("meego-ux-daemon_" + locale->locale() + ".qm",
                           QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-    mediaTranslator.load("meego-ux-media-qml_" + QLocale::system().name() + ".qm",
+    mediaTranslator.load("meego-ux-media-qml_" + locale->locale() + ".qm",
                          QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+
+    foreach (QWidget *widget, QApplication::topLevelWidgets())
+    {
+        Dialog *dialog = static_cast<Dialog *>(widget);
+        dialog->setSource(dialog->source());
+    }
 }
 
 void Application::toggleSwitcher()
