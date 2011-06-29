@@ -85,15 +85,11 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 			QString meh = QString(ISRC);
 			meh += QString::number(total-1);
 			tmp.at(total)->setProperty("source", meh);
-
 			cur_width += p_width;
 			total++;
 		}
 		cur_height += p_height;
 	}
-	
-	
-	setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
 	setOptimizationFlags(
 		QGraphicsView::DontSavePainterState | 
