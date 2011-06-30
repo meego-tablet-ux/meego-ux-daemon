@@ -1,33 +1,9 @@
 #ifndef _PANELVIEW_H
 #define _PANELVIEW_H 
 
-#include<QString>
-#include<QSize>
-#include<QUrl>
-
-#include<QPixmap>
-#include<QBitmap>
-#include<QPainter>
-#include<QGraphicsView>
-#include<QGraphicsScene>
-#include<QWidget>
-#include<QDesktopWidget>
-
-
-#include<QGLFramebufferObject>
-
-#include<QPaintEvent>
-#include<QKeyEvent>
-#include<QMouseEvent>
-#include<QTabletEvent>
-
-#include<QDeclarativeEngine>
-#include<QDeclarativeContext>
 #include<QDeclarativeImageProvider>
-#include<QDeclarativeView>
-#include<QDeclarativeItem>
-
-#include<QApplication>
+#include<QRectF>
+#include<QList>
 
 #include"dialog.h"
 
@@ -38,6 +14,11 @@
 #define ISRC "image://gen/"
 #define ISRC_LEN strlen(ISRC)
 
+class QGLFramebufferObject;
+class QKeyEvent;
+class QMouseEvent;
+class QTabletEvent;
+class QImage;
 
 class PMonitor;
 class PanelView;
@@ -48,7 +29,6 @@ public:
 	PMonitor(void);
 	friend class PanelView;
 };
-
 
 class PanelView : public Dialog,
 		  public QDeclarativeImageProvider {
@@ -76,12 +56,11 @@ private:
 	int fwidth;
 
 	QImage *cache[NUM_P];
-	PMonitor *r;
 	QImage *background;
 	QGLFramebufferObject *fbo;
 
+	PMonitor *r;
 	PMonitor *bg_window;
-
 };
 
 #endif 

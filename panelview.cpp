@@ -1,5 +1,28 @@
 #include"panelview.h"
 
+#include<QString>
+#include<QSize>
+#include<QUrl>
+
+#include<QGraphicsView>
+#include<QGraphicsScene>
+#include<QWidget>
+#include<QDesktopWidget>
+
+#include<QGLFramebufferObject>
+#include<QPainter>
+
+#include<QPaintEvent>
+#include<QKeyEvent>
+#include<QMouseEvent>
+#include<QTabletEvent>
+
+#include<QDeclarativeEngine>
+#include<QDeclarativeContext>
+#include<QDeclarativeView>
+#include<QDeclarativeItem>
+
+#include<QApplication>
 
 PMonitor::PMonitor(void) : Dialog(false)
 {
@@ -30,19 +53,20 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 	const int width = qApp->desktop()->rect().width();
 	const int height = qApp->desktop()->rect().height();
 
-	int j, k, total=1, cur_width, cur_height=0;
-	QList<QObject*> tmp;
+	int j, k, total=1, cur_width, cur_height;
+	QList<QObject *> kids;
 	QDeclarativeItem *dec;
-	QObject *i;
+	QObject *child;
 
 	r = new PMonitor();
 
-	if((i = r->rootObject()->findChild<QDeclarativeItem *>("appPage")) == NULL | 
-	   (i = i->findChild<QDeclarativeItem *>("PC")) == NULL | 
-	   (i = i->findChild<QDeclarativeItem *>("PLV")) == NULL) {
+	if(((child = r->rootObject()->findChild<QDeclarativeItem *>("appPage"))
+		 == NULL) | 
+	   ((child =  child->findChild<QDeclarativeItem *>("PC")) == NULL) | 
+	   ((child = child->findChild<QDeclarativeItem *>("PLV")) == NULL)) {
 		qFatal("Upgrade your version of MeeGo-UX-Panels");
 	}
-	fwidth = i->property("contentWidth").toInt();
+	fwidth = child->property("contentWidth").toInt();
 	r->rootObject()->setProperty("width", fwidth);
 	r->rootObject()->setProperty("height", height);
 
@@ -71,24 +95,20 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 	rootObject()->setProperty("height", height);
 
 	dec =  qobject_cast<QDeclarativeItem*>(rootObject());
-	tmp = dec->children();
+	kids = dec->children();
 
-
-	for(j = 0; j < NUM_R; j++) {
-		cur_width = 0;
-		for(k = 0; k < NUM_C; k++) {
-			tmp.at(total)->setProperty("width", p_width);
-			tmp.at(total)->setProperty("height", p_height);
-			tmp.at(total)->setProperty("x", cur_width); 
-			tmp.at(total)->setProperty("y", cur_height); 
+	for(j = 0, cur_height =0; j < NUM_R; j++, cur_height += p_height) {
+		for(k = 0, cur_width = 0; k < NUM_C; k++, cur_width += p_width) {
+			kids.at(total)->setProperty("width", p_width);
+			kids.at(total)->setProperty("height", p_height);
+			kids.at(total)->setProperty("x", cur_width); 
+			kids.at(total)->setProperty("y", cur_height); 
 	
-			QString meh = QString(ISRC);
-			meh += QString::number(total-1);
-			tmp.at(total)->setProperty("source", meh);
-			cur_width += p_width;
+			QString source = QString(ISRC);
+			source += QString::number(total-1);
+			kids.at(total)->setProperty("source", source);
 			total++;
 		}
-		cur_height += p_height;
 	}
 
 	setOptimizationFlags(
@@ -99,7 +119,6 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 	scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
 	viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
 
-	
 	create_bg();
 }
 
@@ -121,33 +140,29 @@ PanelView::~PanelView(void)
 void PanelView::keyPressEvent(QKeyEvent *e)
 {
 	r->keyPressEvent(e);
-	return;
 }
 
 void PanelView::keyReleaseEvent(QKeyEvent *e)
 {
 	r->keyReleaseEvent(e);
-	return;
 }
 
 void PanelView::mouseDoubleClickEvent(QMouseEvent *e)
 {
 	r->mouseDoubleClickEvent(e);
-	return;
 }
 
 void PanelView::mousePressEvent(QMouseEvent *e)
 {
-	QDeclarativeItem *i;
+	QDeclarativeItem *ro;
 
-	i = qobject_cast<QDeclarativeItem *>(rootObject());
-	QPoint j(e->x() + i->property("contentX").toDouble(), e->y());
-	QMouseEvent k(e->type(), j, e->button(), e->buttons(), e->modifiers()); 
+	ro = qobject_cast<QDeclarativeItem *>(rootObject());
+	QPoint np(e->x() + ro->property("contentX").toDouble(), e->y());
+	QMouseEvent ne(e->type(), np, e->button(), e->buttons(), e->modifiers()); 
 	
 	bg_window->mousePressEvent(e);
-	r->mousePressEvent(&k);
+	r->mousePressEvent(&ne);
 	QDeclarativeView::mousePressEvent(e);
-	return;
 }
 
 void PanelView::mouseReleaseEvent(QMouseEvent *e)
@@ -155,20 +170,25 @@ void PanelView::mouseReleaseEvent(QMouseEvent *e)
 	bg_window->mouseReleaseEvent(e);
 	r->mouseReleaseEvent(e);
 	QDeclarativeView::mouseReleaseEvent(e);
-	return;
 }
 
 void PanelView::tabletEvent(QTabletEvent *e)
 {
 	r->tabletEvent(e);
-	return;
 }
 
 QImage PanelView::requestImage(const QString &id, QSize *size, 
 		const QSize &resize) 
 {
+	Q_UNUSED(size);
+	Q_UNUSED(resize);
+	
 	int i = id.toInt(); 
-	while(i >= NUM_P) { i -= NUM_P; } 
+
+	while(i >= NUM_P) { 
+		i -= NUM_P;
+	}
+ 
 	return *cache[i];
 }
 
@@ -201,18 +221,19 @@ static QRectF consolidate_width(const QList<QRectF> &region)
 			b = _b;
 		}
 	}
+
 	return QRectF(l, t, r -l, b - t); 
 }
 
 void PanelView::invalidate(const QList<QRectF> &region)
 {
-	int i, j, c_width, c_height, total=0;
-
 	const int height = qApp->desktop()->rect().height();
 	const int p_width = fwidth /  NUM_C;
 	const int p_height = height / NUM_R; 
 
-	if(region.count() >= 1) {
+	int i, j, c_width, c_height, total=0;
+
+	if(region.count() > 0) {
 		QRectF n = consolidate_width(region);
 		for(i = 0, c_height =0; i < NUM_R; i++, c_height += p_height) {
 			for(j =0, c_width=0; j < NUM_C; j++, c_width += p_width) {
@@ -224,7 +245,6 @@ void PanelView::invalidate(const QList<QRectF> &region)
 			}
 		}
 	}
-	return;
 }
 
 inline void PanelView::draw_single(int i)
@@ -260,15 +280,12 @@ inline void PanelView::draw_single(int i)
 	cache[i] = new QImage(fbo->toImage());
 	delete old;
 	
-
 	src = kids.at(i+1)->property("source").toString();
 	k = src.right(src.size() - ISRC_LEN).toInt();
 	src.truncate(ISRC_LEN);
 	k += NUM_P;
 	src += QString::number(k);
 	kids.at(i+1)->setProperty("source", src);
-
-	return;		
 }
 
 void PanelView::create_bg(void)
@@ -298,5 +315,4 @@ void PanelView::bg_changed(void)
 
 	scene()->invalidate(QRectF(0,0,0,0), QGraphicsScene::BackgroundLayer); 
 }
-
 
