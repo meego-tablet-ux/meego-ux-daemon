@@ -7,29 +7,29 @@ import MeeGo.Sharing 0.1
 import MeeGo.Sharing.UI 0.1
 
 
-Flickable { 
-	Image { 
-	 }
+Flickable {
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
-	Image { 
-	 }
+    Image {
+     }
 
 }

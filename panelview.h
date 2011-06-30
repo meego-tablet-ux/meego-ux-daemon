@@ -1,5 +1,5 @@
 #ifndef _PANELVIEW_H
-#define _PANELVIEW_H 
+#define _PANELVIEW_H
 
 #include<QDeclarativeImageProvider>
 #include<QRectF>
@@ -8,7 +8,7 @@
 #include"dialog.h"
 
 #define NUM_P 8
-#define NUM_C 4 
+#define NUM_C 4
 #define NUM_R 2
 
 #define ISRC "image://gen/"
@@ -24,44 +24,44 @@ class PMonitor;
 class PanelView;
 
 class PMonitor : public Dialog {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	PMonitor(void);
-	friend class PanelView;
+    PMonitor(void);
+    friend class PanelView;
 };
 
 class PanelView : public Dialog,
-		  public QDeclarativeImageProvider {
-	Q_OBJECT
+          public QDeclarativeImageProvider {
+    Q_OBJECT
 public:
-	PanelView(void);
-	~PanelView(void);
+    PanelView(void);
+    ~PanelView(void);
 
-	void keyPressEvent(QKeyEvent *);
-	void keyReleaseEvent(QKeyEvent *);
-	void mouseDoubleClickEvent(QMouseEvent *);
-	void mousePressEvent(QMouseEvent *);
-	void mouseReleaseEvent(QMouseEvent *);
-	void tabletEvent(QTabletEvent *);
-	
-	QImage  requestImage(const QString &, QSize *, const QSize &);
+    void keyPressEvent(QKeyEvent *);
+    void keyReleaseEvent(QKeyEvent *);
+    void mouseDoubleClickEvent(QMouseEvent *);
+    void mousePressEvent(QMouseEvent *);
+    void mouseReleaseEvent(QMouseEvent *);
+    void tabletEvent(QTabletEvent *);
+
+    QImage  requestImage(const QString &, QSize *, const QSize &);
 
 public slots:
-	void invalidate(const QList<QRectF> &);
-	void bg_changed(void);
+    void invalidate(const QList<QRectF> &);
+    void bg_changed(void);
 private:
-	void create_bg(void);
-	inline void draw_single(int); 
+    void create_bg(void);
+    inline void draw_single(int);
 
-	int fwidth;
+    int fwidth;
 
-	QImage *cache[NUM_P];
-	QImage *background;
-	QGLFramebufferObject *fbo;
+    QImage *cache[NUM_P];
+    QImage *background;
+    QGLFramebufferObject *fbo;
 
-	PMonitor *r;
-	PMonitor *bg_window;
+    PMonitor *r;
+    PMonitor *bg_window;
 };
 
-#endif 
+#endif
 
