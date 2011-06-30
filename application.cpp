@@ -1583,7 +1583,7 @@ void Application::toggleSwitcher()
         showTaskSwitcher();
 }
 
-void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
+void Application::launchDesktopByName(QString name, QString cmd, QString cdata, bool noRaise)
 {
     // verify that we don't have this already in our list
     foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
@@ -1594,7 +1594,7 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
             {
                 if (cmd.isEmpty())
                 {
-                    raiseWindow(d->wid());
+                    if (!noRaise) raiseWindow(d->wid());
                 }
                 else
                 {
@@ -1618,17 +1618,19 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
                         args << "--cmd" << cmd;
                         if (!cdata.isEmpty()) 
                             args << "--cdata" << cdata;
+                        if (noRaise)
+                            args << "--noraise";
                         iface.asyncCall(QLatin1String("raise"), args);
                     }
                     else
                     {
 		        if (cdata.isEmpty())
 			{
-                            QProcess::startDetached(d->exec() + " --cmd " + cmd);
+                            QProcess::startDetached(d->exec() + " --cmd " + cmd + (noRaise ? " --noraise" : ""));
                         }
                         else
 			{
-                            QProcess::startDetached(d->exec() + " --cmd " + cmd + " --cdata " + cdata);
+                            QProcess::startDetached(d->exec() + " --cmd " + cmd + " --cdata " + cdata + (noRaise ? " --noraise": ""));
                         }
                     }
                 }
@@ -1641,11 +1643,11 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata)
                     // running when its really not, so ask the app to
                     // restore to start and store to it's previously
                     // running state
-                    d->launch("restore");
+                    d->launch("restore", "", noRaise);
                 }
                 else
                 {
-                    d->launch(cmd, cdata);
+                    d->launch(cmd, cdata, noRaise);
                 }
             }
             return;

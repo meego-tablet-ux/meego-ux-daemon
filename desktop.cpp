@@ -37,7 +37,7 @@ Desktop::~Desktop()
     m_process->tryAndDelete();
 }
 
-void Desktop::launch(QString cmd, QString cdata)
+void Desktop::launch(QString cmd, QString cdata, bool noRaise)
 {
     QString fullCommand = exec();
     qDebug() << "fullCommand: " << fullCommand;
@@ -54,6 +54,8 @@ void Desktop::launch(QString cmd, QString cdata)
         if (!cdata.isEmpty())
             fullCommand += " --cdata " + cdata;
     }
+    if (noRaise)
+        fullCommand += " --noraise";
 
     m_process->start(fullCommand);
 }
