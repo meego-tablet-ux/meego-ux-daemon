@@ -1695,12 +1695,12 @@ void Application::closeDesktopByName(QString name)
     }
 }
 
-void Application::closeDesktopByWid(int wid)
+void Application::closeDesktopByWid(unsigned int wid)
 {
     for (int i = 0; i < m_runningApps.length(); i++)
     {
         Desktop *d = m_runningApps.at(i);
-        if (d->wid() == wid)
+        if (d->wid() == (int)wid)
         {
             d->terminate();
 
