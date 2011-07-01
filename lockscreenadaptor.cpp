@@ -33,6 +33,18 @@ LockscreenAdaptor::~LockscreenAdaptor()
     // destructor
 }
 
+void LockscreenAdaptor::closeDesktopByName(const QString &name)
+{
+    // handle method call com.lockstatus.query.closeDesktopByName
+    QMetaObject::invokeMethod(parent(), "closeDesktopByName", Q_ARG(QString, name));
+}
+
+void LockscreenAdaptor::closeDesktopByWid(uint wid)
+{
+    // handle method call com.lockstatus.query.closeDesktopByWid
+    QMetaObject::invokeMethod(parent(), "closeDesktopByWid", Q_ARG(uint, wid));
+}
+
 void LockscreenAdaptor::launchDesktopByName(const QString &name, const QString &cmd, const QString &cdata)
 {
     // handle method call com.lockstatus.query.launchDesktopByName

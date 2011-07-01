@@ -11,6 +11,12 @@
         <arg name="cmd" type="s" direction="in"/>
         <arg name="cdata" type="s" direction="in"/>
     </method>
+    <method name="closeDesktopByWid">
+        <arg name="wid" type="u" direction="in"/>
+    </method>
+    <method name="closeDesktopByName">
+        <arg name="name" type="s" direction="in"/>
+    </method>
     <signal name="screenOn">
         <arg name="status" type="b" direction="out"/>
     </signal>

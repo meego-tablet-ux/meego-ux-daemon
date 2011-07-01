@@ -1695,6 +1695,27 @@ void Application::closeDesktopByName(QString name)
     }
 }
 
+void Application::closeDesktopByWid(int wid)
+{
+    for (int i = 0; i < m_runningApps.length(); i++)
+    {
+        Desktop *d = m_runningApps.at(i);
+        if (d->wid() == wid)
+        {
+            d->terminate();
+
+            m_runningApps.takeAt(i);
+            d->deleteLater();
+            if (m_runningAppsOverflow.length() > 0 || m_runningApps.length() > m_runningAppsLimit)
+            {
+                m_runningApps << m_runningAppsOverflow.takeFirst();
+            }
+            emit runningAppsChanged();
+            return;
+        }
+    }
+}
+
 void Application::raiseWindow(int windowId)
 {
     XEvent ev;

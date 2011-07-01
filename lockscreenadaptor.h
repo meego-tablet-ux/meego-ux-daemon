@@ -39,6 +39,12 @@ class LockscreenAdaptor: public QDBusAbstractAdaptor
 "      <arg direction=\"in\" type=\"s\" name=\"cmd\"/>\n"
 "      <arg direction=\"in\" type=\"s\" name=\"cdata\"/>\n"
 "    </method>\n"
+"    <method name=\"closeDesktopByWid\">\n"
+"      <arg direction=\"in\" type=\"u\" name=\"wid\"/>\n"
+"    </method>\n"
+"    <method name=\"closeDesktopByName\">\n"
+"      <arg direction=\"in\" type=\"s\" name=\"name\"/>\n"
+"    </method>\n"
 "    <signal name=\"home_activated\"/>\n"
 "    <signal name=\"screenOn\"/>\n"
 "    <signal name=\"lockScreenOn\"/>\n"
@@ -50,6 +56,8 @@ public:
 
 public: // PROPERTIES
 public Q_SLOTS: // METHODS
+    void closeDesktopByName(const QString &name);
+    void closeDesktopByWid(uint wid);
     void launchDesktopByName(const QString &name, const QString &cmd, const QString &cdata);
     void lockscreen();
     bool lockscreen_status();
