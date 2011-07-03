@@ -18,6 +18,8 @@ class QGLFramebufferObject;
 class QKeyEvent;
 class QMouseEvent;
 class QTabletEvent;
+class QHideEvent;
+class QShowEvent;
 class QImage;
 
 class PMonitor;
@@ -43,6 +45,9 @@ public:
     void mousePressEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
     void tabletEvent(QTabletEvent *);
+
+    void hideEvent(QHideEvent *);
+    void showEvent(QShowEvent *);
 
     QImage  requestImage(const QString &, QSize *, const QSize &);
 

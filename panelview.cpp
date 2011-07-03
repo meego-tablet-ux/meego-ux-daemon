@@ -187,6 +187,34 @@ void PanelView::tabletEvent(QTabletEvent *e)
     r->tabletEvent(e);
 }
 
+void PanelView::hideEvent(QHideEvent *e)
+{
+    Q_UNUSED(e);
+
+    QDeclarativeItem *item;
+
+    item = qobject_cast<QDeclarativeItem *>(rootObject()); 
+    if(item != NULL) { 
+        if((item = item->findChild<QDeclarativeItem *>("statusBar")) != NULL) {
+            item->setProperty("active", false); 
+        }
+    }
+}
+
+void PanelView::showEvent(QShowEvent *e)
+{
+    Q_UNUSED(e);
+       
+    QDeclarativeItem *item;
+
+    item = qobject_cast<QDeclarativeItem *>(rootObject()); 
+    if(item != NULL) { 
+        if((item = item->findChild<QDeclarativeItem *>("statusBar")) != NULL) {
+            item->setProperty("active", true); 
+        }
+    }
+}
+
 QImage PanelView::requestImage(const QString &id, QSize *size,
         const QSize &resize)
 {

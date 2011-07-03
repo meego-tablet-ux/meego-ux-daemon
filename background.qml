@@ -197,10 +197,12 @@ Window {
     }
 
     StatusBar {
+        objectName: "statusBar"
         anchors.top: parent.top
         width: parent.width
         height: theme.statusBarHeight
-        active: window.isActiveWindow
+        //active: window.isActiveWindow
+        active: true
         backgroundOpacity: theme.panelStatusBarOpacity
     }
 }
