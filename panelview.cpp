@@ -167,8 +167,14 @@ void PanelView::mousePressEvent(QMouseEvent *e)
 
 void PanelView::mouseReleaseEvent(QMouseEvent *e)
 {
+    QDeclarativeItem *ro;
+
+    ro = qobject_cast<QDeclarativeItem *>(rootObject());
+    QPoint np(e->x() + ro->property("contentX").toDouble(), e->y());
+    QMouseEvent ne(e->type(), np, e->button(), e->buttons(), e->modifiers());
+
     bg_window->mouseReleaseEvent(e);
-    r->mouseReleaseEvent(e);
+    r->mouseReleaseEvent(&ne);
     QDeclarativeView::mouseReleaseEvent(e);
 }
 
