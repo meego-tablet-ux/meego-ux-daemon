@@ -64,9 +64,13 @@ PanelView::PanelView(void) : Dialog(false, false, true),
          == NULL) |
        ((child =  child->findChild<QDeclarativeItem *>("PC")) == NULL) |
        ((child = child->findChild<QDeclarativeItem *>("PLV")) == NULL)) {
-        qFatal("Upgrade your version of MeeGo-UX-Panels");
+        qWarning("Could not determine flickable content width");
+        fwidth = width;
     }
-    fwidth = child->property("contentWidth").toInt();
+    else {
+        fwidth = child->property("contentWidth").toInt();
+    }
+
     r->rootObject()->setProperty("width", fwidth);
     r->rootObject()->setProperty("height", height);
 
