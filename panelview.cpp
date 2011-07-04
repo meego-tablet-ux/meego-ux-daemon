@@ -182,6 +182,18 @@ void PanelView::mouseReleaseEvent(QMouseEvent *e)
     QDeclarativeView::mouseReleaseEvent(e);
 }
 
+void PanelView::mouseMoveEvent(QMouseEvent *e)
+{
+    QDeclarativeItem *ro;
+
+    ro = qobject_cast<QDeclarativeItem *>(rootObject());
+    QPoint np(e->x() + ro->property("contentX").toDouble(), e->y());
+    QMouseEvent ne(e->type(), np, e->button(), e->buttons(), e->modifiers());
+
+    r->mouseMoveEvent(&ne);
+    QDeclarativeView::mouseMoveEvent(e);
+}
+
 void PanelView::tabletEvent(QTabletEvent *e)
 {
     r->tabletEvent(e);

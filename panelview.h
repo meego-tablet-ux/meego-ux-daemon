@@ -44,6 +44,7 @@ public:
     void mouseDoubleClickEvent(QMouseEvent *);
     void mousePressEvent(QMouseEvent *);
     void mouseReleaseEvent(QMouseEvent *);
+    void mouseMoveEvent(QMouseEvent *);
     void tabletEvent(QTabletEvent *);
 
     void hideEvent(QHideEvent *);
