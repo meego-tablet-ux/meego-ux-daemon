@@ -60,7 +60,6 @@ private:
 
     int fwidth;
 
-    QImage *cache[NUM_P];
     QImage *background;
     QGLFramebufferObject *fbo;
 

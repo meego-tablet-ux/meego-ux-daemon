@@ -80,10 +80,6 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 
     const int p_width = fwidth /  NUM_C;
     const int p_height = height / NUM_R;
-    for(j = 0; j < NUM_P; j++) {
-        cache[j] = new QImage(p_width, p_height,
-             QImage::Format_ARGB32_Premultiplied);
-    }
 
     qobject_cast<QGLWidget *>(viewport())->makeCurrent();
     fbo = new QGLFramebufferObject(p_width, p_height,
@@ -127,12 +123,6 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 
 PanelView::~PanelView(void)
 {
-    int i;
-
-    for(i = 0; i < NUM_P; i++) {
-        delete cache[i];
-    }
-
     delete r;
     delete background;
     delete bg_window;
@@ -234,13 +224,35 @@ QImage PanelView::requestImage(const QString &id, QSize *size,
     Q_UNUSED(size);
     Q_UNUSED(resize);
 
-    int i = id.toInt();
+    const int height = qApp->desktop()->rect().height();
+    const int p_width = fwidth /  NUM_C;
+    const int p_height = height / NUM_R;
+
+    QPainter p;
+    int i, c, _r=0;
+    
+    i  = id.toInt();
 
     while(i >= NUM_P) {
         i -= NUM_P;
     }
 
-    return *cache[i];
+    c = i;
+    while(c >= NUM_C) {
+        _r++;
+        c -= NUM_C;
+    }
+
+    qobject_cast<QGLWidget *>(viewport())->makeCurrent();
+    p.begin(fbo);
+        glClear(GL_COLOR_BUFFER_BIT);
+        r->viewport()->render(&p, QPoint(), QRegion(
+            p_width * c, p_height *_r,
+            p_width, p_height));
+    p.end();
+
+
+    return fbo->toImage();
 }
 
 
@@ -300,36 +312,12 @@ void PanelView::invalidate(const QList<QRectF> &region)
 
 inline void PanelView::draw_single(int i)
 {
-    const int height = qApp->desktop()->rect().height();
-    const int p_width = fwidth /  NUM_C;
-    const int p_height = height / NUM_R;
-
     static const QDeclarativeItem *dec = qobject_cast<QDeclarativeItem *>
         (rootObject());
     static const QList<QObject *> kids = dec->children();
 
-    int c, _r=0,k;
-    QImage *old;
     QString src;
-    QPainter p;
-
-    c = i;
-    while(c >= NUM_C) {
-        _r++;
-        c -= NUM_C;
-    }
-
-    qobject_cast<QGLWidget *>(viewport())->makeCurrent();
-    p.begin(fbo);
-        glClear(GL_COLOR_BUFFER_BIT);
-        r->viewport()->render(&p, QPoint(), QRegion(
-            p_width * c, p_height *_r,
-            p_width, p_height));
-    p.end();
-
-    old = cache[i];
-    cache[i] = new QImage(fbo->toImage());
-    delete old;
+    int k;
 
     src = kids.at(i+1)->property("source").toString();
     k = src.right(src.size() - ISRC_LEN).toInt();
