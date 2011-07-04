@@ -7,8 +7,8 @@
 
 #include"dialog.h"
 
-#define NUM_P 8
-#define NUM_C 4
+#define NUM_P 12
+#define NUM_C 6
 #define NUM_R 2
 
 #define ISRC "image://gen/"
