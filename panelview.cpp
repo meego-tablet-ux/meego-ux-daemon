@@ -33,12 +33,9 @@ PMonitor::PMonitor(void) : Dialog(false, false, false)
 
     setAttribute(Qt::WA_NoSystemBackground);
     setCacheMode(QGraphicsView::CacheNone);
-    setOptimizationFlags(
-        QGraphicsView::DontSavePainterState |
-        QGraphicsView::DontAdjustForAntialiasing);
+    setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
 
     viewport()->setAttribute(Qt::WA_TranslucentBackground, false);
-    scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
 
     rootContext()->setContextProperty("screenWidth", width);
     rootContext()->setContextProperty("screenHeight", height);
@@ -110,12 +107,8 @@ PanelView::PanelView(void) : Dialog(false, false, true),
         }
     }
 
-    setOptimizationFlags(
-        QGraphicsView::DontSavePainterState |
-        QGraphicsView::DontAdjustForAntialiasing);
-
+    setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
     setCacheMode(QGraphicsView::CacheBackground);
-    scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
     viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
 
     create_bg();
