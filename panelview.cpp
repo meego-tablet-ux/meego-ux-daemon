@@ -15,7 +15,6 @@
 #include<QPaintEvent>
 #include<QKeyEvent>
 #include<QMouseEvent>
-#include<QTabletEvent>
 
 #include<QDeclarativeEngine>
 #include<QDeclarativeContext>
@@ -192,11 +191,6 @@ void PanelView::mouseMoveEvent(QMouseEvent *e)
 
     r->mouseMoveEvent(&ne);
     QDeclarativeView::mouseMoveEvent(e);
-}
-
-void PanelView::tabletEvent(QTabletEvent *e)
-{
-    r->tabletEvent(e);
 }
 
 void PanelView::hideEvent(QHideEvent *e)
