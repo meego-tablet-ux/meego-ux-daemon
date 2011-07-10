@@ -14,6 +14,7 @@
 #include <QDBusReply>
 #include <QDeclarativeEngine>
 #include <QDeclarativeContext>
+#include <QFileInfo>
 #include <QLibraryInfo>
 #include <QSettings>
 #include <QTimer>
@@ -1585,10 +1586,19 @@ void Application::toggleSwitcher()
 
 void Application::launchDesktopByName(QString name, QString cmd, QString cdata, bool noRaise)
 {
+    ///////////////////////////////////////////////////////////////////////
+    // If the caller sends a fully qualified path to the desktop file, then
+    // still match the the app against any desktop of the same name already
+    // running, regardless of the full path.  This ensures that a vendors
+    // use of "shadow" desktop directories is transparent, and that the
+    // original and the shadowed desktop are not treated as two different
+    // applications by the task switcher
+    QString dname = QFileInfo(name).baseName();
+
     // verify that we don't have this already in our list
     foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
     {
-        if (d->filename() == name)
+        if (QFileInfo(d->filename()).baseName() == dname)
         {
             if (d->wid() > 0)
             {
@@ -1605,7 +1615,7 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata, 
                     // app with the extra args and let the singleton
                     // mechanism take care of the RPC
 
-                    QString appName = name.mid(name.lastIndexOf('/') + 1);
+                    QString appName = dname;
                     appName.chop(8);
 
                     QString service = "com.meego.launcher." + appName;
@@ -1654,8 +1664,26 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata, 
         }
     }
 
-    Desktop *d = new Desktop(name, this);
-    if (d->isValid())
+    Desktop *d = NULL;
+    if (QFile::exists(name))
+    {
+        d = new Desktop(name, this);
+    }
+    else
+    {
+        // Allow callers to just specify the filename and let the launcher
+        // figure out what directores desktop file can be found
+        foreach (QString dir, m_applicationDirectories)
+        {
+            QString fullname = dir + "/" + dname + ".desktop";
+            if (QFile::exists(fullname))
+            {
+                d = new Desktop(fullname, this);
+                break;
+            }
+        }
+    }
+    if (d && d->isValid())
     {
         connect(d, SIGNAL(launched(int)), this, SLOT(desktopLaunched(int)));
         d->launch(cmd, cdata);
