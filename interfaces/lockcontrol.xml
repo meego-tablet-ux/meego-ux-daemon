@@ -17,6 +17,10 @@
     <method name="closeDesktopByName">
         <arg name="name" type="s" direction="in"/>
     </method>
+    <method name="getDesktopByWid">
+        <arg name="wid" type="u" direction="in"/>
+        <arg name="desktop" type="s" direction="out"/>
+    </method>
     <signal name="screenOn">
         <arg name="status" type="b" direction="out"/>
     </signal>
