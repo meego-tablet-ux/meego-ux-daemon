@@ -118,8 +118,6 @@ public:
     }
     void setScreenOn(bool value);
 
-    bool lockScreenOn();
-
 public slots:
     void showTaskSwitcher();
     void showPanels();
@@ -136,6 +134,7 @@ public slots:
     void desktopLaunched(int pid);
     void activateScreenSaver();
     void loadTranslators();
+    bool lockScreenOn();
 
     // MNotificationManager Interface
     uint addGroup(uint notificationUserId, const QString &eventType, const QString &summary, const QString &body, const QString &action, const QString &imageURI, const QString &declineAction, uint count, const QString &identifier);
