@@ -39,7 +39,6 @@ PMonitor::PMonitor(void) : Dialog(false, false, false)
     rootContext()->setContextProperty("screenWidth", width);
     rootContext()->setContextProperty("screenHeight", height);
 
-    setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
 }
 
 PanelView::PanelView(void) : Dialog(false, false, true)
@@ -53,6 +52,7 @@ PanelView::PanelView(void) : Dialog(false, false, true)
 
 
     r = new PMonitor();
+    r->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
 
     if((child = r->rootObject()->findChild<QDeclarativeItem *>("panelSize"))
             == NULL) {
