@@ -45,6 +45,14 @@ void LockscreenAdaptor::closeDesktopByWid(uint wid)
     QMetaObject::invokeMethod(parent(), "closeDesktopByWid", Q_ARG(uint, wid));
 }
 
+QString LockscreenAdaptor::getDesktopByWid(uint wid)
+{
+    // handle method call com.lockstatus.query.getDesktopByWid
+    QString desktop;
+    QMetaObject::invokeMethod(parent(), "getDesktopByWid", Q_RETURN_ARG(QString, desktop), Q_ARG(uint, wid));
+    return desktop;
+}
+
 void LockscreenAdaptor::launchDesktopByName(const QString &name, const QString &cmd, const QString &cdata)
 {
     // handle method call com.lockstatus.query.launchDesktopByName

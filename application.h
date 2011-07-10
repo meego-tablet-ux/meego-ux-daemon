@@ -130,6 +130,7 @@ public slots:
     void launchDesktopByName(QString name, QString cmd = QString(), QString cdata = QString(), bool noRaise = false);
     void closeDesktopByName(QString name);
     void closeDesktopByWid(unsigned int wid);
+    QString getDesktopByWid(unsigned int wid);
     void openStatusIndicatorMenu();
     void clearAllNotifications();
     void desktopLaunched(int pid);

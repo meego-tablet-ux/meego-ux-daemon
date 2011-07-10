@@ -1716,6 +1716,20 @@ void Application::closeDesktopByWid(unsigned int wid)
     }
 }
 
+QString Application::getDesktopByWid(unsigned int wid)
+{
+    for (int i = 0; i < m_runningApps.length(); i++)
+    {
+        Desktop *d = m_runningApps.at(i);
+        if (d->wid() == (int)wid)
+        {
+            return d->filename();
+        }
+    }
+
+    return QString();
+}
+
 void Application::raiseWindow(int windowId)
 {
     XEvent ev;
