@@ -71,6 +71,7 @@ public slots:
     void invalidate(const QList<QRectF> &);
     void bg_changed(void);
     void panel_snap(void);
+    void panel_snap_flip(int);
 private:
     void create_bg(void);
     inline void draw_single(int);

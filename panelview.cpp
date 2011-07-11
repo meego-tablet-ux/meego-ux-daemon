@@ -82,6 +82,7 @@ PanelView::PanelView(void) : Dialog(false, false, true),
         num_panels = child->property("count").toInt();
         panel_width = child->property("currentItem").value<QDeclarativeItem *>(
                 )->property("width").toInt();
+        QObject::connect(child, SIGNAL(panelFlip(int)), this, SLOT(panel_snap_flip(int))); 
     }
 
     r->rootObject()->setProperty("width", fwidth);
@@ -130,7 +131,6 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 
     QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)),
             this, SLOT(invalidate(const QList<QRectF>&)));
-
 
     setSceneRect(0, 0, width, height);
     setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
@@ -403,4 +403,22 @@ void PanelView::panel_snap(void)
    
 }
 
+void PanelView::panel_snap_flip(int index)
+{
+    const int width = qApp->desktop()->rect().width();
+   
+    int x, l, r;
+
+    x = rootObject()->property("contentX").toInt();
+
+    l = index * (panel_width + panel_outer_spacing); 
+    r = l + panel_width; 
+
+    if(l < x) {
+        rootObject()->setProperty("contentX", l);
+    }
+    else if(r > (x + width)) {
+        rootObject()->setProperty("contentX", r - width);
+    }
+}
 
