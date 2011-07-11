@@ -56,7 +56,17 @@ PanelView::PanelView(void) : Dialog(false, false, true),
     QObject *child;
     QDeclarativeItem *contentItem; 
 
+
     r = new PMonitor();
+
+    if((child = r->rootObject()->findChild<QDeclarativeItem *>("panelSize"))
+            == NULL) {
+        qWarning("Could not determine flickable content spacing");
+        panel_outer_spacing = 0;
+    }
+    else {
+        panel_outer_spacing = child->property("panelOuterSpacing").toInt(); 
+    }
 
     if(((child = r->rootObject()->findChild<QDeclarativeItem *>("appPage"))
          == NULL) |
@@ -65,10 +75,13 @@ PanelView::PanelView(void) : Dialog(false, false, true),
         qWarning("Could not determine flickable content width");
         fwidth = width;
         num_panels = NUM_C; 
+        panel_width = 0;
     }
     else {
         fwidth = child->property("contentWidth").toInt();
         num_panels = child->property("count").toInt();
+        panel_width = child->property("currentItem").value<QDeclarativeItem *>(
+                )->property("width").toInt();
     }
 
     r->rootObject()->setProperty("width", fwidth);
@@ -111,6 +124,9 @@ PanelView::PanelView(void) : Dialog(false, false, true),
             total++;
         }
     }
+
+    QObject::connect(rootObject(), SIGNAL(movementEnded()), 
+                    this, SLOT(panel_snap(void))); 
 
     QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)),
             this, SLOT(invalidate(const QList<QRectF>&)));
@@ -362,4 +378,29 @@ void PanelView::bg_changed(void)
 
     scene()->invalidate(QRectF(0,0,0,0), QGraphicsScene::BackgroundLayer);
 }
+
+void PanelView::panel_snap(void)
+{
+    int x, next_p, prev_p, diff_n, diff_p;
+    
+    x  = rootObject()->property("contentX").toInt(); 
+
+    next_p = 0; 
+    while(next_p < x) {
+        next_p += panel_width + panel_outer_spacing;
+    }
+
+    prev_p = next_p - panel_width - panel_outer_spacing; 
+
+    diff_n = next_p - x;
+    diff_p = x - prev_p; 
+
+    diff_p = (diff_p > diff_n) ? next_p : prev_p;
+
+    if(x != diff_p) {
+        rootObject()->setProperty("contentX", diff_p); 
+    }
+   
+}
+
 

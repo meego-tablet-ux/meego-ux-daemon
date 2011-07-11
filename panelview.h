@@ -70,12 +70,15 @@ public:
 public slots:
     void invalidate(const QList<QRectF> &);
     void bg_changed(void);
+    void panel_snap(void);
 private:
     void create_bg(void);
     inline void draw_single(int);
 
     int fwidth;
     int num_panels;
+    int panel_width; 
+    int panel_outer_spacing; 
 
     QDeclarativeItem **items;
 
