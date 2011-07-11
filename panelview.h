@@ -1,18 +1,33 @@
 #ifndef _PANELVIEW_H
 #define _PANELVIEW_H
 
+#include<cmath>
 #include<QDeclarativeImageProvider>
 #include<QRectF>
 #include<QList>
 
 #include"dialog.h"
 
-#define NUM_P 12
 #define NUM_C 6
 #define NUM_R 2
 
 #define ISRC "image://gen/"
-#define ISRC_LEN strlen(ISRC)
+#define ISRC_LEN (sizeof(ISRC)-1)
+
+#define IQML    "import Qt 4.7\n"           \
+                "Image {\n"                 \
+                    "\twidth:%i\n"          \
+                    "\theight:%i\n"         \
+                    "\tx:%i\n"              \
+                    "\ty:%i\n"              \
+                    "\tsource: \"%s\"\n"    \
+                 "}\n" 
+#define IQML_LEN (sizeof(IQML)-1)
+#define IQML_INT 4
+
+#define INT_LEN (((size_t)log10(INT_MAX))+2)
+#define SRC_MAX (ISRC_LEN + INT_LEN + 1)
+#define QML_MAX ((INT_LEN * IQML_INT) + ISRC_LEN + IQML_LEN +  1)
 
 class QGLFramebufferObject;
 class QKeyEvent;
@@ -21,6 +36,7 @@ class QTabletEvent;
 class QHideEvent;
 class QShowEvent;
 class QImage;
+class QDeclarativeItem; 
 
 class PMonitor;
 class PanelView;
@@ -59,6 +75,9 @@ private:
     inline void draw_single(int);
 
     int fwidth;
+    int num_panels;
+
+    QDeclarativeItem **items;
 
     QImage *background;
     QGLFramebufferObject *fbo;
