@@ -1675,7 +1675,7 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata, 
         // figure out what directores desktop file can be found
         foreach (QString dir, m_applicationDirectories)
         {
-            QString fullname = dir + "/" + dname;
+            QString fullname = dir + "/" + dname + ".desktop";
             if (QFile::exists(fullname))
             {
                 d = new Desktop(fullname, this);
