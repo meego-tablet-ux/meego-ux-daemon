@@ -14,6 +14,7 @@
 #include <QDBusReply>
 #include <QDeclarativeEngine>
 #include <QDeclarativeContext>
+#include <QFileInfo>
 #include <QLibraryInfo>
 #include <QSettings>
 #include <QTimer>
@@ -1592,12 +1593,12 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata, 
     // use of "shadow" desktop directories is transparent, and that the
     // original and the shadowed desktop are not treated as two different
     // applications by the task switcher
-    QString dname = name.mid(name.lastIndexOf('/') + 1);
+    QString dname = QFileInfo(name).baseName();
 
     // verify that we don't have this already in our list
     foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
     {
-        if (d->filename().endsWith("/" + dname))
+        if (QFileInfo(d->filename()).baseName() == dname)
         {
             if (d->wid() > 0)
             {
