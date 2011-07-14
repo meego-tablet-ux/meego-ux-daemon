@@ -28,7 +28,6 @@ PMonitor::PMonitor(void) : Dialog(false, false, false)
     const int width = qApp->desktop()->rect().width();
     const int height = qApp->desktop()->rect().height();
 
-    setSceneRect(0, 0, width, height);
     setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
 
     setAttribute(Qt::WA_NoSystemBackground);
@@ -43,16 +42,12 @@ PMonitor::PMonitor(void) : Dialog(false, false, false)
     setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
 }
 
-PanelView::PanelView(void) : Dialog(false, false, true),
-        QDeclarativeImageProvider(QDeclarativeImageProvider::Image)
+PanelView::PanelView(void) : Dialog(false, false, true)
 {
     const int width = qApp->desktop()->rect().width();
     const int height = qApp->desktop()->rect().height();
 
-    int j, k, total=1, cur_width, cur_height, out;
-    char qml[QML_MAX];
-    char source[SRC_MAX];
-
+    int j, k, total=0, cur_width, cur_height;
     QObject *child;
     QDeclarativeItem *contentItem; 
 
@@ -84,11 +79,10 @@ PanelView::PanelView(void) : Dialog(false, false, true),
                 )->property("width").toInt();
         QObject::connect(child, SIGNAL(panelFlip(int)), this, SLOT(panel_snap_flip(int))); 
     }
-
     r->rootObject()->setProperty("width", fwidth);
     r->rootObject()->setProperty("height", height);
 
-    items = reinterpret_cast<QDeclarativeItem **>(calloc(num_panels,
+    items = reinterpret_cast<QGraphicsPixmapItem **>(calloc(num_panels,
                  sizeof(void *)));
 
     const int p_width = fwidth /  num_panels;
@@ -98,33 +92,25 @@ PanelView::PanelView(void) : Dialog(false, false, true),
     fbo = new QGLFramebufferObject(p_width, p_height,
              QGLFramebufferObject::CombinedDepthStencil);
 
-    engine()->addImageProvider(QLatin1String("gen"), this);
     setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/real.qml"));
 
-    rootObject()->setProperty("contentWidth", fwidth);
-    rootObject()->setProperty("contentHeight", height);
-    rootObject()->setProperty("width", width);
-    rootObject()->setProperty("height", height);
     contentItem = rootObject()->property("contentItem").value<
             QDeclarativeItem *>(); 
 
     for(j = 0, cur_height =0; j < NUM_R; j++, cur_height += p_height) {
         for(k = 0, cur_width = 0; k < num_panels; k++, cur_width += p_width) {
-            snprintf(source, SRC_MAX, "%s%i", ISRC, total-1);
-
-            out = snprintf(qml, QML_MAX, IQML , p_width, p_height, cur_width,
-                         cur_height, source);
-
-            QDeclarativeComponent img(engine());
-            img.setData(QByteArray(qml, out), QUrl());
-             
-            items[total-1] = qobject_cast<QDeclarativeItem *>(img.create(
-                    rootContext()));
-            items[total-1]->setParentItem(contentItem);
+            items[total] = scene()->addPixmap(QPixmap(p_width, p_height));
+            items[total]->setPos(cur_width, cur_height);
+            items[total]->setParentItem(contentItem); 
+            items[total]->setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 
             total++;
         }
     }
+    rootObject()->setProperty("contentWidth", fwidth);
+    rootObject()->setProperty("contentHeight", height);
+    rootObject()->setProperty("width", width);
+    rootObject()->setProperty("height", height);
 
     QObject::connect(rootObject(), SIGNAL(movementEnded()), 
                     this, SLOT(panel_snap(void))); 
@@ -132,7 +118,6 @@ PanelView::PanelView(void) : Dialog(false, false, true),
     QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)),
             this, SLOT(invalidate(const QList<QRectF>&)));
 
-    setSceneRect(0, 0, width, height);
     setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
     setCacheMode(QGraphicsView::CacheBackground);
     viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
@@ -142,11 +127,6 @@ PanelView::PanelView(void) : Dialog(false, false, true),
 
 PanelView::~PanelView(void)
 {
-    int i; 
-
-    for(i = 0; i < num_panels; i++) {
-        delete items[i];
-    }
     free(items);
 
     delete r;
@@ -244,44 +224,6 @@ void PanelView::showEvent(QShowEvent *e)
     }
 }
 
-QImage PanelView::requestImage(const QString &id, QSize *size,
-        const QSize &resize)
-{
-    Q_UNUSED(size);
-    Q_UNUSED(resize);
-
-    const int height = qApp->desktop()->rect().height();
-    const int p_width = fwidth /  num_panels;
-    const int p_height = height / NUM_R;
-    const int num_images = num_panels * NUM_R;
-
-    QPainter p;
-    int i, c, _r=0;
-    
-    i  = id.toInt();
-
-    while(i >= num_images) {
-        i -= num_images;
-    }
-
-    c = i;
-    while(c >= num_panels) {
-        _r++;
-        c -= num_panels;
-    }
-
-    qobject_cast<QGLWidget *>(viewport())->makeCurrent();
-    p.begin(fbo);
-        glClear(GL_COLOR_BUFFER_BIT);
-        r->viewport()->render(&p, QPoint(), QRegion(
-            p_width * c, p_height *_r,
-            p_width, p_height));
-    p.end();
-
-    return fbo->toImage();
-}
-
-
 static QRectF consolidate_width(const QList<QRectF> &region)
 {
     qreal l,r, t, b;
@@ -327,7 +269,7 @@ void PanelView::invalidate(const QList<QRectF> &region)
         for(i = 0, c_height =0; i < NUM_R; i++, c_height += p_height) {
             for(j =0, c_width=0; j < num_panels; j++, c_width += p_width) {
                 QRectF d(c_width, c_height , p_width, p_height);
-                if(d.intersects(n) && items[total] != NULL) {
+                if(d.intersects(n)) {
                         draw_single(total);
                 }
                 total++;
@@ -338,17 +280,32 @@ void PanelView::invalidate(const QList<QRectF> &region)
 
 inline void PanelView::draw_single(int i)
 {
-    const int num_images = num_panels * NUM_R;
+    const int height = qApp->desktop()->rect().height();
+    const int p_width = fwidth /  num_panels;
+    const int p_height = height / NUM_R;
 
-    QString src;
-    int k;
+    QPainter p;
+    int c, _r=0;
 
-    src = items[i]->property("source").toString();
-    k = src.right(src.size() - ISRC_LEN).toInt();
-    src.truncate(ISRC_LEN);
-    k += num_images;
-    src += QString::number(k);
-    items[i]->setProperty("source", src);
+    if(items[i] == NULL) {
+        return;
+    }
+
+    c = i;
+    while(c >= num_panels) {
+        _r++;
+        c -= num_panels;
+    }
+
+    qobject_cast<QGLWidget *>(viewport())->makeCurrent();
+    p.begin(fbo);
+        glClear(GL_COLOR_BUFFER_BIT);
+        r->viewport()->render(&p, QPoint(), QRegion(
+            p_width * c, p_height *_r,
+            p_width, p_height));
+    p.end();
+
+    items[i]->setPixmap(QPixmap::fromImage(fbo->toImage()));
 }
 
 void PanelView::create_bg(void)
