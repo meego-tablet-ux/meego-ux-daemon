@@ -131,7 +131,6 @@ public slots:
     QString getDesktopByWid(unsigned int wid);
     void openStatusIndicatorMenu();
     void clearAllNotifications();
-    void desktopLaunched(int pid);
     void activateScreenSaver();
     void loadTranslators();
     bool lockScreenOn();

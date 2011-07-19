@@ -64,7 +64,6 @@ void Desktop::started()
 {
     m_wid = -1;
     m_pid = m_process->pid();
-    emit launched(m_pid);
 }
 
 void Desktop::finished(int, QProcess::ExitStatus)

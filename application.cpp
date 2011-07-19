@@ -610,7 +610,6 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
             cgroup_change_cgroup_path(spec.path, ::getpid(), spec.controllers);
         }
     }
-    send_ux_msg(UX_CMD_LAUNCHED, ::getpid());
 }
 
 Application::~Application()
@@ -1685,7 +1684,6 @@ void Application::launchDesktopByName(QString name, QString cmd, QString cdata, 
     }
     if (d && d->isValid())
     {
-        connect(d, SIGNAL(launched(int)), this, SLOT(desktopLaunched(int)));
         d->launch(cmd, cdata);
         if (!d->contains("Desktop Entry/X-MEEGO-SKIP-TASKSWITCHER"))
         {
@@ -1968,11 +1966,6 @@ void Application::openStatusIndicatorMenu()
 void Application::clearAllNotifications()
 {
     m_notificationDataStore->clearAllNotifications();
-}
-
-void Application::desktopLaunched(int pid)
-{
-    send_ux_msg(UX_CMD_LAUNCHED, pid);
 }
 
 void Application::setForegroundOrientationForWindow(uint wid)
