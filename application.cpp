@@ -1046,12 +1046,13 @@ bool Application::x11EventFilter(XEvent *event)
 
                 if (m_enableRenderingSwap)
                 {
-                    if (panelsScreen)
+                    if (panelsScreen && !m_enablePanelView)
                     {
-                        if (panelsScreen->winId() == (int)w)
-                            panelsScreen->switchToGLRendering();
+                        Dialog *d = qobject_cast<Dialog *>(panelsScreen);
+                        if (d->winId() == (int)w)
+                            d->switchToGLRendering();
                         else
-                            panelsScreen->switchToSoftwareRendering();
+                            d->switchToSoftwareRendering();
                     }
 
                     if (gridScreen)

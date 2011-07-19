@@ -29,7 +29,7 @@ PMonitor::PMonitor(void) : Dialog(false, false, false)
     setCacheMode(QGraphicsView::CacheNone);
 }
 
-PanelView::PanelView(void) : Dialog(false, false, true)
+PanelView::PanelView(void) : QDeclarativeView()
 {
     const int width = qApp->desktop()->rect().width();
     const int height = qApp->desktop()->rect().height();
@@ -37,7 +37,27 @@ PanelView::PanelView(void) : Dialog(false, false, true)
     int j, k, total=0, cur_width, cur_height;
     QObject *child;
     QDeclarativeItem *contentItem; 
+    QGLFormat format;
 
+    format = QGLFormat::defaultFormat();
+    format.setSampleBuffers(false);
+    format.setSamples(0);
+    format.setAlpha(false);
+    setViewport(new QGLWidget(format));
+
+    setAttribute(Qt::WA_OpaquePaintEvent);
+    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
+
+    setAttribute(Qt::WA_NoSystemBackground);
+    viewport()->setAttribute(Qt::WA_NoSystemBackground);
+
+    viewport()->setAutoFillBackground(false);
+    setWindowFlags(Qt::FramelessWindowHint);
+
+    setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
+    setCacheMode(QGraphicsView::CacheBackground);
+
+    setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/real.qml"));
 
     r = new PMonitor();
     r->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
@@ -80,8 +100,6 @@ PanelView::PanelView(void) : Dialog(false, false, true)
     fbo = new QGLFramebufferObject(p_width, p_height,
              QGLFramebufferObject::CombinedDepthStencil);
 
-    setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/real.qml"));
-
     contentItem = rootObject()->property("contentItem").value<
             QDeclarativeItem *>(); 
 
@@ -106,22 +124,18 @@ PanelView::PanelView(void) : Dialog(false, false, true)
     QObject::connect(r->scene(), SIGNAL(changed(const QList<QRectF>&)),
             this, SLOT(invalidate(const QList<QRectF>&)));
 
-    setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
-    setCacheMode(QGraphicsView::CacheBackground);
-    viewport()->setAttribute(Qt::WA_OpaquePaintEvent);
-
     create_bg();
 }
 
 PanelView::~PanelView(void)
 {
-    free(items);
-
     delete r;
-    delete background;
     delete bg_window;
 
+    delete background;
     delete fbo;
+    free(items);
+
 }
 
 void PanelView::keyPressEvent(QKeyEvent *e)

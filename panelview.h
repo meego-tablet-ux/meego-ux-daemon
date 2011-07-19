@@ -31,7 +31,7 @@ public:
     friend class PanelView;
 };
 
-class PanelView : public Dialog { 
+class PanelView : public QDeclarativeView {
     Q_OBJECT
 public:
     PanelView(void);

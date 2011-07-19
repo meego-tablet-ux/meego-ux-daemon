@@ -216,7 +216,7 @@ private:
     Dialog *taskSwitcher;
     Dialog *lockScreen;
     Dialog *gridScreen;
-    Dialog *panelsScreen;
+    QDeclarativeView *panelsScreen;
     Dialog *statusIndicatorMenu;
     Atom windowTypeAtom;
     Atom windowTypeNormalAtom;
