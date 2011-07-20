@@ -2195,8 +2195,8 @@ void Application::setScreenOn(bool value)
 
         if (m_orientationSensorAvailable)
             orientationSensor.start();
-        if (m_ambientLightSensorAvailable && m_automaticBacklight)
-            ambientLightSensor.start();
+
+        automaticBacklightControlChanged();
 
         // Re-enable updates
         if (lockScreen)
