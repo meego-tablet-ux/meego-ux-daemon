@@ -219,6 +219,11 @@ Window {
                         }
                         ContextMenu {
                             id: contextMenu
+                            Timer {
+                                id: quitTimer
+                                interval: 250
+                                onTriggered: Qt.quit()
+                            }
                             content: ActionMenu {
                                 model: [window.openText, window.closeText]
                                 payload: [0, 1]
@@ -227,7 +232,14 @@ Window {
                                     {
                                         favorites.append(modelData.filename);
                                         qApp.launchDesktopByName(modelData.filename);
-                                        Qt.quit();
+
+                                        // Fix BMC#21409
+                                        // Attempting to quit, which will result in m-u-d hiding
+                                        // the window, while the context menu is animating away
+                                        // will result in a crash deep in the dark heart of Qt
+                                        // touch event handing.  A small delay does  the trick,
+                                        // but yea, this is a hack
+                                        quitTimer.start(); 
                                     }
                                     else
                                     {
