@@ -87,26 +87,32 @@ Window {
     overlayItem: Item {
         id: container
         anchors.fill: parent
+
+        Rectangle {
+            anchors.fill: parent
+            color: "black"
+        }
+        Image {
+            anchors.fill: parent
+            asynchronous: true
+            sourceSize.height: height
+            source: backgroundModel.activeWallpaper
+            fillMode: Image.PreserveAspectCrop
+        }
+ 
         Item {
             id: mainContent
             width: parent.width
             height: parent.height
             x: 0
             y: 0
+            opacity: qApp.screenOn ? 1.0 : 0.0
+            Behavior on opacity {
+                PropertyAnimation { duration: 250; }
+            }
 
             property bool animateAway: false
 
-            Rectangle {
-                anchors.fill: parent
-                color: "black"
-            }
-            Image {
-                anchors.fill: parent
-                asynchronous: true
-                sourceSize.height: height
-                source: backgroundModel.activeWallpaper
-                fillMode: Image.PreserveAspectCrop
-            }
             StatusBar {
                 anchors.top: parent.top
                 width: parent.width
@@ -133,7 +139,7 @@ Window {
                 }
                 LocalTime {
                     id: localTime
-                    interval: 60000
+                    interval: qApp.screenOn ? 60000 : 0
                 }
                 Text {
                     id: timeText
