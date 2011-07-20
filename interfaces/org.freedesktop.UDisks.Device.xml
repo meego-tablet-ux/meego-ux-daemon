@@ -1,0 +1,140 @@
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
+  <!ENTITY ERROR_FAILED "org.freedesktop.UDisks.Error.Failed">
+  <!ENTITY ERROR_BUSY "org.freedesktop.UDisks.Error.Busy">
+  <!ENTITY ERROR_CANCELLED "org.freedesktop.UDisks.Error.Cancelled">
+  <!ENTITY ERROR_INHIBITED "org.freedesktop.UDisks.Error.Inhibited">
+  <!ENTITY ERROR_INVALID_OPTION "org.freedesktop.UDisks.Error.InvalidOption">
+  <!ENTITY ERROR_NOT_SUPPORTED "org.freedesktop.UDisks.Error.NotSupported">
+  <!ENTITY ERROR_ATA_SMART_WOULD_WAKEUP "org.freedesktop.UDisks.Error.NotFound">
+  <!ENTITY ERROR_NOT_AUTHORIZED "org.freedesktop.PolicyKit.Error.NotAuthorized">
+  <!ENTITY ERROR_FILESYSTEM_DRIVER_MISSING "org.freedesktop.UDisks.Error.FilesystemDriverMissing">
+  <!ENTITY ERROR_FILESYSTEM_TOOLS_MISSING "org.freedesktop.UDisks.Error.FilesystemToolsMissing">
+]>
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+  <interface name="org.freedesktop.UDisks.Device">
+
+    <!-- 
+        This is a stripped down version of the xml description for the UDisk Disk interface,
+        only including what we need to call from meego-ux-daemon.
+    -->
+
+    <method name="FilesystemMount">
+      <annotation name="org.freedesktop.DBus.GLib.Async" value=""/>
+      <arg name="filesystem_type" direction="in" type="s">
+        <doc:doc><doc:summary>File system type to use.</doc:summary></doc:doc>
+      </arg>
+      <arg name="options" direction="in" type="as">
+        <doc:doc><doc:summary>
+            Mount Options. Valid mount options include mount options accepted by the native mount program.
+            The option <quote>auth_no_user_interaction</quote> can be used to avoid user interaction (e.g. authentication dialogs) when checking whether the caller is authorized.</doc:summary></doc:doc>
+      </arg>
+      <arg name="mount_path" direction="out" type="s">
+        <doc:doc><doc:summary>Where the device was mounted.</doc:summary></doc:doc>
+      </arg>
+
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Mount the device. If the device is referenced in the
+            system-wide <doc:tt>/etc/fstab</doc:tt> file, the given
+            parameters are all ignored and the device will be
+            attempted to be mounted as the calling user.
+          </doc:para>
+        </doc:description>
+        <doc:permission>
+          The caller will need one of the following PolicyKit authorizations:
+          <doc:list>
+            <doc:item>
+              <doc:term>org.freedesktop.udisks.filesystem-mount</doc:term>
+              <doc:definition>If the operation is on a
+                <doc:ref type="property" to="Device:DeviceIsSystemInternal">non-system-internal</doc:ref>
+                device</doc:definition>
+            </doc:item>
+            <doc:item>
+              <doc:term>org.freedesktop.udisks.filesystem-mount-system-internal</doc:term>
+              <doc:definition>If the operation is on a
+                <doc:ref type="property" to="Device:DeviceIsSystemInternal">system-internal</doc:ref>
+                device</doc:definition>
+            </doc:item>
+          </doc:list>
+        </doc:permission>
+        <doc:errors>
+          <doc:error name="&ERROR_NOT_AUTHORIZED;">if the caller lacks the appropriate PolicyKit authorization</doc:error>
+          <doc:error name="&ERROR_BUSY;">if the device is busy</doc:error>
+          <doc:error name="&ERROR_FAILED;">if the operation failed</doc:error>
+          <doc:error name="&ERROR_CANCELLED;">if the job was cancelled</doc:error>
+          <doc:error name="&ERROR_INVALID_OPTION;">if an invalid or malformed mount option was given</doc:error>
+          <doc:error name="&ERROR_FILESYSTEM_DRIVER_MISSING;">if the kernel driver for this file system type is not available</doc:error>
+        </doc:errors>
+      </doc:doc>
+    </method>
+
+    <signal name="Changed">
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Something on the device changed. Changes in job state wont
+            trigger this signal; see the <doc:ref type="signal"
+            to="Device::JobChanged">JobChanged()</doc:ref> signal.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+    <property name="DeviceIsRemovable" type="b" access="read">
+      <doc:doc><doc:description><doc:para>
+            TRUE if the device contains removable media.
+      </doc:para></doc:description></doc:doc>
+    </property>
+    <property name="DeviceIsMounted" type="b" access="read">
+      <doc:doc><doc:description><doc:para>
+            TRUE if the device is mounted.
+      </doc:para></doc:description></doc:doc>
+    </property>
+    <property name="DeviceMountPaths" type="as" access="read">
+      <doc:doc><doc:description><doc:para>
+            A list of paths in the root namespace where the root of the device is mounted.
+            This property is only valid if
+            <doc:ref type="property" to="Device:DeviceIsMounted">DeviceIsMounted</doc:ref>
+            is TRUE.
+      </doc:para></doc:description></doc:doc>
+    </property>
+
+    <property name="IdUsage" type="s" access="read">
+      <doc:doc><doc:description><doc:para>
+            A result of probing for signatures on the block device;
+            known values are:
+            <doc:list>
+              <doc:item>
+                <doc:term>filesystem</doc:term>
+                <doc:definition>A mountable file system was detected</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>crypto</doc:term>
+                <doc:definition>Encrypted data (e.g. LUKS) was detected</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>partitiontable</doc:term>
+                <doc:definition>A partition table was detected</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>raid</doc:term>
+                <doc:definition>Used for RAID and LVM components</doc:definition>
+              </doc:item>
+              <doc:item>
+                <doc:term>other</doc:term>
+                <doc:definition>A non-standard signature was detected</doc:definition>
+              </doc:item>
+            </doc:list>
+            If blank, no known signature was detected. This doesn't
+            necessarily mean the device contains no structured data;
+            it only means that no signature known to the probing code
+            was detected.
+      </doc:para></doc:description></doc:doc>
+    </property>
+
+  </interface>
+
+</node>

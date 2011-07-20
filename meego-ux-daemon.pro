@@ -28,7 +28,9 @@ SOURCES += main.cpp \
     volumecontrol.cpp \
     lockscreenadaptor.cpp \
     atoms.cpp \
-    panelview.cpp
+    panelview.cpp \
+    udiskproxy.cpp \
+    udiskdeviceproxy.cpp
 HEADERS += \
     application.h \
     dialog.h \
@@ -43,7 +45,9 @@ HEADERS += \
     volumecontrol.h \
     lockscreenadaptor.h \
     atoms.h \
-    panelview.h
+    panelview.h \
+    udiskproxy.h \
+    udiskdeviceproxy.h
 
 OBJECTS_DIR = .obj
 MOC_DIR = .moc
@@ -73,7 +77,9 @@ OTHER_FILES += \
     statusindicatormenu.qml \
     NotificationDelegate.qml \
     real.qml \
-    start-meego-ux
+    start-meego-ux \
+    interfaces/org.freedesktop.UDisks.xml \
+    interfaces/org.freedesktop.UDisks.Device.xml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-daemon

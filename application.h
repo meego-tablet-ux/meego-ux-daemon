@@ -11,6 +11,7 @@
 
 #include <QApplication>
 #include <QDBusConnection>
+#include <QDBusObjectPath>
 #include <QDBusServiceWatcher>
 #include <QDeclarativeEngine>
 #include <QDeclarativeListProperty>
@@ -186,6 +187,11 @@ private slots:
     void musicUnregistered();
     void doSetBacklight();
     void volumeLongPressTimeout();
+    void deviceAdded(QDBusObjectPath path);
+    void deviceRemoved(QDBusObjectPath path);
+    void deviceChanged();
+    void mediaImportCommandChanged();
+    void mediaCleanupCommandChanged();
 
 protected:
     /*! \reimp
@@ -293,8 +299,14 @@ private:
     MGConfItem *m_applicationDirectoriesItem;
     QStringList m_applicationDirectories;
 
-    QDBusServiceWatcher *m_serviceWatcher;
+    QDBusServiceWatcher *m_musicServiceWatcher;
     QDBusInterface *m_player;
+
+    QString m_mediaImportCommand;
+    MGConfItem *m_mediaImportItem;
+    QString m_mediaCleanupCommand;
+    MGConfItem *m_mediaCleanupItem;
+    QMap<QString, QStringList> m_mounts;
 
     int m_currentBacklightValue;
     int m_requestedBacklightValue;

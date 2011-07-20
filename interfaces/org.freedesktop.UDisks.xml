@@ -1,0 +1,66 @@
+<!DOCTYPE node PUBLIC
+"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd" [
+  <!ENTITY ERROR_FAILED "org.freedesktop.UDisks.Error.Failed">
+  <!ENTITY ERROR_BUSY "org.freedesktop.UDisks.Error.Busy">
+  <!ENTITY ERROR_CANCELLED "org.freedesktop.UDisks.Error.Cancelled">
+  <!ENTITY ERROR_INHIBITED "org.freedesktop.UDisks.Error.Inhibited">
+  <!ENTITY ERROR_INVALID_OPTION "org.freedesktop.UDisks.Error.InvalidOption">
+  <!ENTITY ERROR_NOT_SUPPORTED "org.freedesktop.UDisks.Error.NotSupported">
+  <!ENTITY ERROR_ATA_SMART_WOULD_WAKEUP "org.freedesktop.UDisks.Error.NotFound">
+  <!ENTITY ERROR_NOT_AUTHORIZED "org.freedesktop.PolicyKit.Error.NotAuthorized">
+]>
+<node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
+
+  <interface name="org.freedesktop.UDisks">
+
+    <!-- 
+        This is a stripped down version of the xml description for the main UDisk interface,
+        only including what we need to call from meego-ux-daemon.
+    -->
+
+    <signal name="DeviceAdded">
+      <arg name="device" type="o">
+        <doc:doc><doc:summary>Object path of device that was added.</doc:summary></doc:doc>
+      </arg>
+
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Emitted when a device is added.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+    <signal name="DeviceRemoved">
+      <arg name="device" type="o">
+        <doc:doc><doc:summary>Object path of device that was removed.</doc:summary></doc:doc>
+      </arg>
+
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Emitted when a device is removed.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+    <signal name="DeviceChanged">
+      <arg name="device" type="o">
+        <doc:doc><doc:summary>Object path of device that was changed.</doc:summary></doc:doc>
+      </arg>
+
+      <doc:doc>
+        <doc:description>
+          <doc:para>
+            Emitted when a device changed.
+          </doc:para>
+        </doc:description>
+      </doc:doc>
+    </signal>
+
+  </interface>
+
+</node>

@@ -25,6 +25,8 @@
 #include <context_provider.h>
 #include <libcgroup.h>
 
+#include "udiskproxy.h"
+#include "udiskdeviceproxy.h"
 #include "panelview.h"
 #include "application.h"
 #include "notificationsmanageradaptor.h"
@@ -53,6 +55,8 @@
 #define APPS_SOCK_PATH "/var/run/trm-app.sock"
 #define MUSICSERVICE "com.meego.app.music"
 #define MUSICINTERFACE "/com/meego/app/music"
+#define UDISKSERVICE "org.freedesktop.UDisks"
+#define UDISKINTERFACE "/org/freedesktop/UDisks"
 
 #define CONTEXT_NOTIFICATIONS_LAST "Notifications.Last"
 #define CONTEXT_NOTIFICATIONS_UNREAD "Notifications.Unread"
@@ -528,16 +532,25 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     powerKey = grabKey("XF86PowerOff");
 
     m_player = NULL;
-    m_serviceWatcher = new QDBusServiceWatcher(MUSICSERVICE,
+    m_musicServiceWatcher = new QDBusServiceWatcher(MUSICSERVICE,
                                                QDBusConnection::sessionBus(),
                                                QDBusServiceWatcher::WatchForRegistration |
                                                QDBusServiceWatcher::WatchForUnregistration,
                                                this);
-    connect(m_serviceWatcher, SIGNAL(serviceRegistered(const QString &)),
+    connect(m_musicServiceWatcher, SIGNAL(serviceRegistered(const QString &)),
             this, SLOT(musicRegistered()));
-    connect(m_serviceWatcher, SIGNAL(serviceUnregistered(const QString &)),
+    connect(m_musicServiceWatcher, SIGNAL(serviceUnregistered(const QString &)),
             this, SLOT(musicUnregistered()));
 
+    m_mediaImportItem = new MGConfItem("/meego/ux/MediaImportCommand", this);
+    mediaImportCommandChanged();
+
+    m_mediaCleanupItem = new MGConfItem("/meego/ux/MediaCleanupCommand", this);
+    mediaCleanupCommandChanged();
+
+    UdiskProxy *udisk = new UdiskProxy(UDISKSERVICE, UDISKINTERFACE, QDBusConnection::systemBus());
+    connect(udisk, SIGNAL(DeviceAdded(QDBusObjectPath)), SLOT(deviceAdded(QDBusObjectPath)));
+    connect(udisk, SIGNAL(DeviceRemoved(QDBusObjectPath)), SLOT(deviceRemoved(QDBusObjectPath)));
     QDBusReply<bool> registered= QDBusConnection::sessionBus().interface()->isServiceRegistered(MUSICSERVICE);
     if (registered.isValid()&&registered.value())
     {
@@ -640,6 +653,59 @@ void Application::musicUnregistered()
         m_player->deleteLater();
     }
     m_player = NULL;
+}
+
+void Application::deviceAdded(QDBusObjectPath path)
+{
+    UdiskDeviceProxy *device = new UdiskDeviceProxy(UDISKSERVICE, path.path(), QDBusConnection::systemBus());
+    connect(device, SIGNAL(Changed()), SLOT(deviceChanged()));
+
+    if (device->idUsage() == "filesystem" && !device->deviceIsMounted())
+    {
+        QString fstype;
+        QStringList options;
+        device->FilesystemMount(fstype, options);
+    }
+}
+
+void Application::deviceRemoved(QDBusObjectPath path)
+{
+    if (m_mounts.contains(path.path()))
+    {
+        // device was yanked before it had a chance to unmount
+        if (!m_mediaCleanupCommand.isEmpty())
+        {
+            QProcess::startDetached(m_mediaCleanupCommand + " " + m_mounts[path.path()].join(" "));
+        }
+        m_mounts.remove(path.path());
+    }
+}
+
+void Application::deviceChanged()
+{
+    UdiskDeviceProxy *device = static_cast<UdiskDeviceProxy *>(sender());
+    if (device->deviceIsMounted())
+    {
+        if (!m_mounts.contains(device->path()))
+        {
+            m_mounts.insert(device->path(), device->deviceMountPaths());
+            if (!m_mediaImportCommand.isEmpty())
+            {
+                QProcess::startDetached(m_mediaImportCommand + " " + device->deviceMountPaths().join(" "));
+            }
+        }
+    }
+    else
+    {
+        if (m_mounts.contains(device->path()))
+        {
+            if (!m_mediaCleanupCommand.isEmpty())
+            {
+                QProcess::startDetached(m_mediaCleanupCommand + " " + m_mounts[device->path()].join(" "));
+            }
+            m_mounts.remove(device->path());
+        }
+    }
 }
 
 void Application::setRunningAppsLimit(int limit)
@@ -2343,4 +2409,14 @@ bool Application::isSystemModelDialog(unsigned target)
 bool Application::lockScreenOn()
 {
     return lockScreen && lockScreen->isVisible();
+}
+
+void Application::mediaImportCommandChanged()
+{
+    m_mediaImportCommand = m_mediaImportItem->value().toString();
+}
+
+void Application::mediaCleanupCommandChanged()
+{
+    m_mediaCleanupCommand = m_mediaCleanupItem->value().toString();
 }
