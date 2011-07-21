@@ -16,6 +16,14 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
+#include <QDir>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define LOCKSCREENON_FILE "/var/lock/meego-ux-daemon/lockscreenon"
+#define SCREENON_FILE "/var/lock/meego-ux-daemon/screenon"
 
 /*
  * Implementation of adaptor class LockscreenAdaptor
@@ -26,11 +34,15 @@ LockscreenAdaptor::LockscreenAdaptor(QObject *parent)
 {
     // constructor
     setAutoRelaySignals(true);
+
+    if (!QDir().exists("/var/lock/meego-ux-daemon"))
+        QDir().mkpath("/var/lock/meego-ux-daemon");
 }
 
 LockscreenAdaptor::~LockscreenAdaptor()
 {
     // destructor
+
 }
 
 void LockscreenAdaptor::closeDesktopByName(const QString &name)
@@ -80,10 +92,26 @@ void LockscreenAdaptor::home()
 
 void LockscreenAdaptor::sendScreenOn(bool status)
 {
+    if (status)
+    {
+        ::creat(SCREENON_FILE, O_RDONLY);
+    }
+    else
+    {
+        ::unlink(SCREENON_FILE);
+    }
     emit screenOn(status);
 }
 
 void LockscreenAdaptor::sendLockScreenOn(bool status)
 {
+    if (status)
+    {
+        ::creat(LOCKSCREENON_FILE, O_RDONLY);
+    }
+    else
+    {
+        ::unlink(LOCKSCREENON_FILE);
+    }
     emit lockScreenOn(status);
 }

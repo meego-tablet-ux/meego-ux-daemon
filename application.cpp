@@ -497,9 +497,6 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     QDBusConnection::sessionBus().registerService("com.lockstatus");
     QDBusConnection::sessionBus().registerObject("/query", this);
 
-    QDBusConnection::systemBus().registerService("com.lockstatus");
-    QDBusConnection::systemBus().registerObject("/query", this);
-
     MGConfItem *homeKeyName = new MGConfItem("/meego/ux/HomeKey", this);
     if (homeKeyName && homeKeyName->value() != QVariant::Invalid)
     {
@@ -590,6 +587,7 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     m_powerIgnoreTimer->setInterval(500);
     connect(m_powerIgnoreTimer, SIGNAL(timeout()), m_powerIgnoreTimer, SLOT(stop()));
 
+    m_lockScreenAdaptor->sendScreenOn(m_screenOn);
     if (m_screenSaverTimeout > 0)
     {
         // Lock the screen
