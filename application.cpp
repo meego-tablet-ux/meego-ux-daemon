@@ -2273,6 +2273,8 @@ void Application::cleanupGrid()
 
 void Application::showPowerDialog()
 {
+    m_powerLongPressTimer->stop();
+
     QDBusInterface iface("org.meego.shutdownverification",
                          "/org/meego/shutdownverification",
                          "org.meego.shutdownverification",
@@ -2285,6 +2287,8 @@ void Application::showPowerDialog()
 
 void Application::volumeLongPressTimeout()
 {
+    m_volumeLongPressTimer->stop();
+
     // If the user does a press-n-hold on the volume down
     // button then we interpet that is a panic request to
     // make the device quiet.
