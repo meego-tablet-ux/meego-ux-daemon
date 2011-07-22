@@ -195,6 +195,7 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     m_enablePanelView(enablePanelView),
     taskSwitcher(NULL),
     lockScreen(NULL),
+    powerDialog(NULL),
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
     m_runningAppsLimit(16),
@@ -863,6 +864,9 @@ bool Application::x11EventFilter(XEvent *event)
             {
                 m_lockScreenAdaptor->home();
                 m_homeLongPressTimer->stop();
+
+                if (powerDialog)
+                    cleanupPowerDialog();
 
                 if (m_homeActive || (taskSwitcher && taskSwitcher->isVisible()))
                     toggleSwitcher();
@@ -2275,14 +2279,30 @@ void Application::showPowerDialog()
 {
     m_powerLongPressTimer->stop();
 
-    QDBusInterface iface("org.meego.shutdownverification",
-                         "/org/meego/shutdownverification",
-                         "org.meego.shutdownverification",
-                         QDBusConnection::sessionBus());
-    if(iface.isValid())
+    if (powerDialog)
     {
-        iface.asyncCall(QLatin1String("show"));
+        powerDialog->activateWindow();
+        powerDialog->raise();
+        powerDialog->show();
+        return;
     }
+
+    MGConfItem item("/meego/ux/ShutdownVerificationPath");
+    if (item.value().isValid())
+    {
+        powerDialog = new Dialog(true, true, false);
+        powerDialog->setAttribute(Qt::WA_X11NetWmWindowTypeDialog);
+        powerDialog->setSystemDialog();
+        connect(powerDialog->engine(), SIGNAL(quit()), this, SLOT(cleanupPowerDialog()));
+        powerDialog->setSource(QUrl::fromLocalFile(item.value().toString()));
+        powerDialog->show();
+    }
+}
+
+void Application::cleanupPowerDialog()
+{
+    powerDialog->deleteLater();
+    powerDialog = NULL;
 }
 
 void Application::volumeLongPressTimeout()

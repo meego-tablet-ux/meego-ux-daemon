@@ -171,6 +171,7 @@ private slots:
     void cleanupGrid();
     void cleanupTaskSwitcher();
     void cleanupLockscreen();
+    void cleanupPowerDialog();
     void updateApps(const QList<WindowInfo> &windowList);
     void toggleSwitcher();
     void cleanupStatusIndicatorMenu();
@@ -216,6 +217,7 @@ private:
     Dialog *taskSwitcher;
     Dialog *lockScreen;
     Dialog *gridScreen;
+    Dialog *powerDialog;
     QDeclarativeView *panelsScreen;
     Dialog *statusIndicatorMenu;
     Atom windowTypeAtom;
