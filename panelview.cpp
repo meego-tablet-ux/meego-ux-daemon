@@ -25,20 +25,8 @@
 
 PMonitor::PMonitor(void) : Dialog(false, false, false)
 {
-    const int width = qApp->desktop()->rect().width();
-    const int height = qApp->desktop()->rect().height();
-
     setViewportUpdateMode(QGraphicsView::NoViewportUpdate);
-
-    setAttribute(Qt::WA_NoSystemBackground);
     setCacheMode(QGraphicsView::CacheNone);
-    setOptimizationFlags(QGraphicsView::DontAdjustForAntialiasing);
-
-    viewport()->setAttribute(Qt::WA_TranslucentBackground, false);
-
-    rootContext()->setContextProperty("screenWidth", width);
-    rootContext()->setContextProperty("screenHeight", height);
-
 }
 
 PanelView::PanelView(void) : Dialog(false, false, true)
