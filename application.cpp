@@ -1143,12 +1143,15 @@ bool Application::x11EventFilter(XEvent *event)
                 }
                 m_homeActive = m_foregroundWindow == homeWinId;
 
-                if ((!panelsScreen || !panelsScreen->isVisible()) &&
-                        (!gridScreen || !gridScreen->isVisible()) &&
-                        (!lockScreen || !lockScreen->isVisible()))
-                    updateWindowList();
-                else
-                    send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+                // lookup pid for foreground window and send notification to trm
+                foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
+                {
+		    if (d->wid() == m_foregroundWindow)
+		    {
+		        send_ux_msg(UX_CMD_FOREGROUND, d->pid());
+                        break;
+		    }
+                }
 
                 if (altWinId && m_foregroundWindow != altWinId &&
                         (!lockScreen || !lockScreen->isVisible()))
