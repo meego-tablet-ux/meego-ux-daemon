@@ -18,6 +18,7 @@
 #include <QDeclarativeEngine>
 #include <QGLFormat>
 #include <QGLWidget>
+#include <QKeyEvent>
 #include <QSettings>
 #include <QTimer>
 #include <MGConfItem>
@@ -29,6 +30,8 @@
 
 #include "atoms.h"
 
+#define DEBUG_INFO_PATH "/var/tmp/debug.info"
+
 Dialog::Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * parent) :
     QDeclarativeView(parent),
     m_forceOnTop(forceOnTop),
@@ -37,6 +40,10 @@ Dialog::Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * 
     m_usingGl(false)
 {
     Application *app = static_cast<Application *>(qApp);
+
+    setEnableDebugInfo(true);
+    connect(&m_debugInfoFileWatcher, SIGNAL(fileChanged(QString)), SLOT(debugFileChanged(QString)));
+    connect(&m_debugInfoFileWatcher, SIGNAL(directoryChanged(QString)), SLOT(debugDirChanged(QString)));
 
     connect(this, SIGNAL(requestTaskSwitcher()), qApp, SLOT(showTaskSwitcher()));
     connect(this, SIGNAL(requestHome()), qApp, SLOT(goHome()));
@@ -167,6 +174,16 @@ void Dialog::closeEvent(QCloseEvent *)
     emit requestClose();
 }
 
+void Dialog::keyPressEvent ( QKeyEvent * event )
+{
+    if ((event->modifiers() & Qt::ControlModifier) && event->key() == Qt::Key_D)
+    {
+        setEnableDebugInfo(!m_debugInfoEnabled);
+        return;
+    }
+
+    QDeclarativeView::keyPressEvent(event);
+}
 
 void Dialog::setGLRendering()
 {
@@ -222,4 +239,58 @@ void Dialog::setSystemDialog()
     Atom atom = getAtom(ATOM_MEEGO_SYSTEM_DIALOG);
     long value = 1;
     XChangeProperty(QX11Info::display(), internalWinId(), atom, XA_CARDINAL, 32, PropModeReplace, (unsigned char*)&value, 1);
+}
+
+void Dialog::debugDirChanged(const QString)
+{
+    if (QFile::exists(DEBUG_INFO_PATH))
+    {
+        m_debugInfoFileWatcher.removePath("/var/tmp");
+        m_debugInfoFileWatcher.addPath(DEBUG_INFO_PATH);
+        debugFileChanged(DEBUG_INFO_PATH);
+    }
+}
+
+void Dialog::debugFileChanged(const QString)
+{
+    if (QFile::exists(DEBUG_INFO_PATH))
+    {
+        QFile data(DEBUG_INFO_PATH);
+        if (data.open(QIODevice::ReadOnly | QIODevice::Text))
+        {
+            m_debugInfo = data.readAll();
+        }
+        emit debugInfoChanged();
+    }
+    else
+    {
+        m_debugInfoFileWatcher.removePath(DEBUG_INFO_PATH);
+        m_debugInfoFileWatcher.addPath("/var/tmp");
+        m_debugInfo.clear();
+        emit debugInfoChanged();
+    }
+}
+
+void Dialog::setEnableDebugInfo(bool enable)
+{
+    m_debugInfoEnabled = enable;
+    if (m_debugInfoEnabled)
+    {
+        if (QFile::exists("/var/tmp/debug.info"))
+        {
+            m_debugInfoFileWatcher.addPath(DEBUG_INFO_PATH);
+            debugFileChanged(DEBUG_INFO_PATH);
+        }
+        else
+        {
+            m_debugInfoFileWatcher.addPath("/var/tmp");
+        }
+    }
+    else
+    {
+        m_debugInfoFileWatcher.removePath("/var/tmp");
+        m_debugInfoFileWatcher.removePath(DEBUG_INFO_PATH);
+        m_debugInfo.clear();
+        emit debugInfoChanged();
+    }
 }

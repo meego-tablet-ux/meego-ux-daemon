@@ -10,6 +10,7 @@
 #define DIALOG_H
 
 #include <QDeclarativeView>
+#include <QFileSystemWatcher>
 #include <QUrl>
 #include <QWidget>
 #include <X11/X.h>
@@ -20,6 +21,7 @@ class Dialog : public QDeclarativeView
     Q_PROPERTY(int winId READ winId NOTIFY winIdChanged)
     Q_PROPERTY(int actualOrientation READ actualOrientation WRITE setActualOrientation)
     Q_PROPERTY(bool inhibitScreenSaver READ dummyInhibitScreenSaver WRITE dummySetInhibitScreenSaver)
+    Q_PROPERTY(QString debugInfo READ getDebugInfo NOTIFY debugInfoChanged);
 
 public:
     explicit Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * parent = 0);
@@ -46,6 +48,13 @@ public:
     }
     void dummySetInhibitScreenSaver(bool) {}
 
+    QString getDebugInfo() const {
+        if (m_debugInfoEnabled)
+            return m_debugInfo;
+        else
+            return QString();
+    }
+
 public slots:
     void triggerSystemUIMenu();
     void goHome();
@@ -56,6 +65,8 @@ public slots:
 
 private slots:
     void setGLRendering();
+    void debugDirChanged(const QString);
+    void debugFileChanged(const QString);
 
 signals:
     void requestTaskSwitcher();
@@ -64,19 +75,26 @@ signals:
     void activateContent();
     void orientationChanged();
     void requestClose();
+    void debugInfoChanged();
 
 protected:
     bool event(QEvent * event);
     void closeEvent(QCloseEvent *);
+    void keyPressEvent ( QKeyEvent * event );
 
 private:
     void excludeFromTaskBar();
     void changeNetWmState(bool set, Atom one, Atom two = 0);
+    void setEnableDebugInfo(bool);
 
     bool m_forceOnTop;
     bool m_skipAnimation;
     int m_actualOrientation;
     bool m_translucent;
     bool m_usingGl;
+
+    bool m_debugInfoEnabled;
+    QString m_debugInfo;
+    QFileSystemWatcher m_debugInfoFileWatcher;
 };
 #endif // DIALOG_H
