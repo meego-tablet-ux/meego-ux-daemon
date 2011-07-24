@@ -202,7 +202,7 @@ void PanelView::hideEvent(QHideEvent *e)
 
     QDeclarativeItem *item;
 
-    item = qobject_cast<QDeclarativeItem *>(rootObject()); 
+    item = qobject_cast<QDeclarativeItem *>(bg_window->rootObject()); 
     if(item != NULL) { 
         if((item = item->findChild<QDeclarativeItem *>("statusBar")) != NULL) {
             item->setProperty("active", false); 
@@ -216,7 +216,7 @@ void PanelView::showEvent(QShowEvent *e)
        
     QDeclarativeItem *item;
 
-    item = qobject_cast<QDeclarativeItem *>(rootObject()); 
+    item = qobject_cast<QDeclarativeItem *>(bg_window->rootObject()); 
     if(item != NULL) { 
         if((item = item->findChild<QDeclarativeItem *>("statusBar")) != NULL) {
             item->setProperty("active", true); 
