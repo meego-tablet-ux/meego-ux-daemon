@@ -79,7 +79,8 @@ OTHER_FILES += \
     real.qml \
     start-meego-ux \
     interfaces/org.freedesktop.UDisks.xml \
-    interfaces/org.freedesktop.UDisks.Device.xml
+    interfaces/org.freedesktop.UDisks.Device.xml \
+    splash.qml
 
 TRANSLATIONS += $${SOURCES} $${HEADERS} $${OTHER_FILES}
 PROJECT_NAME = meego-ux-daemon

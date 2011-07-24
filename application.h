@@ -192,6 +192,8 @@ private slots:
     void deviceChanged();
     void mediaImportCommandChanged();
     void mediaCleanupCommandChanged();
+    void loadPanels();
+    void loadGrid();
 
 protected:
     /*! \reimp

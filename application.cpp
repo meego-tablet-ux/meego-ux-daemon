@@ -199,6 +199,7 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
     m_enablePanelView(enablePanelView),
     taskSwitcher(NULL),
     lockScreen(NULL),
+    gridScreen(NULL),
     powerDialog(NULL),
     panelsScreen(NULL),
     statusIndicatorMenu(NULL),
@@ -557,31 +558,6 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
         musicRegistered();
     }
 
-    if (m_showPanelsAsHome)
-    {
-        if(m_enablePanelView)
-        {
-            panelsScreen = new PanelView();
-        }
-        else
-        {
-            panelsScreen = new Dialog(false,false,false);
-            panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
-        }
-        panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
-        panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
-        panelsScreen->show();
-        gridScreen = NULL;
-    }
-    else
-    {
-        gridScreen = new Dialog(false, false, false);
-        gridScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
-        gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
-        gridScreen->show();
-        panelsScreen = NULL;
-    }
-
     m_volumeLongPressTimer = new QTimer(this);
     m_volumeLongPressTimer->setInterval(3000);
     connect(m_volumeLongPressTimer, SIGNAL(timeout()), SLOT(volumeLongPressTimeout()));
@@ -622,6 +598,33 @@ Application::Application(int & argc, char ** argv, bool enablePanelView) :
             cgroup_change_cgroup_path(spec.path, ::getpid(), spec.controllers);
         }
     }
+
+    if (!lockScreen)
+    {
+        // If we are not booting into the lockscreen then take measures to
+        // immediately get the panels or grid view loaded and visible
+        if (m_showPanelsAsHome)
+        {
+            loadPanels();
+        }
+        else
+        {
+            loadGrid();
+        }
+    }
+    else
+    {
+        // Allow the lockscreen some cycles to load and paint before
+        // loading the root window content
+        if (m_showPanelsAsHome)
+        {
+            QTimer::singleShot(1000, this, SLOT(loadPanels()));
+        }
+        else
+        {
+            QTimer::singleShot(1000, this, SLOT(loadGrid()));
+        }
+    }
 }
 
 Application::~Application()
@@ -633,6 +636,49 @@ Application::~Application()
     {
         delete m_player;
     }
+}
+
+void Application::loadPanels()
+{
+    if (!panelsScreen)
+    {
+        if(m_enablePanelView)
+        {
+            panelsScreen = new PanelView();
+        }
+        else
+        {
+            panelsScreen = new Dialog(false,false,false);
+            static_cast<Dialog *>(panelsScreen)->setAppSource("/usr/share/meego-ux-panels/main.qml");
+            static_cast<Dialog *>(panelsScreen)->setSplashImage("image://systemicon/meego-app-panels");
+            panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/splash.qml"));
+            panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
+        }
+
+        if (m_showPanelsAsHome)
+            panelsScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
+    }
+
+    // Get sometihng on screen
+    panelsScreen->show();
+    XFlush(QX11Info::display());
+}
+
+void Application::loadGrid()
+{
+    if (!gridScreen)
+    {
+        gridScreen = new Dialog(false, false, false);
+        gridScreen->setSplashImage("image://systemicon/meego-app-grid");
+        gridScreen->setAppSource(m_appLauncherPath);
+        if (!m_showPanelsAsHome)
+            gridScreen->setAttribute(Qt::WA_X11NetWmWindowTypeDesktop);
+        gridScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-daemon/splash.qml"));
+    }
+
+    // Get something on screen
+    gridScreen->show();
+    XFlush(QX11Info::display());
 }
 
 void Application::musicRegistered()
@@ -766,24 +812,14 @@ void Application::showPanels()
         }
         else
         {
-            if(m_enablePanelView)
-            {
-                panelsScreen = new PanelView();
-            }
-            else
-            {
-                panelsScreen = new Dialog(false,false, false);
-                panelsScreen->setSource(QUrl::fromLocalFile("/usr/share/meego-ux-panels/main.qml"));
-            }
-            connect(panelsScreen, SIGNAL(requestClose()), this, SLOT(cleanupPanels()));
-            panelsScreen->rootContext()->setContextProperty("notificationModel", m_notificationModel);
-            panelsScreen->show();
+            loadPanels();
         }
     }
 }
 
 void Application::showGrid()
 {
+    qDebug() << "XXX showGrid";
     if (!m_showPanelsAsHome)
     {
         goHome();
@@ -798,10 +834,7 @@ void Application::showGrid()
         }
         else
         {
-            gridScreen = new Dialog(false, false, false);
-            connect(gridScreen, SIGNAL(requestClose()), this, SLOT(cleanupGrid()));
-            gridScreen->setSource(QUrl::fromLocalFile(m_appLauncherPath));
-            gridScreen->show();
+            loadGrid();
         }
     }
 
@@ -915,6 +948,7 @@ void Application::lock()
 
     m_lockScreenAdaptor->sendLockScreenOn(true);
     send_ux_msg(UX_CMD_FOREGROUND, ::getpid());
+    XFlush(QX11Info::display());
 }
 
 bool Application::x11EventFilter(XEvent *event)
@@ -1132,25 +1166,39 @@ bool Application::x11EventFilter(XEvent *event)
                     }
                 }
                 int altWinId = 0;
-                int homeWinId = m_showPanelsAsHome ? panelsScreen->winId() : gridScreen->winId();
-                if (m_showPanelsAsHome && gridScreen)
+                int homeWinId = 0;
+                if (m_showPanelsAsHome)
                 {
-                    altWinId = gridScreen->winId();
+                    if (panelsScreen)
+                    {
+                        homeWinId = panelsScreen->winId();
+                        if (gridScreen)
+                        {
+                            altWinId = gridScreen->winId();
+                        }
+                    }
                 }
-                else if (!m_showPanelsAsHome && panelsScreen)
+                else
                 {
-                    altWinId = panelsScreen->winId();
+                    if (gridScreen)
+                    {
+                        homeWinId = gridScreen->winId();
+                        if (panelsScreen)
+                        {
+                            altWinId = panelsScreen->winId();
+                        }
+                    }
                 }
                 m_homeActive = m_foregroundWindow == homeWinId;
 
                 // lookup pid for foreground window and send notification to trm
                 foreach (Desktop *d, m_runningApps + m_runningAppsOverflow)
                 {
-		    if (d->wid() == m_foregroundWindow)
-		    {
-		        send_ux_msg(UX_CMD_FOREGROUND, d->pid());
+                    if (d->wid() == m_foregroundWindow)
+                    {
+                        send_ux_msg(UX_CMD_FOREGROUND, d->pid());
                         break;
-		    }
+                    }
                 }
 
                 if (altWinId && m_foregroundWindow != altWinId &&

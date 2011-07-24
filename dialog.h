@@ -22,6 +22,8 @@ class Dialog : public QDeclarativeView
     Q_PROPERTY(int actualOrientation READ actualOrientation WRITE setActualOrientation)
     Q_PROPERTY(bool inhibitScreenSaver READ dummyInhibitScreenSaver WRITE dummySetInhibitScreenSaver)
     Q_PROPERTY(QString debugInfo READ getDebugInfo NOTIFY debugInfoChanged);
+    Q_PROPERTY(QString appSource READ getAppSource NOTIFY appSourceChanged);
+    Q_PROPERTY(QString splashImage READ getSplashImage);
 
 public:
     explicit Dialog(bool translucent, bool skipAnimation, bool forceOnTop, QWidget * parent = 0);
@@ -55,6 +57,21 @@ public:
             return QString();
     }
 
+    QString getAppSource() {
+        return m_appSource;
+    }
+    void setAppSource(QString source) {
+        m_appSource = source;
+        emit appSourceChanged();
+    }
+
+    QString getSplashImage() {
+        return m_appSplash;
+    }
+    void setSplashImage(QString splash) {
+        m_appSplash = splash;
+    }
+
 public slots:
     void triggerSystemUIMenu();
     void goHome();
@@ -76,6 +93,7 @@ signals:
     void orientationChanged();
     void requestClose();
     void debugInfoChanged();
+    void appSourceChanged();
 
 protected:
     bool event(QEvent * event);
@@ -96,5 +114,8 @@ private:
     bool m_debugInfoEnabled;
     QString m_debugInfo;
     QFileSystemWatcher m_debugInfoFileWatcher;
+
+    QString m_appSource;
+    QString m_appSplash;
 };
 #endif // DIALOG_H
