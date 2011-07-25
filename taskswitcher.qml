@@ -105,10 +105,14 @@ Window {
                     height: switcherContent.iconContainerHeight
                     Image {
                         anchors.centerIn: parent
-                        width: switcherContent.iconWidth
-                        height: switcherContent.iconHeight
                         source: "image://systemicon/meego-app-panels"
-                        fillMode: Image.PreserveAspectFit
+                        onSourceSizeChanged: {
+                            if (sourceSize.width > switcherContent.iconWidth || sourceSize.height > switcherContent.iconHeight)
+                            {
+                                width = switcherContent.iconWidth;
+                                height = switcherContent.iconHeight;
+                            }
+                        }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -134,10 +138,14 @@ Window {
                     height: switcherContent.iconContainerHeight
                     Image {
                         anchors.centerIn: parent
-                        width: switcherContent.iconWidth
-                        height: switcherContent.iconHeight
                         source: "image://systemicon/meego-app-grid"
-                        fillMode: Image.PreserveAspectFit
+                        onSourceSizeChanged: {
+                            if (sourceSize.width > switcherContent.iconWidth || sourceSize.height > switcherContent.iconHeight)
+                            {
+                                width = switcherContent.iconWidth;
+                                height = switcherContent.iconHeight;
+                            }
+                        }
                     }
                     MouseArea {
                         anchors.fill: parent
@@ -169,15 +177,24 @@ Window {
                 Repeater {
                     model: qApp.runningApps
                     Item {
+                        id: dinstance
                         width: switcherContent.iconContainerWidth
                         height: switcherContent.iconContainerHeight + theme_iconFontPixelSize
+                        opacity: 1.0
+                        Behavior on opacity {
+                            PropertyAnimation { duration: 100; }
+                        }
                         Image {
                             id: iconItem
                             anchors.centerIn: parent
-                            width: switcherContent.iconWidth
-                            height: switcherContent.iconHeight
                             source: modelData.icon
-                            fillMode: Image.PreserveAspectFit
+                            onSourceSizeChanged: {
+                                if (sourceSize.width > switcherContent.iconWidth || sourceSize.height > switcherContent.iconHeight)
+                                {
+                                    width = switcherContent.iconWidth;
+                                    height = switcherContent.iconHeight;
+                                }
+                            }
                         }
                         Rectangle {
                             anchors.verticalCenter: labelItem.verticalCenter
@@ -190,11 +207,9 @@ Window {
                         }
                         Text {
                             id: labelItem
-                            anchors.top: iconItem.bottom
-                            anchors.topMargin: 5
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 5
                             anchors.horizontalCenter: parent.horizontalCenter
-                            width: parent.width - switcherContent.iconTextPadding * 2
-                            height: 20
                             elide: Text.ElideRight
                             verticalAlignment: Text.AlignVCenter
                             horizontalAlignment: Text.AlignHCenter
@@ -203,6 +218,12 @@ Window {
                             font.bold: true
                             smooth: true
                             text: modelData.title
+                            Component.onCompleted: {
+                                if (labelItem.paintedWidth > parent.width - 30)
+                                {
+                                    labelItem.width = parent.width - 30;
+                                }
+                            }
                         }
                         MouseArea {
                             anchors.fill: parent
@@ -219,31 +240,40 @@ Window {
                         }
                         ContextMenu {
                             id: contextMenu
+
+                            // Attempting to do any operation the deletes our
+                            // parent while the contextmenu is animating away
+                            // will result in stutter and in somecases deadlock
                             Timer {
-                                id: quitTimer
-                                interval: 250
-                                onTriggered: Qt.quit()
-                            }
-                            content: ActionMenu {
-                                model: [window.openText, window.closeText]
-                                payload: [0, 1]
+                                id: actionTimer
+                                interval: 1
                                 onTriggered: {
-                                    if (index == 0)
+                                    if (contextMenu.quitOnContextMenuClose)
                                     {
                                         favorites.append(modelData.filename);
                                         qApp.launchDesktopByName(modelData.filename);
-
-                                        // Fix BMC#21409
-                                        // Attempting to quit, which will result in m-u-d hiding
-                                        // the window, while the context menu is animating away
-                                        // will result in a crash deep in the dark heart of Qt
-                                        // touch event handing.  A small delay does  the trick,
-                                        // but yea, this is a hack
-                                        quitTimer.start(); 
+                                        Qt.quit();
                                     }
                                     else
                                     {
                                         qApp.closeDesktopByName(modelData.filename);
+                                    }
+                                }
+                            }
+                            property bool quitOnContextMenuClose: false
+                            // Adding another very short delay will yield
+                            // control and ensure we have completely finished
+                            // cleanup
+                            onClosed: actionTimer.start()
+
+                            content: ActionMenu {
+                                model: [window.openText, window.closeText]
+                                payload: [0, 1]
+                                onTriggered: {
+                                    dinstance.opacity = 0.0;
+                                    if (index == 0)
+                                    {
+                                        contextMenu.quitOnContextMenuClose = true;
                                     }
                                     contextMenu.hide();
                                 }
