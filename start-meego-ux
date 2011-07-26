@@ -3,9 +3,9 @@ if [ -e /usr/share/meego-app-firstboot ] && [ ! -e ~/.config/meego-app-firstboot
     /usr/bin/meego-qml-launcher --opengl --fullscreen --app meego-app-firstboot
     if [ $? -eq 0 ]; then
         touch ~/.config/meego-app-firstboot
-        exec /usr/libexec/meego-ux-daemon
+        exec /usr/libexec/meego-ux-daemon --opengl
     fi
     // If we get here then first time boot failed... let uxlaunch restart us to try again
 else
-    exec /usr/libexec/meego-ux-daemon
+    exec /usr/libexec/meego-ux-daemon --opengl
 fi
