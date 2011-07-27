@@ -67,7 +67,13 @@ context.path += $$INSTALL_ROOT/usr/share/contextkit/providers
 dbusconfig.files += meego-ux-daemon.conf
 dbusconfig.path += $$INSTALL_ROOT/etc/dbus-1/system.d
 
-INSTALLS += target share desktop context dbusconfig
+utils.files += trackerhelper
+utils.path += $$INSTALL_ROOT/usr/bin/
+
+schemas.files += trackerhelper.schemas
+schemas.path += $$INSTALL_ROOT/etc/gconf/schemas
+
+INSTALLS += target share desktop context dbusconfig utils schemas
 
 OTHER_FILES += \
     taskswitcher.qml \

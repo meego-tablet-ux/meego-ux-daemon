@@ -1,0 +1,52 @@
+#!/bin/sh
+
+function print_usage {
+    echo "Usage: trackerhelper add/remove mountpoint"
+}
+
+if [ $# -lt 2 ]; then
+    echo "ERROR: too few arguments"
+    print_usage
+    exit
+elif [ "$1" != "add" -a "$1" != "remove" -a "$1" != "list" ]; then
+    echo "ERROR: $1 is not a valid command"
+    print_usage
+    exit
+elif [ ! -d "$2" ]; then
+    echo "ERROR: $2 is not a valid directory"
+    print_usage
+    exit
+fi
+
+MOUNTPOINT=$2
+IFS_BAK=$IFS
+IFS="
+"
+
+if [ "$1" == "add" ]; then
+    FILES=`find "$MOUNTPOINT" -name \*.\*`
+
+    for FILE in $FILES
+    do
+	if [ ! -d "$FILE" ]; then
+            echo Adding $FILE
+            tracker-control -f "$FILE"
+        fi
+    done
+elif [ "$1" == "remove" ]; then
+    MP=`echo "$2" | sed -e "s/ /%20/"`
+    TRACKERMP="file://$MP"
+    tracker-sparql -u -q "DELETE { ?u a nie:InformationElement } WHERE { ?u a nie:InformationElement . FILTER ( fn:starts-with( nie:url (?u), \"$TRACKERMP\") ) }"
+elif [ "$1" == "list" ]; then
+    FILES=`find "$MOUNTPOINT" -name \*.\*`
+
+    for FILE in $FILES
+    do
+	if [ ! -d "$FILE" ]; then
+            echo $FILE
+        fi
+    done
+fi
+
+IFS=$IFS_BAK
+IFS_BAK=

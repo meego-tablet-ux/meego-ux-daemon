@@ -1,0 +1,28 @@
+<gconfschemafile>
+  <schemalist>
+    <schema>
+      <key>/schemas/meego/ux/MediaImportCommand</key>
+      <applyto>/meego/ux/MediaImportCommand</applyto>
+      <owner>trackerhelper</owner>
+      <type>string</type>
+      <default>/usr/bin/trackerhelper add </default>
+      <gettext_domain>trackerhelper</gettext_domain>
+      <locale name="C">
+        <short>Command to call on mount</short>
+        <long>Command that meego-ux-daemon calls after mounting a removable disk</long>
+      </locale>
+    </schema>
+    <schema>
+      <key>/schemas/meego/ux/MediaCleanupCommand</key>
+      <applyto>/meego/ux/MediaCleanupCommand</applyto>
+      <owner>trackerhelper</owner>
+      <type>string</type>
+      <default>/usr/bin/trackerhelper remove </default>
+      <gettext_domain>trackerhelper</gettext_domain>
+      <locale name="C">
+        <short>Command to call on unmount</short>
+        <long>Command that meego-ux-daemon calls after unmounting a removable disk</long>
+      </locale>
+    </schema>
+  </schemalist>
+</gconfschemafile>
